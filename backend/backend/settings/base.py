@@ -39,7 +39,7 @@ if 'WEBSITE_HOSTNAME' in os.environ:
     ALLOWED_HOSTS.append(os.environ['WEBSITE_HOSTNAME'])
 
 # Configure admins for getting notified of errors
-ADMINS = [('Sheldon', 'sheldon.ej@gmail.com')]
+ADMINS = [('Bob', 'test@gmail.com')]
 SERVER_EMAIL = 'django@author.yourdomain.com'
 
 # Application definition
