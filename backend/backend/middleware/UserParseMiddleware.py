@@ -28,6 +28,7 @@ class UserParseMiddleware:
         if id_token == None:
             return HttpResponse('Unauthorized (missing user identification token)', status=HTTPStatus.UNAUTHORIZED)
 
+        #print('AAD USER: ', aad_user_from_id_token(id_token))
         aad_user = aad_user_from_id_token(id_token)
         request.aad_user = aad_user
 
@@ -36,6 +37,7 @@ class UserParseMiddleware:
 
 def aad_user_from_id_token(id_token):
     aad_user = {'raw_claims': id_token}
+    print(aad_user)
 
     id_token_raw_split = id_token.split('.')
 
@@ -47,13 +49,13 @@ def aad_user_from_id_token(id_token):
         token_props_string = token_props_bytes.decode('utf-8')
         parsed_claims = json.loads(token_props_string)
 
+        print("\nParsed:\n ", parsed_claims, "\n\n")
+
         aad_user['claims'] = parsed_claims
         aad_user['id'] = parsed_claims['oid']
-        # aad_user['email'] = parsed_claims['email']
-        aad_user['email'] = 'jchen4086@gmail.com'
+        aad_user['email'] = parsed_claims['emails'][0]
         aad_user['name'] = parsed_claims['name']
-        # aad_user['preferred_username'] = parsed_claims['preferred_username']
-        aad_user['preffered_username'] = 'jae'
+        aad_user['preferred_username'] =  parsed_claims['name'] #parsed_claims['preferred_username']
 
     return aad_user
 
