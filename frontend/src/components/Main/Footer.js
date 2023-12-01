@@ -10,6 +10,9 @@ export default function Footer() {
         <a className="text-light" href="https://www.yourcompany.com/contactus/" target="_blank" rel="noreferrer">
           Contact Us
         </a>{' '}
+        <h1 className="text-3xl font-bold underline">
+          Hello world!
+        </h1>
         &middot;{' '}
         <a className="text-light" href="https://www.yourcompany.com/privacy/" target="_blank" rel="noreferrer">
           Privacy & Cookies

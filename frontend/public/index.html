@@ -4,12 +4,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-     <!--  <link rel="icon" href="%PUBLIC_URL%/static/media/favicon.ico" /> -->
+    <link rel="icon" href="%PUBLIC_URL%/public/media/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#4D4D4D" />
     <title>Soundscape Author</title>
     <meta name="description" content="Create and manage Soundscape experiences for your spaces and places" />
-     <!-- <link rel="apple-touch-icon" href="%PUBLIC_URL%/static/media/favicon.ico" /> -->
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/static/media/favicon.ico" />
     <meta name="version" content="0.1" />
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
@@ -34,9 +34,29 @@
       integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
       crossorigin=""
     ></script>
+    <!-- Tailwind CSS -->
+    <link href="./dist/index.css" rel="stylesheet">
+    <style>
+
+      #mapid { height: 180px; }
+      
+    </style>
+    <!-- Mapbox -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />    
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
+    <script>
+
+      var mymap = L.map('mapid').setView([51.505, -0.09], 13);
+      
+      L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+              attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+          }).addTo(mymap);
+      
+      
+    </script>
     <div id="root"></div>
     <!--
       This HTML file is a template.
