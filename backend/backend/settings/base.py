@@ -18,7 +18,6 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-print("Hello, World!: ", BASE_DIR)
 
 
 # Quick-start development settings - unsuitable for production
@@ -39,8 +38,9 @@ if 'WEBSITE_HOSTNAME' in os.environ:
     ALLOWED_HOSTS.append(os.environ['WEBSITE_HOSTNAME'])
 
 # Configure admins for getting notified of errors
-ADMINS = [('Bob', 'test@gmail.com')]
-SERVER_EMAIL = 'django@author.yourdomain.com'
+ADMINS = [('NAME', 'EMAIL')]
+# SERVER_EMAIL = 'django@author.yourdomain.com'
+SERVER_EMAIL = 'soundscape.buddhism103@passinbox.com'
 
 # Application definition
 
@@ -104,19 +104,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-#DATABASES = {}
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ['PSQL_DB_NAME'],
-        'USER': os.environ['PSQL_DB_USER'],
-        'PASSWORD': os.environ['PSQL_DB_PASS'],
-        'HOST': os.environ['PSQL_DB_HOST'],
-        'PORT': os.environ['PSQL_DB_PORT'],
-        'OPTIONS': {'sslmode': 'prefer'},
-    }
-}
-
+DATABASES = {}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

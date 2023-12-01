@@ -171,7 +171,7 @@ export default class App extends React.Component {
       .then((activities) => {
         this.setState({
           activities,
-          selectedActivity: activities[0],
+          //selectedActivity: activities[0],
         });
       })
       .catch((error) => {
@@ -438,7 +438,7 @@ export default class App extends React.Component {
             <main className="main container-fluid">
               <Row className="main-row">
                 {/* Primary */}
-                {/* this.state.selectedActivity ? (
+                {this.state.selectedActivity ? (
                   <ActivityTable
                     activity={this.state.selectedActivity}
                     editing={this.state.editing}
@@ -464,11 +464,10 @@ export default class App extends React.Component {
                       this.setState({ showModalActivityImport: true });
                     }}
                   />
-                ) 
-                  */}
+                )}
 
                 {/* Secondary */}
-                {/* <ActivityDetail
+                <ActivityDetail
                   activity={this.state.selectedActivity}
                   selectedWaypoint={this.state.selectedWaypoint}
                   editing={this.state.editing}
@@ -491,7 +490,7 @@ export default class App extends React.Component {
                   }}
                   onWaypointCreated={this.waypointCreated}
                   onWaypointUpdated={this.waypointUpdated}
-                />*/}
+                />
               </Row>
             </main>
 
@@ -509,7 +508,7 @@ export default class App extends React.Component {
             />
 
             {/* Activities */}
-            
+
             <ActivityUpdateModal
               show={this.state.showModalActivityCreate}
               creating={true}
