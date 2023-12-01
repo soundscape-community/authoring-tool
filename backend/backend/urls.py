@@ -22,14 +22,10 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import auth_me
-#print("WE ARE IN DEBUG MODE AND RAN THIS 2 ", auth_me)
- 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
-    path('.auth/me', auth_me),
 
     # Serve API app
     path('api/', include('api.urls')),
@@ -51,8 +47,5 @@ else:
 
 # In debug, we simulate the Azure auth by serving the auth JSON locally.
 if settings.DEBUG:
-    #print("WE ARE IN DEBUG MODE AND RAN THIS ", settings.DEBUG)
     from .views import auth_me
-    #print("WE ARE IN DEBUG MODE AND RAN THIS 2 ", auth_me)
     urlpatterns.append(path('.auth/me', auth_me))
-    #print("WE ARE IN DEBUG MODE AND RAN THIS 3 ", urlpatterns)

@@ -30,7 +30,8 @@ class ActivityViewSet(ModelViewSet):
     queryset = Activity.objects.all()
 
     def get_queryset(self):
-        user_id = self.request.aad_user['id']
+        # user_id = self.request.aad_user['id']
+        user_id = "justin"
         if user_id == None:
             raise ValidationError('Missing user id')
         queryset = Activity.objects.filter(author_id=user_id)
@@ -43,7 +44,8 @@ class ActivityViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         # Make sure the user id is valid and append it to the activity
-        user_id = self.request.aad_user['id']
+        # user_id = self.request.aad_user['id']
+        user_id = "justin"
         if user_id == None:
             raise ValidationError('Missing user id')
 

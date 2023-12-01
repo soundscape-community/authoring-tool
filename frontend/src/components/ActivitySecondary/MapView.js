@@ -403,28 +403,8 @@ export default class MapView extends React.Component {
 
     return (
       <MapContainer bounds={this.bounds()} zoom={19} worldCopyJump={true} ref={this.setMap} attributionControl={false}>
+        <TileLayer attribution={OSM_MAP_TILE_LAYER_DATA.attribution} url={OSM_MAP_TILE_LAYER_DATA.url} />
         <LayersControl position="topright">
-          {/* Default layers */}
-          {azureMapsTilesetIDs.map((tilesetID) => (
-            <LayersControl.BaseLayer key={tilesetID.id} name={tilesetID.name} checked={tilesetID.default}>
-              <TileLayer url={azureMapUrl(tilesetID.id)} attribution={azureMapAttribution} />
-            </LayersControl.BaseLayer>
-          ))}
-
-          {/* Group layers */}
-          <LayersControl.BaseLayer name="Satellite & Roads">
-            <LayerGroup>
-              <TileLayer url={azureMapUrl('microsoft.imagery')} attribution={azureMapAttribution} />
-              <TileLayer url={azureMapUrl('microsoft.base.hybrid.road')} attribution={azureMapAttribution} />
-            </LayerGroup>
-          </LayersControl.BaseLayer>
-
-          {/* DEV layers */}
-          {process.env.NODE_ENV === 'development' && (
-            <LayersControl.BaseLayer name={OSM_MAP_TILE_LAYER_DATA.name}>
-              <TileLayer url={OSM_MAP_TILE_LAYER_DATA.url} attribution={OSM_MAP_TILE_LAYER_DATA.attribution} />
-            </LayersControl.BaseLayer>
-          )}
           <LayersControl.Overlay checked name="Waypoints">
             <LayerGroup>
               {this.waypointMarkersPolyline()}
