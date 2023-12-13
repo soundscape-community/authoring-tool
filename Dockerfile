@@ -1,3 +1,7 @@
+# To run:
+#   docker build . -t authoring-tool
+#   docker run -p 8000:8000 -it --rm authoring-tool 
+
 FROM mcr.microsoft.com/cbl-mariner/base/core:2.0 as installer
 
 RUN tdnf -y update \
@@ -12,11 +16,17 @@ COPY --from=installer /staging/ /
 COPY . /app
 WORKDIR /app
 
-RUN pip3 install wheel setuptools && pip install -r backend/requirements.txt
-RUN cd frontend && npm install && npm run build
-
 ENV PYTHONPATH=/app/backend
 ENV DJANGO_SETTINGS_MODULE=backend.settings.local
 ENV DJANGO_SECRET_KEY=bogus
 
-ENTRYPOINT python3 /app/backend/manage.py runserver
+ENV AZURE_MAPS_SUBSCRIPTION_KEY=bogus
+ENV AZURE_STORAGE_ACCOUNT_LOCATION=bogus
+
+EXPOSE 8000
+
+RUN pip3 install wheel setuptools gunicorn && pip install -r backend/requirements.txt
+RUN cd frontend && npm install && npm run build
+RUN python3 /app/backend/manage.py collectstatic
+
+ENTRYPOINT python3 /app/backend/manage.py runserver 0.0.0.0:8000
