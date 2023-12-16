@@ -29,4 +29,4 @@ RUN pip3 install wheel setuptools gunicorn && pip install -r backend/requirement
 RUN cd frontend && npm install && npm run build
 RUN python3 /app/backend/manage.py collectstatic
 
-ENTRYPOINT python3 /app/backend/manage.py runserver 0.0.0.0:8000
+ENTRYPOINT gunicorn backend.wsgi:application --bind 0.0.0.0:8000
