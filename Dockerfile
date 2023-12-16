@@ -27,6 +27,5 @@ EXPOSE 8000
 
 RUN pip3 install wheel setuptools gunicorn && pip install -r backend/requirements.txt
 RUN cd frontend && npm install && npm run build
-RUN python3 /app/backend/manage.py collectstatic
 
-ENTRYPOINT gunicorn backend.wsgi:application --bind 0.0.0.0:8000
+ENTRYPOINT bash entrypoint.sh
