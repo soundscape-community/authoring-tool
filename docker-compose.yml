@@ -1,0 +1,27 @@
+#
+# To launch Postgres and web containers:
+#   $ docker-compose up
+# First time, also run:
+#   $ docker exec -it authoring-tool-web python manage.py collectstatic --noinput
+#   $ docker exec -it authoring-tool-web python manage.py migrate
+#
+version: '3.7'
+
+services:
+  web:
+    build: ./
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:13.0-alpine
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres

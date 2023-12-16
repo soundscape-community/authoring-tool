@@ -100,24 +100,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
-#DATABASES = {}
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ['PSQL_DB_NAME'],
-        'USER': os.environ['PSQL_DB_USER'],
-        'PASSWORD': os.environ['PSQL_DB_PASS'],
-        'HOST': os.environ['PSQL_DB_HOST'],
-        'PORT': os.environ['PSQL_DB_PORT'],
-        'OPTIONS': {'sslmode': 'prefer'},
-    }
-}
-
-
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
