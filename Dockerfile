@@ -20,12 +20,7 @@ ENV PYTHONPATH=/app/backend
 ENV DJANGO_SETTINGS_MODULE=backend.settings.local
 ENV DJANGO_SECRET_KEY=bogus
 
-ENV AZURE_MAPS_SUBSCRIPTION_KEY=bogus
-ENV AZURE_STORAGE_ACCOUNT_LOCATION=bogus
-
-EXPOSE 8000
-
 RUN pip3 install wheel setuptools gunicorn && pip install -r backend/requirements.txt
 RUN cd frontend && npm install && npm run build
 
-ENTRYPOINT bash entrypoint.sh
+ENTRYPOINT gunicorn backend.wsgi:application --bind 0.0.0.0:8000
