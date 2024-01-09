@@ -1,0 +1,15 @@
+# dependencies
+frontend/node_modules
+frontend/package-lock.json
+
+# misc
+frontend/.env
+frontend/.env.development
+
+backend/.env
+backend/.auth
+backend/.venv
+
+
+
+
