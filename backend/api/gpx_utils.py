@@ -109,10 +109,10 @@ def activity_to_gpx(activity: Activity) -> str:
 
     elem_behavior = mod_etree.SubElement(gpxsc_meta, GPXSC_NS + 'behavior')
 
-    if version == GPXVersion.v1:
-        elem_behavior.text = 'ScavengerHunt'
-    else:
-        elem_behavior.text = activity.type
+    # if version == GPXVersion.v1:
+    #     elem_behavior.text = 'ScavengerHunt'
+    # else:
+    elem_behavior.text = activity.type
 
     elem_version = mod_etree.SubElement(gpxsc_meta, GPXSC_NS + 'version')
     elem_version.text = str(version.value)

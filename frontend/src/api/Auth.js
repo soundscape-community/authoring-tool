@@ -25,11 +25,8 @@ class Auth {
   }
 
   async fetchAuthInfo() {
-    console.log('fetching auth info');
     let res = await axios.get('me');
-    console.error(res.data);
     res = res.data;
-
 
     const userId = Auth.valueForClaimType(res, 'http://schemas.microsoft.com/identity/claims/objectidentifier');
     const userEmail = Auth.valueForClaimType(res, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress');
@@ -39,8 +36,6 @@ class Auth {
     if (!userId || !userName) {
       throw Error('Invalid authentication response. Should contain user ID and name.');
     }
-
-
 
     this.authResponse = res;
     this.userId = userId;
@@ -61,11 +56,9 @@ class Auth {
   }
 
   static valueForClaimType(authResponse, claimType) {
-    //console.log("WE MADE IT TO NUMBER 1", authResponse);
     if (!Array.isArray(authResponse) || authResponse.length === 0) {
       throw Error('Invalid authentication response. should contain at least one tokens object.');
     }
-    //console.log("WE MADE IT TO NUMBER 2");
 
     const claims = authResponse[0].user_claims;
     const claim = claims.find((claim) => {

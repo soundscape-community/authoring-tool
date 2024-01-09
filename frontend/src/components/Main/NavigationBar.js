@@ -17,7 +17,7 @@ export default function NavigationBar({ presentingDetail, onActivitiesShow, user
             src="/static/media/your_brand_logo.png"
             aria-hidden="true"
           />{' '}
-          Authoring Tools
+          Authoring Tool
         </Navbar.Brand>
 
         {presentingDetail && <Navbar.Toggle aria-controls="responsive-navbar-nav" />}
