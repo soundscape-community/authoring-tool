@@ -140,7 +140,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/assets/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -150,7 +150,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # This section is added to support serving the frontend files
-INSTALLED_APPS.extend(["whitenoise.runserver_nostatic"])
+#INSTALLED_APPS.extend(["whitenoise.runserver_nostatic"])
 
 # Must insert after SecurityMiddleware, which is first in settings/common.py
 MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
@@ -161,6 +161,6 @@ FRONTEND_DIR = "../frontend/serve"
 TEMPLATES[0]["DIRS"] = [os.path.join(BASE_DIR, FRONTEND_DIR)]
 WHITENOISE_ROOT = os.path.join(BASE_DIR, FRONTEND_DIR, "root")
 
-FRONTEND_DIR_STATIC = os.path.join(FRONTEND_DIR, 'static')
+FRONTEND_DIR_STATIC = os.path.join(FRONTEND_DIR, 'assets')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, FRONTEND_DIR_STATIC)]
 # End of frontend section

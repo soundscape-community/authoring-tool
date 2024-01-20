@@ -20,13 +20,14 @@
     "not op_mini all"
   ],
   "dependencies": {
-    "axios": "0.27.2",
+    "axios": "^0.27.2",
     "bootstrap": "5.2.0",
+    "browserslist-to-esbuild": "^2.1.1",
     "formik": "2.2.9",
     "gpxparser": "^3.0.0",
     "leaflet": "^1.9.4",
     "qrcode.react": "3.1.0",
-    "react": "18.2.0",
+    "react": "^18.2.0",
     "react-bootstrap": "2.5.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "14.2.2",
@@ -49,10 +50,6 @@
     "postcss": "^8.4.33",
     "prettier": "2.7.1",
     "tailwindcss": "^3.4.1",
-    "vite": "^5.0.11",
-    "vite-plugin-svgr": "^4.2.0",
-    "vite-tsconfig-paths": "^4.3.1"
-  },
-  "proxy": "http://127.0.0.1:8000/",
-  "proxy_comment": "Used to tell the development server to proxy any unknown requests to your API server in development"
+    "vite": "^5.0.11"
+  }
 }

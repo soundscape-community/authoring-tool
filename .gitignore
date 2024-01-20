@@ -13,3 +13,5 @@ backend/.venv
 
 
 
+backend/backend/staticfiles
+backend/frontend/serve
