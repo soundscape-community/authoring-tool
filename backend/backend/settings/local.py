@@ -13,7 +13,6 @@ DATABASES = {
     }
 }
 
-
 # Used for serving local user-uploaded files
 # I.g., "http://127.0.0.1:8000/files/{file_path}"
 MEDIA_URL = 'files/'

@@ -25,7 +25,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # This value is the key to securing signed data.
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
+# default to insecure secret key for local development
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-i45(4w6er1sabytg45#mai((%ea_36ojfr_ms3k6jin!+ikor')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
