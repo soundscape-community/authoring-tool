@@ -2,33 +2,17 @@
 // Licensed under the MIT License.
 
 import Axios from 'axios';
-import Auth from './Auth';
+import auth from './Auth';
 import Activity from '../data/Activity';
-
-const auth = new Auth();
 
 const axios = Axios.create({
   baseURL: '/api/v1/',
   headers: {
     'content-type': 'application/json',
   },
+  xsrfCookieName: 'csrftoken',
+  xsrfHeaderName: 'X-CSRFToken'
 });
-
-axios.interceptors.request.use(
-  function (config) {
-    // Represents the user ID.
-    // In a production environment, Azure Easy Auth injects this token into request headers.
-    // In a development environment, set this value to replicate that value.
-    // This can be viewed at https://url-to-current-live-webpage/.auth/me under the value `id_token`.
-    if (process.env.NODE_ENV !== 'production' && auth.isAuthenticated) {
-      config.headers['X-Ms-Token-Aad-Id-Token'] = auth.idToken;
-    }
-    return config;
-  },
-  function (error) {
-    return Promise.reject(error);
-  },
-);
 
 axios.interceptors.response.use(
   function (response) {
@@ -72,10 +56,13 @@ function objectToFormData(object) {
 }
 
 class API {
-  // Auth
 
   async authenticate() {
     return auth.fetchAuthInfo();
+  }
+
+  async logout() {
+    auth.logout();
   }
 
   // Activities
