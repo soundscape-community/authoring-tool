@@ -10,10 +10,12 @@ export default defineConfig({
   server: {
     proxy: {
       '^(/admin|/api|/api-auth|/dj-rest-auth|/files|/.auth)/.*': {
-        'target': 'http://localhost:8000',
-        'xfwd': true
+        target: 'http://localhost:8000',
+        xfwd: true,
+        changeOrigin: true
       }
     },
+    host: '127.0.0.1',
     port: 3000,
   },
   build: {

@@ -24,23 +24,8 @@ ALLOWED_HOSTS = [
     'localhost', '*' # elephant: had to add star
 ]
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-        },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "WARNING",
-    },
-    "loggers": {
-        "django.server": {
-            "handlers": ["console"],
-            "level": "DEBUG",
-            "propagate": False,
-        },
-    },
-}
+# allow Github Code Spaces to pass CSRF origin check
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.preview.app.github.dev'
+]
+

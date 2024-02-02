@@ -4,6 +4,7 @@
 import React from 'react';
 import { Container, Dropdown, Nav, NavDropdown, Button, Navbar } from 'react-bootstrap';
 import API from '../../api/API';
+import auth from '../../api/Auth';
 import {useContext} from 'react';
 import MainContext from './MainContext';
 
@@ -47,7 +48,7 @@ export default function NavigationBar({ presentingDetail, onActivitiesShow }) {
               <Dropdown.ItemText>{user.userEmail}</Dropdown.ItemText>
               <NavDropdown.Divider />
               <NavDropdown.Item onClick={() => {
-                API.logout().then(() => {
+                auth.logout().then(() => {
                   setUser({}); 
                   window.location.reload(true);
               });
