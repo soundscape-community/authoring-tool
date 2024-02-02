@@ -13,6 +13,14 @@ Soundscape Authoring is a web app which allows users to create routed activities
 The easiest way to get started is by opening this repository in a GitHub Codespace. This will create a development environment with all the necessary tools and dependencies pre-installed.
 Click the "Open in GitHub Codespaces" button above to get started.
 
+This will start a new codespace and open VSCode in your browser. Once the codespace is ready, you can start the development server by doing the following:
+
+1. From the command palette (Ctrl+Shift+P), select "python: select interpreter" and choose python 3.12.
+2. Select "Run task" from the command palette and choose "create superuser". Fill in the details in the terminal to create a superuser.
+3. Choose the "Run and Debug" tab on the left-hand side of the screen (control+shift+D), and select "run full stack" from the dropdown menu.
+4. Click the green play button (F5) to start the server.
+5. a notification will appear in the bottom right corner of the screen with a link to open the app in a new browser window.
+
 ## Tech Stack
 
 - [Azure](https://azure.microsoft.com/)

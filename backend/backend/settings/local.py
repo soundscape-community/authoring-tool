@@ -26,6 +26,7 @@ ALLOWED_HOSTS = [
 
 # allow Github Code Spaces to pass CSRF origin check
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.preview.app.github.dev'
+    'https://*.app.github.dev',
+'http://localhost:3000',
 ]
 

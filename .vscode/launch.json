@@ -26,12 +26,13 @@
     ],
     "compounds": [
         {
-            "name": "Run Fullstack",
+            "name": "Run Full stack",
             "presentation": {
                 "hidden": false,
                 "group": "",
                 "order": 1
             },
+            "stopAll": true,
             "configurations": [
                 "Python: Django",
                 "Run npm start"
