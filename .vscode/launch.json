@@ -27,6 +27,11 @@
     "compounds": [
         {
             "name": "Run Fullstack",
+            "presentation": {
+                "hidden": false,
+                "group": "",
+                "order": 1
+            },
             "configurations": [
                 "Python: Django",
                 "Run npm start"
