@@ -29,7 +29,7 @@ the app will open in a new browser window. You can now start making changes to t
 
 If you want to use VSCode on your local machine, you can use the GitHub Codespaces extension to achieve the same result.
 Install the GitHub Codespaces extension from the VSCode marketplace and open this repository in a new codespace.
-See [Using Codespaces in Visual Studio Code](https://code.visualstudio.com/docs/remote/codespaces) for more information.
+See [Using Codespaces in Visual Studio Code](https://docs.github.com/en/codespaces/developing-in-a-codespace/using-github-codespaces-in-visual-studio-code) for more information.
 For now, make sure you choose the rd-devcontainer branch when opening the codespace.
 
 Once the codespace is ready, follow the same steps as above to start the development server.
