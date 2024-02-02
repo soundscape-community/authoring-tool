@@ -43,7 +43,3 @@ else:
     # In a cloud environment, files are stored and served via the 'files' app.
     urlpatterns.append(path('files/', include('files.urls')))
 
-# In debug, we simulate the Azure auth by serving the auth JSON locally.
-if settings.DEBUG:
-    from .views import auth_me
-    urlpatterns.append(path('.auth/me', auth_me))
