@@ -6,6 +6,13 @@ This document describes how to build and run the Soundscape Authoring web app.
 
 Soundscape Authoring is a web app which allows users to create routed activities for use with the Soundscape iOS app.
 
+## Getting Started
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/soundscape-community/authoring-tool/tree/rd-devcontainer?quickstart=1)
+
+The easiest way to get started is by opening this repository in a GitHub Codespace. This will create a development environment with all the necessary tools and dependencies pre-installed.
+Click the "Open in GitHub Codespaces" button above to get started.
+
 ## Tech Stack
 
 - [Azure](https://azure.microsoft.com/)
