@@ -28,5 +28,6 @@ ALLOWED_HOSTS = [
 CSRF_TRUSTED_ORIGINS = [
     'https://*.app.github.dev',
 'http://localhost:3000',
+'https://authoring.mur.org.uk'
 ]
 
