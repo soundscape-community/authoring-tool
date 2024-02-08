@@ -8,9 +8,7 @@ import { Alert } from 'react-bootstrap';
 
 export default class ActivityLinkModal extends React.Component {
   render() {
-    // v2: iOS will load activity from production service
-    // v3: iOS will load activity from development service
-    const link = `https://yourservicesdomain.com/experience?id=${this.props.activity?.id}`;
+    const link = `https://share.soundscape.services/v3/experience?id=${this.props.activity?.id}`;
 
     return (
       <Modal
