@@ -47,10 +47,10 @@
 
     AZURE_MAPS_SUBSCRIPTION_KEY=""
 
-    X_MS_TOKEN_AAD_ID_TOKEN="lkjsajf;djfdsa;lkfj"
+    X_MS_TOKEN_AAD_ID_TOKEN="lkjsajfdjfdsalkfj"
     ```
     
-4.  double check `.env` file
+4.  Double check `.env` file
     * remove all the comments in the `backend/.env` files 
     * no spaces before and after "="
     * it should look like above
