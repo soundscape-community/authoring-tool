@@ -49,6 +49,7 @@ export default function NavigationBar({ presentingDetail, onActivitiesShow }) {
               <NavDropdown.Item onClick={() => {
                 API.logout().then(() => {
                   setUser({}); 
+                  window.location.reload(true);
               });
               }}>Sign out</NavDropdown.Item>
             </NavDropdown>

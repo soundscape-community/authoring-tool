@@ -18,6 +18,7 @@ function Login({ }) {
       console.log(error);
     }
     setUser(await auth.fetchAuthInfo());
+    window.location.reload(true);
   };
 
   const validationSchema = Yup.object().shape({
