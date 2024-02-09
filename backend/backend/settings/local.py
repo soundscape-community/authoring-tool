@@ -20,3 +20,28 @@ MEDIA_URL = 'files/'
 
 # Used for storing local user-uploaded files
 MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL)
+
+ALLOWED_HOSTS = [
+    'localhost', '*' # elephant: had to add star
+]
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
+    },
+    "loggers": {
+        "django.server": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+}

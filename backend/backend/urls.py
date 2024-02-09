@@ -26,12 +26,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
+    path('dj-rest-auth/', include('dj_rest_auth.urls')),
 
     # Serve API app
     path('api/', include('api.urls')),
-
-    # Serve map tiles app
-    path('map/', include('map.urls')),
 
     # Serve frontend app
     path('', include('frontend.urls')),
