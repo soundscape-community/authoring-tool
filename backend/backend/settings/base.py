@@ -58,13 +58,12 @@ INSTALLED_APPS = [
     # 'corsheaders',
 
     'rest_framework',
+    'dj_rest_auth'
 ]
 
 REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny'  # DjangoModelPermissionsOrAnonReadOnly
+        'rest_framework.permissions.IsAuthenticated'  
     ]
 }
 
@@ -122,6 +121,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+REST_AUTH = {
+    'USE_JWT': True,
+    'JWT_AUTH_COOKIE': 'AUTHORING_AUTH',
+    'TOKEN_MODEL':None
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
