@@ -19,8 +19,6 @@ import WaypointMarker from './WaypointMarker';
 import API from '../../api/API';
 import { showError, showLoading, dismissLoading } from '../../utils/Toast';
 import { GPXMapOverlaysBounds, GPXMapOverlays } from '../../utils/GPX+MapView';
-// import { azureMapsTilesetIDs, azureMapUrl, azureMapAttribution } from '../../utils/AzureMapsUtils';
-import { osmMapAttribution, osmMapsTilesetIDs, osmMapUrl } from '../../utils/MapboxMapsUtil';
 import { GitPullRequest, MapPin } from 'react-feather';
 import POIMarker from './POIMarker';
 import Waypoint from '../../data/Waypoint';
@@ -28,11 +26,10 @@ import Activity from '../../data/Activity';
 
 const DEFAULT_MAP_BOUNDS = [[47.64203029829583, -122.14126189681534]];
 
-const OSM_MAP_TILE_LAYER_DATA = {
-  name: 'OSM (Dev)',
+const OSM_ATTR = {
   url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
   attribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>',
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 };
 
 function shouldShowWaypointCreationControl(activity) {
@@ -404,29 +401,8 @@ export default class MapView extends React.Component {
 
     return (
       <MapContainer bounds={this.bounds()} zoom={19} worldCopyJump={true} ref={this.setMap} attributionControl={false}>
-        <TileLayer attribution={osmMapAttribution} url={osmMapUrl()}/>
+        <TileLayer attribution={OSM_ATTR.attribution} url={OSM_ATTR.url}/>
         <LayersControl position="topright">
-          {/* Default layers */}
-          {/* {osmMapsTilesetIDs.map((tilesetID) => (
-            <LayersControl.BaseLayer key={tilesetID.id} name={tilesetID.name} checked={tilesetID.default}>
-              <TileLayer url={osmMapUrl(tilesetID.id)} attribution={osmMapAttribution} />
-            </LayersControl.BaseLayer>
-          ))} */}
-
-          {/* Group layers */}
-          {/* <LayersControl.BaseLayer name="Satellite & Roads">
-            <LayerGroup>
-              <TileLayer url={osmMapUrl('microsoft.imagery')} attribution={osmMapAttribution} />
-              <TileLayer url={osmMapUrl('microsoft.base.hybrid.road')} attribution={osmMapAttribution} />
-            </LayerGroup>
-          </LayersControl.BaseLayer> */}
-
-          {/* DEV layers */}
-          {/* {process.env.NODE_ENV === 'development' && (
-            <LayersControl.BaseLayer name={OSM_MAP_TILE_LAYER_DATA.name}>
-              <TileLayer url={OSM_MAP_TILE_LAYER_DATA.url} attribution={OSM_MAP_TILE_LAYER_DATA.attribution} />
-            </LayersControl.BaseLayer>
-          )} */}
           <LayersControl.Overlay checked name="Waypoints">
             <LayerGroup>
               {this.waypointMarkersPolyline()}
