@@ -18,10 +18,11 @@ Click the "Open in GitHub Codespaces" button above to get started.
 This will start a new codespace and open VSCode in your browser. Once the codespace is ready, you can start the development server by doing the following:
 
 1. From the command palette (Ctrl+Shift+P), select "python: select interpreter" and choose python 3.12.
-2. Select "Run task" from the command palette and choose "create superuser". Fill in the details in the terminal to create a superuser.
-3. Choose the "Run and Debug" tab on the left-hand side of the screen (control+shift+D), and select "run full stack" from the dropdown menu.
-4. Click the green play button (F5) to start the server.
-5. a notification will appear in the bottom right corner of the screen with a link to open the app in a new browser window. If there are two, select the one with the port number 3000.
+2. In the terminal cd to the frontend directory and run the command "npm run build"
+3. Select "Run task" from the command palette and choose "create superuser". Fill in the details in the terminal to create a superuser.
+4. Choose the "Run and Debug" tab on the left-hand side of the screen (control+shift+D), and select "run full stack" from the dropdown menu.
+5. Click the green play button (F5) to start the server.
+6. a notification will appear in the bottom right corner of the screen with a link to open the app in a new browser window. If there are two, select the one with the port number 3000.
 
 the app will open in a new browser window. You can now start making changes to the code and see the results in real-time.
 
