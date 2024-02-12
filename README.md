@@ -6,6 +6,34 @@ This document describes how to build and run the Soundscape Authoring web app.
 
 Soundscape Authoring is a web app which allows users to create routed activities for use with the Soundscape iOS app.
 
+## Getting Started
+
+### GitHub Codespaces on the web
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/soundscape-community/authoring-tool/tree/rd-devcontainer?quickstart=1)
+
+The easiest way to get started is by opening this repository in a GitHub Codespace. This will create a development environment with all the necessary tools and dependencies pre-installed.
+Click the "Open in GitHub Codespaces" button above to get started.
+
+This will start a new codespace and open VSCode in your browser. Once the codespace is ready, you can start the development server by doing the following:
+
+1. From the command palette (Ctrl+Shift+P), select "python: select interpreter" and choose python 3.12.
+2. Select "Run task" from the command palette and choose "create superuser". Fill in the details in the terminal to create a superuser.
+3. Choose the "Run and Debug" tab on the left-hand side of the screen (control+shift+D), and select "run full stack" from the dropdown menu.
+4. Click the green play button (F5) to start the server.
+5. a notification will appear in the bottom right corner of the screen with a link to open the app in a new browser window. If there are two, select the one with the port number 3000.
+
+the app will open in a new browser window. You can now start making changes to the code and see the results in real-time.
+
+### GitHub Codespaces in VSCode
+
+If you want to use VSCode on your local machine, you can use the GitHub Codespaces extension to achieve the same result.
+Install the GitHub Codespaces extension from the VSCode marketplace and open this repository in a new codespace.
+See [Using Codespaces in Visual Studio Code](https://docs.github.com/en/codespaces/developing-in-a-codespace/using-github-codespaces-in-visual-studio-code) for more information.
+For now, make sure you choose the rd-devcontainer branch when opening the codespace.
+
+Once the codespace is ready, follow the same steps as above to start the development server.
+
 ## Tech Stack
 
 - [Azure](https://azure.microsoft.com/)

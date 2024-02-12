@@ -12,9 +12,7 @@ from azure.storage.blob import BlobServiceClient, ContainerClient, StorageStream
 ACCOUNT_URL = "https://{}.blob.core.windows.net/".format(os.environ.get('AZURE_STORAGE_ACCOUNT_NAME'))
 CREDENTIAL = os.environ.get('AZURE_STORAGE_ACCOUNT_KEY')
 CONTAINER_NAME = os.environ.get('AZURE_STORAGE_ACCOUNT_CONTAINER')
-# elephant
-# BLOB_PATH_PREFIX = os.environ.get('AZURE_STORAGE_ACCOUNT_LOCATION') + '/'
-BLOB_PATH_PREFIX = 'asdf/'
+BLOB_PATH_PREFIX = os.getenv('AZURE_STORAGE_ACCOUNT_LOCATION', '') + '/'
 
 
 @require_http_methods(["GET"])

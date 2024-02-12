@@ -57,14 +57,6 @@ function objectToFormData(object) {
 
 class API {
 
-  async authenticate() {
-    return auth.fetchAuthInfo();
-  }
-
-  async logout() {
-    auth.logout();
-  }
-
   // Activities
 
   async getActivities() {

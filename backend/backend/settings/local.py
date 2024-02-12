@@ -13,7 +13,6 @@ DATABASES = {
     }
 }
 
-
 # Used for serving local user-uploaded files
 # I.g., "http://127.0.0.1:8000/files/{file_path}"
 MEDIA_URL = 'files/'
@@ -25,23 +24,10 @@ ALLOWED_HOSTS = [
     'localhost', '*' # elephant: had to add star
 ]
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-        },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "WARNING",
-    },
-    "loggers": {
-        "django.server": {
-            "handlers": ["console"],
-            "level": "DEBUG",
-            "propagate": False,
-        },
-    },
-}
+# allow Github Code Spaces to pass CSRF origin check
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.app.github.dev',
+'http://localhost:3000',
+'https://authoring.mur.org.uk'
+]
+
