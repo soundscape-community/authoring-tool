@@ -82,7 +82,6 @@ For now, make sure you choose the rd-devcontainer branch when opening the codesp
 
 Once the codespace is ready, follow the same steps as above to start the development server.
 
-
 <!-- CONTRIBUTING -->
 ## Contributing
 

@@ -7,6 +7,7 @@ import { ToastContainer } from 'react-toastify';
 import { animateScroll } from 'react-scroll';
 
 import API from './api/API';
+import Auth from './api/Auth';
 import { showError, showLoading, dismissLoading } from './utils/Toast';
 import NavigationBar from './components/Main/NavigationBar';
 import Footer from './components/Main/Footer';
@@ -24,6 +25,8 @@ import MapOverlayModal from './components/Modals/MapOverlayModal';
 import ActivityImportModal from './components/Modals/ActivityImportModal';
 import InvalidWindowSizeAlert from './components/Main/InvalidWindowSizeAlert';
 import PrivacyAlertModal from './components/Modals/PrivacyAlertModal';
+import Login from './components/auth/Login';
+import MainContext from './components/Main/MainContext';
 
 export default class App extends React.Component {
   static STORAGE_KEYS = Object.freeze({
@@ -90,6 +93,7 @@ export default class App extends React.Component {
     this.waypointUpdated = this.waypointUpdated.bind(this);
     this.waypointDeleteModal = this.waypointDeleteModal.bind(this);
     this.waypointDeleted = this.waypointDeleted.bind(this);
+    this.setUser = this.setUser.bind(this);
   }
 
   componentDidMount() {
@@ -156,8 +160,14 @@ export default class App extends React.Component {
   // User
   ///////////////////////////////////////////////////////////
 
+  setUser(user) {
+    console.log('setUser', user);
+    this.setState({ user });
+    console.log('setUser', this.state.user);
+  }
+
   async authenticate() {
-    return API.authenticate();
+    return Auth.fetchAuthInfo();
   }
 
   ///////////////////////////////////////////////////////////
@@ -424,170 +434,173 @@ export default class App extends React.Component {
 
   render() {
     return (
-      <div className="App">
-        {this.state.isScreenSizeValid ? (
-          <>
-            <ToastContainer />
+      <MainContext.Provider value={{ user: this.state.user, setUser: this.setUser }}>
+        <div className="App">
+          {this.state.isScreenSizeValid ? (
+            <>
+              <ToastContainer />
 
-            <NavigationBar
-              user={this.state.user}
-              onActivitiesShow={this.showActivities}
-              presentingDetail={this.state.selectedActivity}
-            />
+              <NavigationBar
+                user={this.state.user}
+                onActivitiesShow={this.showActivities}
+                presentingDetail={this.state.selectedActivity}
+              />
 
-            <main className="main container-fluid">
-              <Row className="main-row">
-                {/* Primary */}
-                {this.state.selectedActivity ? (
-                  <ActivityTable
+              <main className="main container-fluid">
+                <Row className="main-row">
+                  {/* Primary */}
+                  {(!this.state.user.userName)?(<Login/>):
+                  this.state.selectedActivity ? (
+                    <ActivityTable
+                      activity={this.state.selectedActivity}
+                      editing={this.state.editing}
+                      onActivityUpdate={() => {
+                        this.setState({ showModalActivityUpdate: true });
+                      }}
+                      onShowActivities={this.showActivities}
+                      onWaypointSelected={this.waypointSelected}
+                      onWaypointCreate={this.waypointCreateModal}
+                      onWaypointDelete={this.waypointDeleteModal}
+                      onWaypointUpdate={this.waypointUpdateModal}
+                      onWaypointMovedUp={this.waypointMovedUp}
+                      onWaypointMovedDown={this.waypointMovedDown}
+                    />
+                  ) : (
+                    <ActivitiesTable
+                      activities={this.state.activities}
+                      onActivitySelected={this.activitySelected}
+                      onActivityCreate={() => {
+                        this.setState({ showModalActivityCreate: true });
+                      }}
+                      onActivityImport={() => {
+                        this.setState({ showModalActivityImport: true });
+                      }}
+                    />
+                  )}
+
+                  {/* Secondary */}
+                  <ActivityDetail
                     activity={this.state.selectedActivity}
+                    selectedWaypoint={this.state.selectedWaypoint}
                     editing={this.state.editing}
-                    onActivityUpdate={() => {
-                      this.setState({ showModalActivityUpdate: true });
+                    mapOverlay={this.state.mapOverlay}
+                    onToggleEditing={this.toggleEditing}
+                    onMapOverlay={() => {
+                      this.setState({ showModalMapOverlay: true });
                     }}
-                    onShowActivities={this.showActivities}
-                    onWaypointSelected={this.waypointSelected}
-                    onWaypointCreate={this.waypointCreateModal}
-                    onWaypointDelete={this.waypointDeleteModal}
-                    onWaypointUpdate={this.waypointUpdateModal}
-                    onWaypointMovedUp={this.waypointMovedUp}
-                    onWaypointMovedDown={this.waypointMovedDown}
+                    onActivityDelete={() => {
+                      this.setState({ showModalActivityDelete: true });
+                    }}
+                    onActivityDuplicate={() => {
+                      this.setState({ showModalActivityDuplicate: true });
+                    }}
+                    onActivityPublish={() => {
+                      this.setState({ showModalActivityPublish: true });
+                    }}
+                    onActivityLink={() => {
+                      this.setState({ showModalActivityLink: true });
+                    }}
+                    onWaypointCreated={this.waypointCreated}
+                    onWaypointUpdated={this.waypointUpdated}
                   />
-                ) : (
-                  <ActivitiesTable
-                    activities={this.state.activities}
-                    onActivitySelected={this.activitySelected}
-                    onActivityCreate={() => {
-                      this.setState({ showModalActivityCreate: true });
-                    }}
-                    onActivityImport={() => {
-                      this.setState({ showModalActivityImport: true });
-                    }}
-                  />
-                )}
+                </Row>
+              </main>
 
-                {/* Secondary */}
-                <ActivityDetail
-                  activity={this.state.selectedActivity}
-                  selectedWaypoint={this.state.selectedWaypoint}
-                  editing={this.state.editing}
-                  mapOverlay={this.state.mapOverlay}
-                  onToggleEditing={this.toggleEditing}
-                  onMapOverlay={() => {
-                    this.setState({ showModalMapOverlay: true });
-                  }}
-                  onActivityDelete={() => {
-                    this.setState({ showModalActivityDelete: true });
-                  }}
-                  onActivityDuplicate={() => {
-                    this.setState({ showModalActivityDuplicate: true });
-                  }}
-                  onActivityPublish={() => {
-                    this.setState({ showModalActivityPublish: true });
-                  }}
-                  onActivityLink={() => {
-                    this.setState({ showModalActivityLink: true });
-                  }}
-                  onWaypointCreated={this.waypointCreated}
-                  onWaypointUpdated={this.waypointUpdated}
-                />
-              </Row>
-            </main>
+              <Footer></Footer>
 
-            <Footer></Footer>
+              {/* Models */}
 
-            {/* Models */}
+              <PrivacyAlertModal onAccept={this.didAcceptPrivacyAgreement} show={this.state.showModalPrivacyAlert} />
 
-            <PrivacyAlertModal onAccept={this.didAcceptPrivacyAgreement} show={this.state.showModalPrivacyAlert} />
+              <MapOverlayModal
+                show={this.state.showModalMapOverlay}
+                mapOverlay={this.state.mapOverlay}
+                onCancel={this.dismissModal.bind(this, 'showModalMapOverlay')}
+                onDone={this.mapOverlayUpdated}
+              />
 
-            <MapOverlayModal
-              show={this.state.showModalMapOverlay}
-              mapOverlay={this.state.mapOverlay}
-              onCancel={this.dismissModal.bind(this, 'showModalMapOverlay')}
-              onDone={this.mapOverlayUpdated}
-            />
+              {/* Activities */}
 
-            {/* Activities */}
+              <ActivityUpdateModal
+                show={this.state.showModalActivityCreate}
+                creating={true}
+                onCancel={this.dismissModal.bind(this, 'showModalActivityCreate')}
+                onDone={this.activityCreated}
+              />
 
-            <ActivityUpdateModal
-              show={this.state.showModalActivityCreate}
-              creating={true}
-              onCancel={this.dismissModal.bind(this, 'showModalActivityCreate')}
-              onDone={this.activityCreated}
-            />
+              <ActivityImportModal
+                show={this.state.showModalActivityImport}
+                onCancel={this.dismissModal.bind(this, 'showModalActivityImport')}
+                onDone={this.activityImported}
+              />
 
-            <ActivityImportModal
-              show={this.state.showModalActivityImport}
-              onCancel={this.dismissModal.bind(this, 'showModalActivityImport')}
-              onDone={this.activityImported}
-            />
+              <ActivityUpdateModal
+                show={this.state.showModalActivityUpdate}
+                creating={false}
+                activity={this.state.selectedActivity}
+                onCancel={this.dismissModal.bind(this, 'showModalActivityUpdate')}
+                onDone={this.activityUpdated}
+              />
 
-            <ActivityUpdateModal
-              show={this.state.showModalActivityUpdate}
-              creating={false}
-              activity={this.state.selectedActivity}
-              onCancel={this.dismissModal.bind(this, 'showModalActivityUpdate')}
-              onDone={this.activityUpdated}
-            />
+              <ActivityDeleteModal
+                show={this.state.showModalActivityDelete}
+                activity={this.state.selectedActivity}
+                onCancel={this.dismissModal.bind(this, 'showModalActivityDelete')}
+                onDelete={this.activityDeleted}
+              />
 
-            <ActivityDeleteModal
-              show={this.state.showModalActivityDelete}
-              activity={this.state.selectedActivity}
-              onCancel={this.dismissModal.bind(this, 'showModalActivityDelete')}
-              onDelete={this.activityDeleted}
-            />
+              <ActivityDuplicateModal
+                show={this.state.showModalActivityDuplicate}
+                activity={this.state.selectedActivity}
+                onCancel={this.dismissModal.bind(this, 'showModalActivityDuplicate')}
+                onDuplicate={this.activityDuplicated}
+              />
 
-            <ActivityDuplicateModal
-              show={this.state.showModalActivityDuplicate}
-              activity={this.state.selectedActivity}
-              onCancel={this.dismissModal.bind(this, 'showModalActivityDuplicate')}
-              onDuplicate={this.activityDuplicated}
-            />
+              <ActivityPublishModal
+                show={this.state.showModalActivityPublish}
+                activity={this.state.selectedActivity}
+                onCancel={this.dismissModal.bind(this, 'showModalActivityPublish')}
+                onPublish={this.activityPublished}
+              />
 
-            <ActivityPublishModal
-              show={this.state.showModalActivityPublish}
-              activity={this.state.selectedActivity}
-              onCancel={this.dismissModal.bind(this, 'showModalActivityPublish')}
-              onPublish={this.activityPublished}
-            />
+              <ActivityLinkModal
+                show={this.state.showModalActivityLink}
+                activity={this.state.selectedActivity}
+                onCancel={this.dismissModal.bind(this, 'showModalActivityLink')}
+              />
 
-            <ActivityLinkModal
-              show={this.state.showModalActivityLink}
-              activity={this.state.selectedActivity}
-              onCancel={this.dismissModal.bind(this, 'showModalActivityLink')}
-            />
+              {/* Waypoints */}
 
-            {/* Waypoints */}
+              <WaypointUpdateModal
+                show={this.state.showModalWaypointCreate}
+                creating={true}
+                waypointType={this.state.waypointCreateType}
+                activity={this.state.selectedActivity}
+                onCancel={this.dismissModal.bind(this, 'showModalWaypointCreate')}
+                onDone={this.waypointCreated}
+              />
 
-            <WaypointUpdateModal
-              show={this.state.showModalWaypointCreate}
-              creating={true}
-              waypointType={this.state.waypointCreateType}
-              activity={this.state.selectedActivity}
-              onCancel={this.dismissModal.bind(this, 'showModalWaypointCreate')}
-              onDone={this.waypointCreated}
-            />
+              <WaypointUpdateModal
+                show={this.state.showModalWaypointUpdate}
+                creating={false}
+                waypoint={this.state.selectedWaypoint}
+                activity={this.state.selectedActivity}
+                onCancel={this.dismissModal.bind(this, 'showModalWaypointUpdate')}
+                onDone={this.waypointUpdated}
+              />
 
-            <WaypointUpdateModal
-              show={this.state.showModalWaypointUpdate}
-              creating={false}
-              waypoint={this.state.selectedWaypoint}
-              activity={this.state.selectedActivity}
-              onCancel={this.dismissModal.bind(this, 'showModalWaypointUpdate')}
-              onDone={this.waypointUpdated}
-            />
-
-            <WaypointDeleteModal
-              show={this.state.showModalWaypointDelete}
-              waypoint={this.state.selectedWaypoint}
-              onCancel={this.dismissModal.bind(this, 'showModalWaypointDelete')}
-              onDelete={this.waypointDeleted}
-            />
-          </>
-        ) : (
-          <InvalidWindowSizeAlert />
-        )}
-      </div>
+              <WaypointDeleteModal
+                show={this.state.showModalWaypointDelete}
+                waypoint={this.state.selectedWaypoint}
+                onCancel={this.dismissModal.bind(this, 'showModalWaypointDelete')}
+                onDelete={this.waypointDeleted}
+              />
+            </>
+          ) : (
+            <InvalidWindowSizeAlert />
+          )}
+        </div>
+      </MainContext.Provider>
     );
   }
 }

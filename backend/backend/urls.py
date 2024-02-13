@@ -26,12 +26,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
+    path('dj-rest-auth/', include('dj_rest_auth.urls')),
 
     # Serve API app
     path('api/', include('api.urls')),
-
-    # Serve map tiles app
-    path('map/', include('map.urls')),
 
     # Serve frontend app
     path('', include('frontend.urls')),
@@ -45,7 +43,3 @@ else:
     # In a cloud environment, files are stored and served via the 'files' app.
     urlpatterns.append(path('files/', include('files.urls')))
 
-# In debug, we simulate the Azure auth by serving the auth JSON locally.
-if settings.DEBUG:
-    from .views import auth_me
-    urlpatterns.append(path('.auth/me', auth_me))
