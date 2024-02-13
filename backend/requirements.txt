@@ -14,5 +14,3 @@ django-cors-headers==3.13.0        # For local development, to be able to access
 autopep8==1.6.0                    # A tool that automatically formats Python code to conform to the PEP 8 style guide
 dj-rest-auth==5.0.2
 djangorestframework-simplejwt[crypto]==5.3.1
-
-pgadmin4==8.3.0                    # temporary DB on local machine for Issue # 20

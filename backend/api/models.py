@@ -14,7 +14,8 @@ from django.core.files.storage import default_storage
 geographic_decimal_places = 6
 geographic_digits = geographic_decimal_places + 3
 
-RELATIVE_FILE_URL = os.environ.get('AZURE_STORAGE_ACCOUNT_RELATIVE_FILE_URL')
+# blobbed
+# RELATIVE_FILE_URL = os.environ.get('AZURE_STORAGE_ACCOUNT_RELATIVE_FILE_URL')
 
 # Helpers
 

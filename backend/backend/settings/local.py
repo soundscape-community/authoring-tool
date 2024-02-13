@@ -22,7 +22,7 @@ MEDIA_URL = 'files/'
 MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL)
 
 ALLOWED_HOSTS = [
-    'localhost', '*' # elephant: had to add star
+    '*'
 ]
 
 LOGGING = {
