@@ -18,9 +18,10 @@ DATABASES = {
     }
 }
 
+# blobbed: commenting out azure stuff
 # Database for storing files, such as images and GPX files
-DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
-AZURE_ACCOUNT_NAME = os.environ['AZURE_STORAGE_ACCOUNT_NAME']
-AZURE_ACCOUNT_KEY = os.environ['AZURE_STORAGE_ACCOUNT_KEY']
-AZURE_CONTAINER = os.environ['AZURE_STORAGE_ACCOUNT_CONTAINER']
-AZURE_LOCATION = os.environ['AZURE_STORAGE_ACCOUNT_LOCATION']
+# DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+# AZURE_ACCOUNT_NAME = os.environ['AZURE_STORAGE_ACCOUNT_NAME']
+# AZURE_ACCOUNT_KEY = os.environ['AZURE_STORAGE_ACCOUNT_KEY']
+# AZURE_CONTAINER = os.environ['AZURE_STORAGE_ACCOUNT_CONTAINER']
+# AZURE_LOCATION = os.environ['AZURE_STORAGE_ACCOUNT_LOCATION']

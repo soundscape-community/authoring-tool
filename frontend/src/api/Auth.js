@@ -25,9 +25,10 @@ class Auth {
   }
 
   async fetchAuthInfo() {
+    console.log('FETCH');
     let res = await axios.get('user/');
     res = res.data;
-console.log(res);
+    console.log(res);
     if (!res.username) {
       throw Error('Invalid authentication response. Should contain user name.');
     }
@@ -47,6 +48,7 @@ console.log(res);
   }
 
   async logout() {
+    console.log('LOGOUT');
     await axios.post('logout/');
     this.authResponse = null;
     this.userName = null;
@@ -54,6 +56,7 @@ console.log(res);
   }
 
   async login(username, password) {
+    console.log('LOGIN');
     let res = await axios.post('login/', { username, password });
     res = res.data;
     console.log(res);

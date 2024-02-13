@@ -3,6 +3,7 @@
 // Login component for the frontend
 
 import React, { useContext, useState } from "react";
+import { showError } from "../../utils/Toast";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import auth from "../../api/Auth";
@@ -16,6 +17,8 @@ function Login({ }) {
       await auth.login(username, password);
     } catch (error) {
       console.log(error);
+      error.title = 'Invalid login attempt'
+      showError(error); // do show error on frontend when unsuccessful login
     }
     setUser(await auth.fetchAuthInfo());
     window.location.reload(true);
