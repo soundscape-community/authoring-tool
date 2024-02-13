@@ -108,7 +108,8 @@ export default class App extends React.Component {
       })
       .catch((error) => {
         error.title = 'Error authenticating user';
-        showError(error);
+        // do not show error on login screen upon component mount
+        // showError(error);
       });
   }
 
