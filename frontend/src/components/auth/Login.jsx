@@ -7,6 +7,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import auth from "../../api/Auth";
 import MainContext from '../Main/MainContext';
+import './Login.css'
 
 function Login({ }) {
   const { user, setUser } = useContext(MainContext);
@@ -27,31 +28,35 @@ function Login({ }) {
   });
 
   return (
-    <Formik
-      initialValues={{ username: "", password: "" }}
-      validationSchema={validationSchema}
-      onSubmit={handleLogin}
-    >
-      {({ isSubmitting }) =>
-        <Form>
-          <div>
-            <label>
-              Username
-              <Field type="text" id="username" name="username" />
-            </label>
-            <ErrorMessage name="username" component="div" />
+    <div className="wrapper">
+      <Formik
+        initialValues={{ username: "", password: "" }}
+        validationSchema={validationSchema}
+        onSubmit={handleLogin}
+      >
+        {({ isSubmitting }) =>
+          <div className="centered_container">
+            <Form>
+              <div>
+                <label>
+                  Username
+                  <Field type="text" id="username" name="username" className="field" />
+                </label>
+                <ErrorMessage name="username" component="div" className="error"/>
+              </div>
+              <div>
+                <label>
+                  Password
+                  <Field type="password" id="password" name="password" className="field" />
+                </label>
+                <ErrorMessage name="password" component="div" className="error"/>
+              </div>
+              <button type="submit" disabled={isSubmitting} className="button">Login</button>
+            </Form>
           </div>
-          <div>
-            <label>
-              Password
-              <Field type="password" id="password" name="password" />
-            </label>
-            <ErrorMessage name="password" component="div" />
-          </div>
-          <button type="submit" disabled={isSubmitting}>Login</button>
-        </Form>
-      }
-    </Formik>
+        }
+      </Formik>
+    </div>
   );
 };
 
