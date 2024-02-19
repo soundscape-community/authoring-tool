@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { Container, Dropdown, Nav, NavDropdown, Button, Navbar } from 'react-bootstrap';
+import logo from '../../images/logo.png';
 
 export default function NavigationBar({ presentingDetail, onActivitiesShow, user }) {
   return (
@@ -14,7 +15,7 @@ export default function NavigationBar({ presentingDetail, onActivitiesShow, user
             width="24"
             height="24"
             alt="Brand logo"
-            src="/static/media/your_brand_logo.png"
+            src={logo}
             aria-hidden="true"
           />{' '}
           Authoring Tool
