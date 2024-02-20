@@ -9,11 +9,11 @@ export default function NavigationBar({ presentingDetail, onActivitiesShow, user
   return (
     <Navbar className="navbar" variant="dark">
       <Container fluid>
-        <Navbar.Brand href="/" role="heading" aria-level="1">
+        <Navbar.Brand href="#home" role="heading" aria-level="1">
           <img
             className="d-inline-block align-text-bottom me-2"
-            width="24"
-            height="24"
+            width="35"
+            height="35"
             alt="Brand logo"
             src={logo}
             aria-hidden="true"
