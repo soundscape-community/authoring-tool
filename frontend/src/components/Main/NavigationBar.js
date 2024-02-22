@@ -9,18 +9,17 @@ export default function NavigationBar({ presentingDetail, onActivitiesShow, user
   return (
     <Navbar className="navbar" variant="dark">
       <Container fluid>
-        <Navbar.Brand href="#home" role="heading" aria-level="1">
-          <img
-            className="d-inline-block align-text-bottom me-2"
-            width="35"
-            height="35"
-            alt="Brand logo"
-            src={logo}
-            aria-hidden="true"
-          />{' '}
-          Authoring Tool
+        <Navbar.Brand href="#home" role="heading" aria-level="1" style={{ display: 'flex', alignItems: 'center' }}>
+            <img
+                style={{ maxHeight: '35px', marginRight: '10px' }}
+                src={logo}
+                alt="Brand logo"
+                aria-hidden="true"
+            />
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '35px' , fontSize: '1.35rem'}}>
+                Authoring Tool
+            </div>
         </Navbar.Brand>
-
         {presentingDetail && <Navbar.Toggle aria-controls="responsive-navbar-nav" />}
 
         <Navbar.Collapse id="responsive-navbar-nav" className="justify-content-end">
