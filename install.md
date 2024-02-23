@@ -11,8 +11,7 @@
 1. In the `/backend` folder, if there is no virtual environment (`.venv`), create one and select it as the default Python interpreter in VSCode. 
     * Run `python -m venv .venv`.
     * If you did not have python you can try to use `python3 -m venv .venv`
-2. You can use the line below to check if there are any Python packages that you haven't installed yet.
-    * run `pip install -r requirements.txt`.
+2. You can use the line below to check if there are any Python packages that you haven't installed yet. Go to the backend folder and run `pip install -r requirements.txt`.
 3. In the folder `/backend/.env`(If you did not have is folder just create one):
     * Create files called  `local.env`, `development.env`, `production.env`, and `.env`
     * Copy the below and pasted to these four files( `local.env`, `development.env`, `production.env`, and `.env`)
@@ -66,7 +65,7 @@
     export DJANGO_SECRET_KEY="dadjaidojsaiondsuabdiadbsaiub"
     export ALLOWED_HOSTS="*"
     export DANGEROUSLY_DISABLE_HOST_CHECK=true
-    export X_MS_TOKEN_AAD_ID_TOKEN = "lkjsajf;djfdsa;lkfj"
+    export X_MS_TOKEN_AAD_ID_TOKEN="lkjsajf;djfdsa;lkfj"
     ```
 7. Create a folder called `/.auth` in `/backend`.
 8. Create a file called `me.json` in `/.auth folder`. This is the format with some dummy values:

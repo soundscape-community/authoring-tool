@@ -18,7 +18,7 @@ Before diving into frontend development, make sure you have the backend services
 
 ## Installation
 
-1. Make sure you have the backend services up and running.
+1. Make sure you have the backend services up and running.(If you don't have the backend services up and running, you can refer to the `install.md` document in the main directory of the project.)
 2. Create a new terminal and navigate to the `frontend` directory.
 3. Install the necessary dependencies using npm:
    `npm install`
