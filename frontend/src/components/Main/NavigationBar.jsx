@@ -4,8 +4,15 @@
 import React from 'react';
 import { Container, Dropdown, Nav, NavDropdown, Button, Navbar } from 'react-bootstrap';
 import logo from '../../images/logo.png';
+import API from '../../api/API';
+import auth from '../../api/Auth';
+import {useContext} from 'react';
+import MainContext from './MainContext';
 
-export default function NavigationBar({ presentingDetail, onActivitiesShow, user }) {
+export default function NavigationBar({ presentingDetail, onActivitiesShow }) {
+
+  const {user, setUser} =useContext(MainContext);
+
   return (
     <Navbar className="navbar" variant="dark">
       <Container fluid>
@@ -40,7 +47,12 @@ export default function NavigationBar({ presentingDetail, onActivitiesShow, user
               <Dropdown.ItemText>{user.userName}</Dropdown.ItemText>
               <Dropdown.ItemText>{user.userEmail}</Dropdown.ItemText>
               <NavDropdown.Divider />
-              <NavDropdown.Item href="/.auth/logout">Sign out</NavDropdown.Item>
+              <NavDropdown.Item onClick={() => {
+                auth.logout().then(() => {
+                  setUser({}); 
+                  window.location.reload(true);
+              });
+              }}>Sign out</NavDropdown.Item>
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>

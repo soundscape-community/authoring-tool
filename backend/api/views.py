@@ -31,8 +31,7 @@ class ActivityViewSet(ModelViewSet):
     queryset = Activity.objects.all()
 
     def get_queryset(self):
-        # user_id = self.request.aad_user['id']
-        user_id = "justin"
+        user_id = self.request.user.id
         if user_id == None:
             raise ValidationError('Missing user id')
         queryset = Activity.objects.filter(author_id=user_id)
@@ -47,8 +46,7 @@ class ActivityViewSet(ModelViewSet):
         # Make sure the user id is valid and append it to the activity
         logging.info("hi")
         print(logging.warning("hi"))
-        # user_id = self.request.aad_user['id'] # elephant
-        user_id = "justin"
+        user_id = self.request.user.id
         if user_id == None:
             raise ValidationError('Missing user id')
 
@@ -97,7 +95,7 @@ class ActivityViewSet(ModelViewSet):
         if gpx == None:
             raise ValidationError('Missing GPX file')
 
-        user = self.request.aad_user
+        user = self.request.user
         if user == None:
             raise ValidationError('Missing user')
 

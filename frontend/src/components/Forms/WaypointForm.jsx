@@ -351,7 +351,9 @@ export default class WaypointForm extends React.Component {
                       <Dropzone
                         accept={{ 'image/jpeg': ['.jpeg', '.jpg'], 'image/png': ['.png'] }}
                         maxFiles={MAX_MEDIA_FILES}
-                        disabled={this.shouldDisableImageInput(values)}
+                        // blobbed: disabled image upload
+                        // disabled={this.shouldDisableImageInput(values)}
+                        disabled={true}
                         onDrop={(acceptedFiles, fileRejections) => {
                           const totalFiles = values.images.length + values.image_files.length + acceptedFiles.length;
                           if (totalFiles > MAX_MEDIA_FILES || fileRejections.length > MAX_MEDIA_FILES) {
@@ -479,7 +481,9 @@ export default class WaypointForm extends React.Component {
                           'audio/aac': ['.aac'],
                         }}
                         maxFiles={MAX_MEDIA_FILES}
-                        disabled={this.shouldDisableAudioInput(values)}
+                        // blobbed: disabled blob service endpoint
+                        // disabled={this.shouldDisableAudioInput(values)}
+                        disabled={true}
                         onDrop={(acceptedFiles, fileRejections) => {
                           const totalFiles =
                             values.audio_clips.length + values.audio_clip_files.length + acceptedFiles.length;

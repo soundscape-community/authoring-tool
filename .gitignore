@@ -1,6 +1,7 @@
 # dependencies
 frontend/node_modules
-frontend/package-lock.json
+# package-lock.json should be commited to the repo.
+# https://docs.npmjs.com/cli/v10/configuring-npm/package-lock-json
 
 # misc
 frontend/.env
@@ -13,3 +14,5 @@ backend/.venv
 
 
 
+backend/backend/staticfiles
+backend/frontend/serve
