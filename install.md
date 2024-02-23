@@ -20,9 +20,9 @@
 
     DJANGO_SETTINGS_MODULE="backend.settings.local"
 
-    DJANGO_SECRET_KEY=""
+    DJANGO_SECRET_KEY="dadjaidojsaiondsuabdiadbsaiub"
 
-    ALLOWED_HOSTS=""
+    ALLOWED_HOSTS="*"
 
     PSQL_DB_NAME=""
 
@@ -44,9 +44,9 @@
 
     AZURE_STORAGE_ACCOUNT_RELATIVE_FILE_URL=""
 
-    AZURE_MAPS_SUBSCRIPTION_KEY=""
+    AZURE_MAPS_SUBSCRIPTION_KEY="os.environ.get('AZURE_MAPS_SUBSCRIPTION_KEY')"
 
-    X_MS_TOKEN_AAD_ID_TOKEN="lkjsajfdjfdsalkfj"
+    X_MS_TOKEN_AAD_ID_TOKEN="lkjsajf;djfdsa;lkfj"
     ```
     
 4.  Double check `.env` file
@@ -64,7 +64,6 @@
     export AZURE_MAPS_SUBSCRIPTION_KEY="os.environ.get('AZURE_MAPS_SUBSCRIPTION_KEY')"
     export DJANGO_SECRET_KEY="dadjaidojsaiondsuabdiadbsaiub"
     export ALLOWED_HOSTS="*"
-    export DANGEROUSLY_DISABLE_HOST_CHECK=true
     export X_MS_TOKEN_AAD_ID_TOKEN="lkjsajf;djfdsa;lkfj"
     ```
 7. Create a folder called `/.auth` in `/backend`.

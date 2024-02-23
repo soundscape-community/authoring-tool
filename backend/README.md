@@ -38,7 +38,6 @@ To test the backend, you can choose to run one of the following two options:
     export AZURE_MAPS_SUBSCRIPTION_KEY="os.environ.get('AZURE_MAPS_SUBSCRIPTION_KEY')"
     export DJANGO_SECRET_KEY="dadjaidojsaiondsuabdiadbsaiub"
     export ALLOWED_HOSTS="*"
-    export DANGEROUSLY_DISABLE_HOST_CHECK=true
     export X_MS_TOKEN_AAD_ID_TOKEN="lkjsajf;djfdsa;lkfj"
     ```
 

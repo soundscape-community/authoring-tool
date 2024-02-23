@@ -36,7 +36,7 @@ If your `npm run start` give you an error
 Invalid options object. Dev Server has been initialized using an options object that does not match the API schema.
  - options.allowedHosts[0] should be a non-empty string.
 ```
-You can run `npm run build` and then go to the backend folder and run `python manage.py runserver` and then open `http://127.0.0.1:8000/`
+You can run `npm run build`, then go to the backend folder and run `export $(xargs <.env/local.env)` and `python manage.py runserver` ==>  open `http://127.0.0.1:8000/`
 
 Note: If you are using the backend server, you should do `npm run build` when you are done with the frontend development and then goto the backend folder and run `python manage.py runserver` to see the changes. (Also, do not forgot to refresh the page after running the backend server.)
 
