@@ -242,6 +242,7 @@ export default class ActivityForm extends React.Component {
                 <Form.Control
                   type="file"
                   accept="image/jpeg, image/jpg, image/png"
+                  disabled={true} // blobbed: disabled image upload
                   name="image_filename"
                   value={values.image_filename}
                   onChange={(event) => {
