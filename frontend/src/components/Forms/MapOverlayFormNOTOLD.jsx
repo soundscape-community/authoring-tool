@@ -16,8 +16,14 @@ const activitySchema = yup.object().shape({
 
 // const [value, setValue] = useState<File>(undefined);
 
-export default function MapOverlayForm () {
-  
+export default class MapOverlayForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      file: undefined
+    };
+    
+  }
 
   removeOverlay = () => {
     this.props.onSubmit(null);
