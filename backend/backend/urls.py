@@ -36,7 +36,7 @@ urlpatterns = [
 ]
 
 # Serve user file uploads
-if os.environ.get('ENV') == 'local':
+if settings.MEDIA_URL and settings.MEDIA_ROOT :
     # In a local environment, this is used for storing and serving user file uploads.
     urlpatterns.extend(static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT))
 else:
