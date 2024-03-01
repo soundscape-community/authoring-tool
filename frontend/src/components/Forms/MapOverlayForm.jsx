@@ -6,7 +6,7 @@ import { Form, Button } from 'react-bootstrap';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import GPXCard from '../ActivitySecondary/GPXCard';
-import { fileToGPX, getFileGPX, isGPXFileValid } from '../../utils/GPXUtils';
+import { fileToGPX, isGPXFileValid } from '../../utils/GPXUtils';
 
 const activitySchema = yup.object().shape({
   file: yup
@@ -88,7 +88,7 @@ export default class MapOverlayForm extends React.Component {
             </Form.Group>
 
             {/* The `touched` property does not seem to report the correct values in Safari */}
-            <Button variant="primary" type="submit" /*disabled={values.file === null || !isValid}*/>
+            <Button variant="primary" type="submit" disabled={values.file === null || !isValid}>
               {this.props.mapOverlay ? 'Replace' : 'Add'}
             </Button>
           </Form>
