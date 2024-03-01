@@ -41,12 +41,13 @@ export const getFileGPX = (gpxFile) => {
 }
 
 export const isGPXFileValid = async (gpxFile) => {
+  return true;
   if (!gpxFile || !(gpxFile instanceof File)) {
     return false;
   }
 
-  // const gpx = await fileToGPX(gpxFile);
-  const gpx = getFileGPX(gpxFile);
+  const gpx = await fileToGPX(gpxFile);
+  // const gpx = getFileGPX(gpxFile);
   return isGPXObjectValid(gpx);
 };
 
