@@ -22,9 +22,8 @@ const activitySchema = yup.object().shape({
   image_filename: yup.string(),
 });
 
-export default class ActivityForm extends React.Component {
-  render() {
-    const activity = this.props.activity ?? {};
+export default function ActivityForm(props) {
+    const activity = props.activity ?? {};
 
     const initialValues = {
       name: activity.name || '',
@@ -71,7 +70,7 @@ export default class ActivityForm extends React.Component {
             delete activity.image_filename;
           }
 
-          this.props.onSubmit(activity).finally(() => {
+          props.onSubmit(activity).finally(() => {
             setSubmitting(false);
           });
         }}>
@@ -145,7 +144,7 @@ export default class ActivityForm extends React.Component {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 isInvalid={touched.type && !!errors.type}
-                disabled={this.props.activity}>
+                disabled={props.activity}>
                 <option value={Activity.TYPE.ORIENTEERING}>Orienteering</option>
                 <option value={Activity.TYPE.GUIDED_TOUR}>Guided Tour</option>
               </Form.Select>
@@ -279,12 +278,12 @@ export default class ActivityForm extends React.Component {
             <Button
               variant="primary"
               type="submit"
-              disabled={!isValid || isSubmitting || (!this.props.activity && Object.keys(touched).length === 0)}>
-              {this.props.activity ? 'Save' : 'Continue'}
+              disabled={!isValid || isSubmitting || (!props.activity && Object.keys(touched).length === 0)}>
+              {props.activity ? 'Save' : 'Continue'}
             </Button>
           </Form>
         )}
       </Formik>
     );
   }
-}
+
