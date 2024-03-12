@@ -59,7 +59,7 @@ INSTALLED_APPS = [
     # 'corsheaders',
 
     'rest_framework',
-    'dj_rest_auth'
+    'dj_rest_auth',
 ]
 
 REST_FRAMEWORK = {

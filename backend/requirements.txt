@@ -12,5 +12,5 @@ markdown==3.4.1                    # (optional Django REST) Markdown support for
 Pygments==2.13.0                   # (optional Django REST) Add syntax highlighting to Markdown processing
 django-cors-headers==3.13.0        # For local development, to be able to access API from frontend
 autopep8==1.6.0                    # A tool that automatically formats Python code to conform to the PEP 8 style guide
-dj-rest-auth==5.0.2
+dj-rest-auth[with_social]==5.0.2
 djangorestframework-simplejwt[crypto]==5.3.1
