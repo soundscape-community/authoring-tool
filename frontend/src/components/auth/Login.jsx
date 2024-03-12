@@ -13,7 +13,13 @@ import './Login.css'
 function Login({ }) {
   const { user, setUser } = useContext(MainContext);
 
-  const handleSignUp = async ({username, password}) => {
+  const handleSignUp = async ({username, email, password1, password2}) => {
+    try {
+      await auth.signup(username, email, password1, password2);
+    } catch (error) {
+      console.log(error);
+    }
+    setUser(await auth.fetchAuthInfo());
     window.location.reload(true);
   }
 
