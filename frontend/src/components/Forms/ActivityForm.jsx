@@ -241,7 +241,6 @@ export default function ActivityForm(props) {
                 <Form.Control
                   type="file"
                   accept="image/jpeg, image/jpg, image/png"
-                  disabled={true} // blobbed: disabled image upload
                   name="image_filename"
                   value={values.image_filename}
                   onChange={(event) => {
