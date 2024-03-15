@@ -13,13 +13,13 @@ import './Login.css'
 function Login({ }) {
   const { user, setUser } = useContext(MainContext);
 
-  const handleSignUp = async ({username, email, password1, password2}) => {
+  const handleSignUp = async ({username, email, password, confirmPassword}) => {
     try {
-      await auth.signup(username, email, password1, password2);
+      await auth.signup(username, email, password, confirmPassword);
     } catch (error) {
       console.log(error);
     }
-    setUser(await auth.fetchAuthInfo());
+    //setUser(await auth.fetchAuthInfo());
     window.location.reload(true);
   }
 
@@ -47,11 +47,16 @@ function Login({ }) {
       .max(25, "Must be less than 25 characters")
       .matches(/^\S*$/, 'Input must not contain whitespace')
       .matches(/^[a-zA-Z0-9]*$/, 'Input must not contain non-alphanumeric characters'),
+    email: Yup.string()
+      .required('Email is required')
+      .email('Invalid email address'),
     password: Yup.string()
       .required('Password is required')
-      .min(5, 'Password must be at least 5 characters long')
-      .max(25, 'Password must not exceed 25 characters')
-      .matches(/^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$/, 'Password must contain at least one number'),
+      .min(5, 'Password must be at least 8 characters long')
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+      ),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref('password'), null], 'Passwords must match')
       .required('Please confirm your password'),
@@ -72,7 +77,7 @@ function Login({ }) {
       { showSignUp && (
         <div className="sign_up_wrapper">
           <Formik
-            initialValues={{ username: "", password: "", confirmPassword: ""}}
+            initialValues={{ username: "", email: "", password: "", confirmPassword: ""}}
             validationSchema={validationSchemaSignUp}
             onSubmit={handleSignUp}
           >
@@ -85,6 +90,15 @@ function Login({ }) {
                     <Field type="text" id="username" name="username" className="field" />
                   </label>
                   <ErrorMessage name="username" component="div" className="error" />
+                </div>
+
+                <div>
+                  <label>
+                    Enter an email address:
+                    &nbsp;&nbsp;
+                    <Field type="email" id="email" name="email" className="field"/>
+                  </label>
+                  <ErrorMessage name="email" component="div" className="error" />
                 </div>
 
                 <div>
@@ -105,8 +119,8 @@ function Login({ }) {
                 </div>
 
                 <div className="button_container">
-                  <button className="button_sign_in" style={{ marginRight: '5px', width: '25%' }}>Submit</button>
-                  <button className="button_sign_in" onClick={handleLogInButtonClick} style={{ width: '75%' }}>Already a user? Log in!</button>
+                  <button type="submit" className="button_sign_in" style={{ marginRight: '5px', width: '25%' }}>Submit</button>
+                  <button type="button" className="button_sign_in" onClick={handleLogInButtonClick} style={{ backgroundColor: 'transparent', color: '#253d62', textDecoration: 'underline', width: '75%' }}>Already a user? Log in!</button>
                 </div>
                 
               </Form>
@@ -140,7 +154,7 @@ function Login({ }) {
                 </div>
                 <div className="button_container">
                   <button type="submit" disabled={isSubmitting} className="button_login">Login</button>
-                  <button className="button_login" onClick={handleSignUpButtonClick}>Sign up!</button>
+                  <button type="button" className="button_login" onClick={handleSignUpButtonClick} style={{ backgroundColor: 'transparent', color: '#253d62', textDecoration: 'underline' }}>Sign up!</button>
                 </div>
               </Form>
             </div>
