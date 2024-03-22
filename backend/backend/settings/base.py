@@ -137,6 +137,15 @@ REST_AUTH = {
     'TOKEN_MODEL':None
 }
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+ACCOUNT_AUTHENTICATION_METHOD = 'username'
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
