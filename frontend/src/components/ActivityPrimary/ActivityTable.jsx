@@ -98,32 +98,64 @@ export default function ActivityInfoTable(props) {
 
       {/* Waypoints */}
       <section className="d-flex flex-column" aria-label="Waypoints">
-        <TableHeader
+        <div className="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
+          <div className="d-flex w-100 align-items-center justify-content-between">
+            <h1 className="fs-5 fw-bold me-2 mb-0">{"Waypoints"}</h1>
+            {(props.editing ? (
+              <AddWaypointButton onClick={props.onWaypointCreate.bind(this, Waypoint.TYPE.WAYPOINT)} />            
+            ) : null) && (props.editing ? (
+              <AddWaypointButton onClick={props.onWaypointCreate.bind(this, Waypoint.TYPE.WAYPOINT)} />            
+            ) : null)}
+          </div>
+        </div>
+        {
+          props.editing && (
+            <div className="align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
+              <p className="fs-6 fw-normal me-2 mb-0">{"+ Add: Click to create a new waypoint in the list."}</p>
+              <p className="fs-6 fw-normal me-2 mb-0">{"Upward Arrow: Shift this waypoint down one position."}</p>
+              <p className="fs-6 fw-normal me-2 mb-0">{"Downward Arrow: Shift this waypoint up one position."}</p>
+              <p className="fs-6 fw-normal me-2 mb-0">{"Pencil Icon (Edit): Edit the details of this waypoint."}</p>
+              <p className="fs-6 fw-normal me-2 mb-0">{"Trash Can Icon (Delete): Delete this waypoint."}</p>
+            </div>
+          )
+        }
+
+        {/* <TableHeader
           title="Waypoints"
           subheaderView={
             props.editing ? (
-              <AddWaypointButton onClick={props.onWaypointCreate.bind(this, Waypoint.TYPE.WAYPOINT)} />
+              <AddWaypointButton onClick={props.onWaypointCreate.bind(this, Waypoint.TYPE.WAYPOINT)} />            
             ) : null
           }
-        />
-
+        /> */}
         <ListGroup className="border-bottom" variant="flush">
           {waypoints && waypoints.length > 0 ? (
-            waypoints.map((waypoint, index) => (
-              <WaypointRow
-                key={waypoint.id}
-                waypoint={waypoint}
-                editing={props.editing}
-                onSelect={props.onWaypointSelected}
-                onDelete={props.onWaypointDelete}
-                onUpdate={props.onWaypointUpdate}
-                onMoveDown={index !== 0 ? props.onWaypointMovedDown : null}
-                onMoveUp={index !== waypoints.length - 1 ? props.onWaypointMovedUp : null}
-              />
-            ))
+            console.log(waypoints),
+            waypoints.map((waypoint, index) => {
+              var waypointName = waypoint.name;
+              if (index === 0 && waypoint.name.split(" ").indexOf("(Start)") === -1) {
+                waypointName += " (Start)";
+              } else if (index === waypoints.length - 1 && waypoint.name.split(" ").indexOf("(End)") === -1) {
+                waypointName += " (End)";
+              }
+              return (
+                <WaypointRow
+                  key={waypoint.id}
+                  waypoint={waypoint}
+                  name={waypointName}
+                  editing={props.editing}
+                  onSelect={props.onWaypointSelected}
+                  onDelete={props.onWaypointDelete}
+                  onUpdate={props.onWaypointUpdate}
+                  onMoveDown={index !== 0 ? props.onWaypointMovedDown : null}
+                  onMoveUp={index !== waypoints.length - 1 ? props.onWaypointMovedUp : null}
+                />
+              )
+            })
           ) : (
             <WaypointRowEmpty />
-          )}
+          )
+          }
         </ListGroup>
       </section>
 

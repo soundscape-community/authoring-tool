@@ -29,11 +29,11 @@ function shouldShowWaypointMoveControls(waypoint) {
   }
 }
 
-export default function WaypointRow({ waypoint, editing, onSelect, onUpdate, onMoveUp, onMoveDown, onDelete }) {
+export default function WaypointRow({ waypoint, editing, onSelect, onUpdate, onMoveUp, onMoveDown, onDelete, name }) {
   return (
     <ListGroup.Item className="py-3 lh-tight" action={!editing} onClick={onSelect.bind(this, waypoint)}>
       <strong className="mb-2">
-        {shouldShowWaypointIndex(waypoint) ? `${waypoint.index + 1}. ${waypoint.name}` : waypoint.name}
+        {shouldShowWaypointIndex(waypoint) ? `${waypoint.index + 1}. ${name}` : waypoint.name}
       </strong>
 
       {waypoint.description && <p className="mb-1">{waypoint.description}</p>}

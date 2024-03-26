@@ -9,6 +9,7 @@ Welcome to the frontend development guide. This document provides all the necess
 - [Installation](#installation)
 - [Running the Development Server](#running-the-development-server)
 - [Development Workflow](#development-workflow)
+- [structure](#structure)
 - [Building for Production](#building-for-production)
 - [Submitting Changes](#submitting-changes)
 
@@ -43,6 +44,17 @@ Note: If you are using the backend server, you should do `npm run build` when yo
 ## Development Workflow
 
 When developing new features or fixing bugs, create a new branch from `main`. Use descriptive branch names that reflect the changes being made.
+
+## Structure
+- `src`: Contains the source code for the frontend application.
+  - `api`: Contains the API endpoints used to fetch data from the backend.
+    - `API.js`: 
+  - `components`: Contains all the reusable components used in the application.
+  - `pages`: Contains the main pages of the application.
+  - `services`: Contains the services used to fetch data from the backend.
+  - `styles`: Contains the global styles used in the application.
+  - `App.js`: The main entry point of the application.
+  - `index.js`: The file that renders the application to the DOM.
 
 ## Building for Production
 
