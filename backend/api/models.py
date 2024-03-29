@@ -310,3 +310,9 @@ class UserPermissions(models.Model):
 
     def __str__(self):
         return '{0} allow app: {1}, allow api {2}'.format(self.user_email, self.allow_app, self.allow_api)
+    
+class WhitelistedEmail(models.Model):
+    email = models.EmailField(unique=True)  # assuming each email should be unique
+
+    def __str__(self):
+        return self.email

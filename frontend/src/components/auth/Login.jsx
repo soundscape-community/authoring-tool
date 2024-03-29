@@ -9,9 +9,13 @@ import * as Yup from "yup";
 import auth from "../../api/Auth";
 import MainContext from '../Main/MainContext';
 import './Login.css'
+import axios from 'axios';
+
 
 function Login({ }) {
   const { user, setUser } = useContext(MainContext);
+
+  //const whitelisted_emails = ['goodemail@email.com', 'greatemail@email.com', 'soundscape_author@email.com', 'hello@example.com', 'testing@test.org'];
 
   const handleSignUp = async ({username, email, password, confirmPassword}) => {
     try {
@@ -49,7 +53,20 @@ function Login({ }) {
       .matches(/^[a-zA-Z0-9]*$/, 'Input must not contain non-alphanumeric characters'),
     email: Yup.string()
       .required('Email is required')
-      .email('Invalid email address'),
+      .email('Invalid email address')
+      .test('is-whitelisted', 'Email is not whitelisted', async value => {
+        try {
+          // Fetch whitelisted emails from Django backend
+          const response = await axios.get('/api/whitelisted-emails/');
+          const whitelistedEmails = response.data.split('\n'); // Split by newline to get an array
+
+          // Check if the entered email is in the whitelisted array
+          return whitelistedEmails.includes(value);
+        } catch (error) {
+          console.error('Error fetching whitelisted emails:', error);
+          return false; // Assume false if an error occurs
+        }
+      }),
     password: Yup.string()
       .required('Password is required')
       .min(8, 'Password must be at least 8 characters long')
