@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React from 'react';
+import React, { useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 
 import { showLoading, dismissLoading } from '../../utils/Toast';
@@ -10,79 +10,63 @@ import ActivityForm from '../Forms/ActivityForm';
 import API from '../../api/API';
 import ErrorAlert from '../Main/ErrorAlert';
 
-export default class ActivityUpdateModal extends React.Component {
-  constructor(props) {
-    super(props);
+export default function ActivityUpdateModal(props) {
+  const [error, setError] = useState(null);
 
-    this.state = {
-      error: null,
-    };
-
-    this.createActivity = this.createActivity.bind(this);
-    this.updateActivity = this.updateActivity.bind(this);
-  }
-
-  createActivity(activity) {
+  function createActivity(activity) {
     const toastId = showLoading('Creating activity...');
-    const self = this;
 
     return new Promise((resolve, reject) => {
       API.createActivity(activity)
         .then((activity) => {
           dismissLoading(toastId);
-          self.props.onDone(activity);
+          props.onDone(activity);
           resolve();
         })
         .catch((error) => {
           dismissLoading(toastId);
-          self.setState({
-            error: error,
-          });
+          setError(error);
           reject();
         });
     });
   }
 
-  updateActivity(activity) {
+  function updateActivity(activity) {
     const toastId = showLoading('Updating activity...');
-    const self = this;
 
     return new Promise((resolve, reject) => {
       API.updateActivity(activity)
         .then((activity) => {
           dismissLoading(toastId);
-          self.props.onDone(activity);
+          props.onDone(activity);
           resolve();
         })
         .catch((error) => {
           dismissLoading(toastId);
-          self.setState({
-            error: error,
-          });
+          setError(error);
           reject();
         });
     });
   }
 
-  render() {
-    return (
-      <Modal
-        show={this.props.show}
-        onHide={this.props.onCancel}
-        backdrop="static"
-        centered
-        aria-labelledby="contained-modal-title-vcenter">
-        <Modal.Header closeButton>
-          <Modal.Title>{this.props.creating ? 'Create Activity' : 'Edit Activity'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <ActivityForm
-            activity={this.props.activity}
-            onSubmit={this.props.creating ? this.createActivity : this.updateActivity}
-          />
-          {this.state.error && <ErrorAlert error={this.state.error} />}
-        </Modal.Body>
-      </Modal>
-    );
-  }
+  return (
+    <Modal
+      show={props.show}
+      onHide={props.onCancel}
+      backdrop="static"
+      centered
+      aria-labelledby="contained-modal-title-vcenter"
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>{props.creating ? 'Create Activity' : 'Edit Activity'}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <ActivityForm
+          activity={props.activity}
+          onSubmit={props.creating ? createActivity : updateActivity}
+        />
+        {error && <ErrorAlert error={error} />}
+      </Modal.Body>
+    </Modal>
+  );
 }
