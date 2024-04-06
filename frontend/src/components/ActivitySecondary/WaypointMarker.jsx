@@ -5,7 +5,7 @@ import React from 'react';
 import { Marker, Popup, Tooltip } from 'react-leaflet';
 import { Icon } from 'leaflet';
 
-import waypointIcon from '../../media/map-pin-waypoint.png';
+import waypointIcon from '../../media/updated-map-pin.svg';
 
 const mapPinIcon = new Icon({
   iconUrl: waypointIcon,

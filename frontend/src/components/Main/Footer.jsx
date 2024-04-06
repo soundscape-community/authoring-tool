@@ -7,22 +7,10 @@ export default function Footer() {
   return (
     <footer className="footer mt-auto py-3 text-center fixed-bottom text-light">
       <div className="container">
-        <a className="text-light" href="https://www.yourcompany.com/contactus/" target="_blank" rel="noreferrer">
-          Contact Us
+        <a className="text-light" href="https://ialabs.ie/privacy-policy/" target="_blank" rel="noreferrer">
+          Privacy Policy
         </a>{' '}
-        &middot;{' '}
-        <a className="text-light" href="https://www.yourcompany.com/privacy/" target="_blank" rel="noreferrer">
-          Privacy & Cookies
-        </a>{' '}
-        &middot;{' '}
-        <a className="text-light" href="https://www.yourcompany.com/terms/" target="_blank" rel="noreferrer">
-          Terms of Use
-        </a>{' '}
-        &middot;{' '}
-        <a className="text-light" href="https://www.yourcompany.com/trademarks/" target="_blank" rel="noreferrer">
-          Trademarks
-        </a>{' '}
-        &middot; &copy; {new Date().getFullYear()} Your Company
+        &middot; &copy; {new Date().getFullYear()} Soundscape Community
       </div>
     </footer>
   );
