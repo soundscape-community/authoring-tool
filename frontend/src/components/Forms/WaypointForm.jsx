@@ -295,6 +295,14 @@ export default class WaypointForm extends React.Component {
               <Form.Text muted id="descriptionHelpBlock">
                 Displayed in the app but not called out
               </Form.Text>
+              <Form.Text muted id="linkHelpBlock">
+                <div>
+                  <a href={`https://www.google.com/maps/?q=${values.latitude},${values.longitude}`} target="_blank">
+                  Open in Google Maps for detail information about this waypoint
+                  </a>
+                </div>
+              </Form.Text>
+
             </Form.Group>
 
             {shouldShowExtraWaypointInputs(this.state.waypointType) && (
@@ -309,6 +317,7 @@ export default class WaypointForm extends React.Component {
                     name="departure_callout"
                     aria-label="Departure Callout"
                     aria-describedby="departureHelpBlock"
+                    placeholder={`Leaving Waypoint ${waypoint.index + 1}: Follow the path to the next marker.`}
                     value={values.departure_callout}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -330,6 +339,7 @@ export default class WaypointForm extends React.Component {
                     name="arrival_callout"
                     aria-label="Arrival Callout"
                     aria-describedby="arrivalHelpBlock"
+                    placeholder={`Arriving at Waypoint ${waypoint.index + 1}: Check your surroundings for the next direction.`}
                     value={values.arrival_callout}
                     onChange={handleChange}
                     onBlur={handleBlur}

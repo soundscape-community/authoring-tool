@@ -120,14 +120,6 @@ export default function ActivityInfoTable(props) {
           )
         }
 
-        {/* <TableHeader
-          title="Waypoints"
-          subheaderView={
-            props.editing ? (
-              <AddWaypointButton onClick={props.onWaypointCreate.bind(this, Waypoint.TYPE.WAYPOINT)} />            
-            ) : null
-          }
-        /> */}
         <ListGroup className="border-bottom" variant="flush">
           {waypoints && waypoints.length > 0 ? (
             console.log(waypoints),
