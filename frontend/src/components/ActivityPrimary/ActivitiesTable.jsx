@@ -4,7 +4,7 @@
 import React from 'react';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
-import { Download, MapPin, Plus } from 'react-feather';
+import { Download, MapPin, Plus, RefreshCw } from 'react-feather';
 import TableHeader from '../Table/TableHeader';
 import TableRow from '../Table/TableRow';
 import TableRowEmpty from '../Table/TableRowEmpty';
@@ -20,9 +20,13 @@ function ActivityRowEmpty() {
   );
 }
 
-function HeaderButtons({ onActivityCreate, onActivityImport }) {
+function HeaderButtons({ onActivityCreate, onActivityImport, onActivityRefearch }) {
   return (
     <div className="d-flex flex-row">
+      <Button className="me-2" variant="primary" onClick={onActivityRefearch} size="sm">
+        <RefreshCw className="me-1" color="white" size={16} style={{ verticalAlign: 'text-bottom' }} />
+        Refresh
+      </Button>
       <Button className="me-2" variant="primary" onClick={onActivityCreate} size="sm">
         <Plus className="me-1" color="white" size={16} style={{ verticalAlign: 'text-bottom' }} />
         Create
