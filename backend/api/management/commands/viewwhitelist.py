@@ -11,5 +11,5 @@ class Command(BaseCommand):
             for email in we:
                 print(email.email)
         except Exception as e:
-            raise CommandError('Error: {e}')
+            raise CommandError('Error')
         self.stdout.write(self.style.SUCCESS('End of whitelist'))

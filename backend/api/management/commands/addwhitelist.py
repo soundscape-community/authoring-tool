@@ -9,5 +9,5 @@ class Command(BaseCommand):
             email = input("Enter email: ")
             WhitelistedEmail.objects.create(email=email)
         except Exception as e:
-            raise CommandError('Error: ' + e)
+            raise CommandError('Error')
         self.stdout.write(self.style.SUCCESS('Successfully added ' + email + ' to whitelist'))

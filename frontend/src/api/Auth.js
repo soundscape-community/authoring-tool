@@ -74,11 +74,11 @@ class Auth {
     let res = await axios.post('registration', { username, email, password1, password2 });
     res = res.data;
     console.log(res);
-    
+
     this.idToken = 'fixme';
     return await this.fetchAuthInfo();
   }
-    
+
 };
 
 export default new Auth();

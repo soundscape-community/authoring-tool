@@ -147,8 +147,9 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
-ACCOUNT_EMAIL_VERIFICATION = 'none'
-
+AUTH_USER_MODEL = 'api.User'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_UNIQUE = True
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 
 # Internationalization

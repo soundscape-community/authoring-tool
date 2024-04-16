@@ -10,6 +10,10 @@ from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 from django.core.files.storage import default_storage
 
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import Group
+from django.contrib.auth.models import Permission
+
 # Constants
 geographic_decimal_places = 6
 geographic_digits = geographic_decimal_places + 3
@@ -310,9 +314,31 @@ class UserPermissions(models.Model):
 
     def __str__(self):
         return '{0} allow app: {1}, allow api {2}'.format(self.user_email, self.allow_app, self.allow_api)
-    
+
+class User(AbstractUser):
+    email = models.EmailField(unique=True, blank=False)
+    groups = models.ManyToManyField(
+        Group,
+        verbose_name=_("groups"),
+        blank=True,
+        help_text=_(
+            "The groups this user belongs to. A user will get all permissions "
+            "granted to each of their groups."
+        ),
+        related_name="overriden_user_set",
+        related_query_name="user",
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        verbose_name=_("user permissions"),
+        blank=True,
+        help_text=_("Specific permissions for this user."),
+        related_name="ovoerriden_user_set",
+        related_query_name="user",
+    )
+
 class WhitelistedEmail(models.Model):
-    email = models.EmailField(unique=True)  # assuming each email should be unique
+    email = models.EmailField(unique=True, blank=False)  # assuming each email should be unique
 
     def __str__(self):
         return self.email
