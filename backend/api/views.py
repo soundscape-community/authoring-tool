@@ -27,12 +27,12 @@ def gpx_response(content, filename):
     response['Content-Disposition'] = 'attachment; filename="{0}.gpx"'.format(filename)
     return response
 
-def get_whitelisted_emails(request):
+def get_whitelisted_emails(_request):
     whitelisted_emails = list(WhitelistedEmail.objects.values_list('email', flat=True))
     emails_text = '\n'.join(whitelisted_emails)
     return HttpResponse(emails_text, content_type='text/plain')
 
-def get_registered_emails():
+def get_registered_emails(_request):
     emails = list(User.objects.values_list('email', flat=True))
     emails_text = '\n'.join(emails)
     return HttpResponse(emails_text, content_type='text/plain')

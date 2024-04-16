@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -71,19 +71,19 @@ let locatingUser = false;
 function LocateUser({ onUserLocationUpdated }) {
   const map = useMap();
 
-  let toastId = undefined;
+  let toastId = useRef();
 
   useMapEvent('locationfound', (event) => {
     map.stopLocate();
     map.setView(event.latlng);
-    dismissLoading(toastId);
+    dismissLoading(toastId.current);
     onUserLocationUpdated([event.latlng.lat, event.latlng.lng]);
     locatingUser = false;
   });
 
   useMapEvent('locationerror', (error) => {
     map.stopLocate();
-    dismissLoading(toastId);
+    dismissLoading(toastId.current);
     error.title = 'Error locating user';
     showError(error);
     locatingUser = false;
@@ -91,7 +91,7 @@ function LocateUser({ onUserLocationUpdated }) {
 
   if (!locatingUser) {
     locatingUser = true;
-    toastId = showLoading('Getting location...');
+    toastId.current = showLoading('Getting location...');
     map.locate();
   }
 
@@ -128,80 +128,32 @@ function WaypointCreationControl({ value, onChange }) {
   );
 }
 
-// https://stackoverflow.com/questions/60658422/rending-stateful-components-from-array-grandchild-state-and-parent-state-not-a
+export default function MapView(props) {
+  const [map, setMap] = useState(null);
+  const [creatingWaypoint, setCreatingWaypoint] = useState(false);
+  const [geolocationPermissionGranted, setGeolocationPermissionGranted] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [waypointCreationType, setWaypointCreationType] = useState(Waypoint.TYPE.WAYPOINT);
 
-export default class MapView extends React.Component {
-  static CURSOR_TYPE = Object.freeze({
-    DEFAULT: '',
-    CROSSHAIR: 'crosshair',
-  });
+  const mapRef = useRef();
 
-  constructor(props) {
-    super(props);
+  useEffect(() => {
+    queryGeolocationPermission();
+  }, []);
 
-    this.state = {
-      map: null,
-      creatingWaypoint: false,
-      geolocationPermissionGranted: false,
-      userLocation: null,
-      waypointCreationType: Waypoint.TYPE.WAYPOINT,
-    };
-
-    this.setMap = this.setMap.bind(this);
-    this.onMapClicked = this.onMapClicked.bind(this);
-    this.onWaypointMove = this.onWaypointMove.bind(this);
-    this.queryGeolocationPermission = this.queryGeolocationPermission.bind(this);
-  }
-
-  componentDidMount() {
-    this.queryGeolocationPermission();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.map) {
-      this.configureMapCursor();
-
-      if (prevProps.mapOverlay !== this.props.mapOverlay) {
-        this.state.map.fitBounds(this.bounds());
-      }
+  useEffect(() => {
+    if (mapRef.current) {
+      configureMapCursor();
     }
-  }
+  }, [map]);
 
-  setMap(map) {
-    this.setState({
-      map: map,
-    });
-
-    this.configureMapCursor();
-  }
-
-  get cursorType() {
-    if (this.state.map) {
-      return this.state.map.getContainer().style.cursor;
+  useEffect(() => {
+    if (map && props.mapOverlay !== props.mapOverlay) {
+      map.fitBounds(bounds());
     }
+  }, [props.mapOverlay]);
 
-    return null;
-  }
-
-  setCursorType(cursorType) {
-    if (this.state.map) {
-      this.state.map.getContainer().style.cursor = cursorType;
-    }
-  }
-
-  configureMapCursor() {
-    if (!this.state.map) {
-      return;
-    }
-
-    if (this.props.editing && this.cursorType !== MapView.CURSOR_TYPE.CROSSHAIR) {
-      this.setCursorType(MapView.CURSOR_TYPE.CROSSHAIR);
-    } else if (!this.props.editing && this.cursorType !== MapView.CURSOR_TYPE.DEFAULT) {
-      this.setCursorType(MapView.CURSOR_TYPE.DEFAULT);
-    }
-  }
-
-  queryGeolocationPermission() {
+  function queryGeolocationPermission() {
     if (!navigator.geolocation) {
       return;
     }
@@ -209,45 +161,40 @@ export default class MapView extends React.Component {
     // Some browsers do not support `permissions`
     // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/permissions
     if (!navigator.permissions) {
-      this.setState({
-        geolocationPermissionGranted: true,
-      });
+      setGeolocationPermissionGranted(true);
       return;
     }
 
-    let self = this;
     navigator.permissions.query({ name: 'geolocation' }).then(function (result) {
       if (result.state === 'granted' || result.state === 'prompt') {
-        self.setState({
-          geolocationPermissionGranted: true,
-        });
+        setGeolocationPermissionGranted(true);
       }
     });
   }
 
-  // Computed  properties
+  // Computed properties
 
-  bounds() {
+  function bounds() {
     let bounds = null;
 
-    if (this.props.mapOverlay) {
-      bounds = GPXMapOverlaysBounds(this.props.mapOverlay);
+    if (props.mapOverlay) {
+      bounds = GPXMapOverlaysBounds(props.mapOverlay);
     } else {
-      let coordinates = this.props.activity.waypoints_group.waypoints.map((waypoint) => [
+      let coordinates = props.activity.waypoints_group.waypoints.map((waypoint) => [
         waypoint.latitude,
         waypoint.longitude,
       ]);
 
-      if (this.props.activity.pois_group) {
+      if (props.activity.pois_group) {
         coordinates.concat(
-          this.props.activity.pois_group.waypoints.map((waypoint) => [waypoint.latitude, waypoint.longitude]),
+          props.activity.pois_group.waypoints.map((waypoint) => [waypoint.latitude, waypoint.longitude]),
         );
       }
 
       if (coordinates.length > 0) {
         bounds = coordinates;
-      } else if (this.state.userLocation) {
-        bounds = [this.state.userLocation];
+      } else if (userLocation) {
+        bounds = [userLocation];
       } else {
         bounds = DEFAULT_MAP_BOUNDS;
       }
@@ -257,8 +204,8 @@ export default class MapView extends React.Component {
     return paddedBounds;
   }
 
-  waypointMarkers() {
-    const waypoints = this.props.activity.waypoints_group.waypoints;
+  function waypointMarkers() {
+    const waypoints = props.activity.waypoints_group.waypoints;
     if (waypoints.length === 0) {
       return null;
     }
@@ -267,14 +214,14 @@ export default class MapView extends React.Component {
       <WaypointMarker
         key={waypoint.id}
         waypoint={waypoint}
-        editing={this.props.editing}
-        onWaypointMove={this.onWaypointMove}
+        editing={props.editing}
+        onWaypointMove={onWaypointMove}
       />
     ));
   }
 
-  waypointMarkersPolyline() {
-    const coordinates = this.props.activity.waypoints_group.waypoints.map((waypoint) => [
+  function waypointMarkersPolyline() {
+    const coordinates = props.activity.waypoints_group.waypoints.map((waypoint) => [
       waypoint.latitude,
       waypoint.longitude,
     ]);
@@ -291,12 +238,12 @@ export default class MapView extends React.Component {
     );
   }
 
-  poiMarkers() {
-    if (!this.props.activity.pois_group) {
+  function poiMarkers() {
+    if (!props.activity.pois_group) {
       return null;
     }
 
-    const waypoints = this.props.activity.pois_group.waypoints;
+    const waypoints = props.activity.pois_group.waypoints;
     if (waypoints.length === 0) {
       return null;
     }
@@ -305,36 +252,31 @@ export default class MapView extends React.Component {
       <POIMarker
         key={waypoint.id}
         waypoint={waypoint}
-        editing={this.props.editing}
-        onWaypointMove={this.onWaypointMove}
+        editing={props.editing}
+        onWaypointMove={onWaypointMove}
       />
     ));
   }
+
   // Actions
 
-  onWaypointCreationTypeChanged = (value) => {
-    this.setState({
-      waypointCreationType: value,
-    });
-  };
+  function onWaypointCreationTypeChanged(value) {
+    setWaypointCreationType(value);
+  }
 
-  onUserLocationUpdated = (userLocation) => {
-    this.setState({
-      userLocation: userLocation,
-    });
-  };
+  function onUserLocationUpdated(userLocation) {
+    setUserLocation(userLocation);
+  }
 
-  onMapClicked = (event) => {
-    if (!this.props.editing || !isLatLngValue(event.latlng) || this.state.creatingWaypoint) {
+  function onMapClicked(event) {
+    if (!props.editing || !isLatLngValue(event.latlng) || creatingWaypoint) {
       return;
     }
 
-    this.setState({
-      creatingWaypoint: true,
-    });
+    setCreatingWaypoint(true);
 
-    const waypointGroup = this.props.activity.waypointGroupByType(this.state.waypointCreationType);
-    const name = Waypoint.typeTitle(this.state.waypointCreationType);
+    const waypointGroup = props.activity.waypointGroupByType(waypointCreationType);
+    const name = Waypoint.typeTitle(waypointCreationType);
 
     const waypoint = {
       group: waypointGroup.id,
@@ -349,7 +291,7 @@ export default class MapView extends React.Component {
 
     API.createWaypoint(waypoint)
       .then((waypoint) => {
-        this.props.onWaypointCreated(waypoint);
+        props.onWaypointCreated(waypoint);
         dismissLoading(toastId);
       })
       .catch((error) => {
@@ -358,16 +300,14 @@ export default class MapView extends React.Component {
         showError(error);
       })
       .finally(() => {
-        this.setState({
-          creatingWaypoint: false,
-        });
+        setCreatingWaypoint(false);
       });
-  };
+  }
 
-  onWaypointMove(waypointId, coordinate) {
-    let waypoint = this.props.activity.waypoints_group.waypoints.find((waypoint) => waypoint.id === waypointId);
-    if (!waypoint && this.props.activity.pois_group) {
-      waypoint = this.props.activity.pois_group.waypoints.find((waypoint) => waypoint.id === waypointId);
+  function onWaypointMove(waypointId, coordinate) {
+    let waypoint = props.activity.waypoints_group.waypoints.find((waypoint) => waypoint.id === waypointId);
+    if (!waypoint && props.activity.pois_group) {
+      waypoint = props.activity.pois_group.waypoints.find((waypoint) => waypoint.id === waypointId);
     }
 
     const waypoint_ = Object.assign({}, waypoint);
@@ -380,7 +320,7 @@ export default class MapView extends React.Component {
     API.updateWaypoint(waypoint_)
       .then((waypoint) => {
         dismissLoading(toastId);
-        this.props.onWaypointUpdated(waypoint);
+        props.onWaypointUpdated(waypoint);
       })
       .catch((error) => {
         dismissLoading(toastId);
@@ -389,49 +329,59 @@ export default class MapView extends React.Component {
       });
   }
 
-  render() {
-    let shouldLocateUser =
-      this.state.geolocationPermissionGranted &&
-      this.props.activity.waypoints_group.waypoints.length === 0 &&
-      !this.state.userLocation;
+  function configureMapCursor() {
+    if (!map) {
+      return;
+    }
 
-    let selectedWaypointCoordinate = this.props.selectedWaypoint
-      ? [this.props.selectedWaypoint.latitude, this.props.selectedWaypoint.longitude]
-      : null;
-
-    return (
-      <MapContainer bounds={this.bounds()} zoom={19} worldCopyJump={true} ref={this.setMap} attributionControl={false}>
-        <TileLayer attribution={OSM_ATTR.attribution} url={OSM_ATTR.url}/>
-        <LayersControl position="topright">
-          <LayersControl.Overlay checked name="Waypoints">
-            <LayerGroup>
-              {this.waypointMarkersPolyline()}
-              {this.waypointMarkers()}
-            </LayerGroup>
-          </LayersControl.Overlay>
-          <LayersControl.Overlay checked name="Points of Interest">
-            <LayerGroup>{this.poiMarkers()}</LayerGroup>
-          </LayersControl.Overlay>
-        </LayersControl>
-
-        {this.props.editing && shouldShowWaypointCreationControl(this.props.activity) && (
-          <WaypointCreationControl
-            value={this.state.waypointCreationType}
-            onChange={this.onWaypointCreationTypeChanged}
-          />
-        )}
-
-        {/* Remove the attribution prefix */}
-        <AttributionControl position="bottomright" prefix="" />
-
-        {/* Map controls and location */}
-        <OnMapClick onMapClicked={this.onMapClicked} />
-        {shouldLocateUser && <LocateUser onUserLocationUpdated={this.onUserLocationUpdated} />}
-        {selectedWaypointCoordinate && <CenterMap coordinate={selectedWaypointCoordinate} />}
-
-        {/* Map Annotations */}
-        {GPXMapOverlays(this.props.mapOverlay)}
-      </MapContainer>
-    );
+    if (props.editing && mapRef.current.style.cursor !== MapView.CURSOR_TYPE.CROSSHAIR) {
+      mapRef.current.style.cursor = MapView.CURSOR_TYPE.CROSSHAIR;
+    } else if (!props.editing && mapRef.current.style.cursor !== MapView.CURSOR_TYPE.DEFAULT) {
+      mapRef.current.style.cursor = MapView.CURSOR_TYPE.DEFAULT;
+    }
   }
+
+  let shouldLocateUser =
+    geolocationPermissionGranted &&
+    props.activity.waypoints_group.waypoints.length === 0 &&
+    !userLocation;
+
+  let selectedWaypointCoordinate = props.selectedWaypoint
+    ? [props.selectedWaypoint.latitude, props.selectedWaypoint.longitude]
+    : null;
+
+  return (
+    <MapContainer bounds={bounds()} zoom={19} worldCopyJump={true} ref={mapRef} attributionControl={false}>
+      <TileLayer attribution={OSM_ATTR.attribution} url={OSM_ATTR.url} />
+      <LayersControl position="topright">
+        <LayersControl.Overlay checked name="Waypoints">
+          <LayerGroup>
+            {waypointMarkersPolyline()}
+            {waypointMarkers()}
+          </LayerGroup>
+        </LayersControl.Overlay>
+        <LayersControl.Overlay checked name="Points of Interest">
+          <LayerGroup>{poiMarkers()}</LayerGroup>
+        </LayersControl.Overlay>
+      </LayersControl>
+
+      {props.editing && shouldShowWaypointCreationControl(props.activity) && (
+        <WaypointCreationControl
+          value={waypointCreationType}
+          onChange={onWaypointCreationTypeChanged}
+        />
+      )}
+
+      {/* Remove the attribution prefix */}
+      <AttributionControl position="bottomright" prefix="" />
+
+      {/* Map controls and location */}
+      <OnMapClick onMapClicked={onMapClicked} />
+      {shouldLocateUser && <LocateUser onUserLocationUpdated={onUserLocationUpdated} />}
+      {selectedWaypointCoordinate && <CenterMap coordinate={selectedWaypointCoordinate} />}
+
+      {/* Map Annotations */}
+      {GPXMapOverlays(props.mapOverlay)}
+    </MapContainer>
+  );
 }

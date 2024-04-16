@@ -62,7 +62,7 @@ export default class MapOverlayForm extends React.Component {
                   name="filename"
                   value={values.filename}
                   onBlur={handleBlur}
-                  isInvalid={touched.filename && !!errors.file}
+                  isInvalid={touched.filename && errors.file}
                   onChange={(event) => {
                     const file = event.currentTarget.files[0];
                     setFieldValue('file', file);

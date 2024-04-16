@@ -14,5 +14,5 @@ router.register(r'waypoints_media', WaypointMediaViewSet)
 urlpatterns = [
     path('v1/', include(router.urls)),
     path('whitelisted-emails/', get_whitelisted_emails, name='whitelisted-emails'),
-    path('registered-emails', get_registered_emails, name='registered-emails')
+    path('registered-emails/', get_registered_emails, name='registered-emails')
 ]
