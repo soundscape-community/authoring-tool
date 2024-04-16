@@ -20,10 +20,10 @@ function ActivityRowEmpty() {
   );
 }
 
-function HeaderButtons({ onActivityCreate, onActivityImport, onActivityRefearch }) {
+function HeaderButtons({ onActivityCreate, onActivityImport, onActivityRefresh }) {
   return (
     <div className="d-flex flex-row">
-      <Button className="me-2" variant="primary" onClick={onActivityRefearch} size="sm">
+      <Button className="me-2" variant="primary" onClick={onActivityRefresh} size="sm">
         <RefreshCw className="me-1" color="white" size={16} style={{ verticalAlign: 'text-bottom' }} />
         Refresh
       </Button>
@@ -45,7 +45,11 @@ export default function ActivitiesTable(props) {
   ));
 
   const subheaderView = (
-    <HeaderButtons onActivityCreate={props.onActivityCreate} onActivityImport={props.onActivityImport} />
+    <HeaderButtons 
+      onActivityCreate={props.onActivityCreate} 
+      onActivityImport={props.onActivityImport} 
+      onActivityRefresh={props.onActivityRefresh}
+    />
   );
 
   return (

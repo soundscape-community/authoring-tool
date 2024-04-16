@@ -476,6 +476,24 @@ export default class App extends React.Component {
                       onActivityImport={() => {
                         this.setState({ showModalActivityImport: true });
                       }}
+                      onActivityRefresh={() => {
+                        for (const activity of this.state.activities) {
+                          const act_endtime = new Date(activity.end);
+                          const cur_time = new Date();
+                          if (act_endtime < cur_time && !activity.expires) {
+                            const toastId = showLoading('Deleting activity...');
+                            API.deleteActivity(activity.id)
+                              .then(() => {
+                                dismissLoading(toastId);
+                                this.activityDeleted(activity);
+                              })
+                              .catch((error) => {
+                                dismissLoading(toastId);
+                                setError(error);
+                              });
+                          }
+                        }
+                      }}
                     />
                   )}
 

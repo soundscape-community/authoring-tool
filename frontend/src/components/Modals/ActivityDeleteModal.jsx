@@ -22,7 +22,7 @@ export default function ActivityDeleteModal(props) {
         setError(error);
       });
   };
-
+  
   return (
     <Modal
       show={props.show}
