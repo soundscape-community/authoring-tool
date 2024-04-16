@@ -95,11 +95,13 @@
     ]
     ```
 9. Run following things
-   * if you did not have python, you can use `python3` instead `python`
-   * run `python manage.py makemigrations`(If it said you missing something, just intall it)
-   * run `python manage.py makemigrations api`
-   * run `python manage.py migrate`
-   * run `python manage.py runserver`
+   * If you did not have python, you can use `python3` instead `python`
+   * Run `python manage.py makemigrations`(If it said you missing something, just intall it)
+   * Run `python manage.py makemigrations api`
+   * Comment out line 150 (the one that says `AUTH_USER_MODEL = 'api.User'`) in `backend/backend/settings/base.py`
+   * Run `python manage.py migrate`
+   * Put line 150 back in
+   * Run `python manage.py runserver`
 9. All of above will run the project locally
 
 # Frontend
