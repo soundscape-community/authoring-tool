@@ -66,6 +66,17 @@ function Login({ }) {
           console.error('Error fetching whitelisted emails:', error);
           return false; // Assume false if an error occurs
         }
+      })
+      .test('is-already-used', 'Already an account registered with this email', async value => {
+        try {
+          const response = await axios.get('api/registered-emails/');
+          const emails = response.data.split('\n');
+
+          return emails.includes(value);
+        } catch (error) {
+          console.error('Error fetching registered emails:', error);
+          return false;
+        }
       }),
     password: Yup.string()
       .required('Password is required')

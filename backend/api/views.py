@@ -17,7 +17,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 
-from .models import Waypoint, WaypointGroup, WaypointMedia, MediaType, Activity, WaypointGroupType, WhitelistedEmail
+from .models import Waypoint, WaypointGroup, WaypointMedia, MediaType, Activity, WaypointGroupType, WhitelistedEmail, User
 from .serializers import ActivityListSerializer, ActivityDetailSerializer, WaypointGroupSerializer, WaypointSerializer, WaypointMediaSerializer
 from .model_utils import duplicate_activity, shift_waypoints_after_delete
 from .gpx_utils import activity_to_gpx, gpx_to_activity
@@ -30,6 +30,11 @@ def gpx_response(content, filename):
 def get_whitelisted_emails(request):
     whitelisted_emails = list(WhitelistedEmail.objects.values_list('email', flat=True))
     emails_text = '\n'.join(whitelisted_emails)
+    return HttpResponse(emails_text, content_type='text/plain')
+
+def get_registered_emails():
+    emails = list(User.objects.values_list('email', flat=True))
+    emails_text = '\n'.join(emails)
     return HttpResponse(emails_text, content_type='text/plain')
 
 
