@@ -5,12 +5,12 @@ import React from 'react';
 import { Marker, Popup, Tooltip } from 'react-leaflet';
 import { Icon } from 'leaflet';
 
-import waypointIcon from '../../media/map-pin-waypoint.png';
+import waypointIcon from '../../media/updated-map-pin.svg';
 
 const mapPinIcon = new Icon({
   iconUrl: waypointIcon,
-  iconSize: [42, 42],
-  iconAnchor: [21, 37],
+  iconSize: [38, 38],
+  iconAnchor: [20, 37],
 });
 
 export default function WaypointMarker({ waypoint, editing, onWaypointMove }) {
