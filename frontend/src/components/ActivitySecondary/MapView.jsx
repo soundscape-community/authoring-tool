@@ -133,7 +133,7 @@ function WaypointCreationControl({ value, onChange }) {
 
 //Cursor Snapping Feature
 
-function CustomCursor({ activity }) {
+function CustomCursor({ activity, props }) {
   const map = useMap();
 
   useMapEvent('mousemove', (e) => {
@@ -157,7 +157,17 @@ function CustomCursor({ activity }) {
       }
     });
 
-    // If a waypoint is within the snap range, hide the cursor
+    // Check if the cursor is within the range of the polyline
+    const polylineCoordinates = props.activity.waypoints_group.waypoints.map((waypoint) => [
+      waypoint.latitude,
+      waypoint.longitude,
+    ]);
+    const polylineBounds = L.polyline(polylineCoordinates).getBounds();
+    if (!closestWaypoint && polylineBounds.contains(mouseLatLng)) {
+      closestWaypoint = mouseLatLng;
+    }
+
+    // If a waypoint or polyline is within the snap range, hide the cursor
     if (closestWaypoint) {
       map.getContainer().style.cursor = 'none';
     } else {
@@ -167,6 +177,7 @@ function CustomCursor({ activity }) {
 
   return null; // Render nothing directly, cursor visibility is controlled by changing cursor style
 }
+
 
 
 
@@ -395,7 +406,7 @@ export default function MapView(props) {
   return (
     <MapContainer bounds={bounds()} zoom={19} worldCopyJump={true} ref={mapRef} attributionControl={false}>
       <TileLayer attribution={OSM_ATTR.attribution} url={OSM_ATTR.url} />
-      <CustomCursor activity={props.activity} />
+      <CustomCursor activity={props.activity} props={props} />
       <LayersControl position="topright">
         <LayersControl.Overlay checked name="Waypoints">
           <LayerGroup>
