@@ -128,6 +128,48 @@ function WaypointCreationControl({ value, onChange }) {
   );
 }
 
+//Cursor Snapping Feature
+
+
+//Cursor Snapping Feature
+
+function CustomCursor({ activity }) {
+  const map = useMap();
+
+  useMapEvent('mousemove', (e) => {
+    const mouseLatLng = e.latlng;
+
+    // Define the snap range (in meters)
+    const snapRange = 35;
+
+    // Find the closest waypoint
+    let closestWaypoint = null;
+    let minDistance = snapRange + 1;
+
+    activity.waypoints_group.waypoints.forEach((waypoint) => {
+      const waypointLatLng = L.latLng(waypoint.latitude, waypoint.longitude);
+      const distance = mouseLatLng.distanceTo(waypointLatLng);
+
+      if (distance < minDistance) {
+        console.log("snap", distance);
+        minDistance = distance;
+        closestWaypoint = waypointLatLng;
+      }
+    });
+
+    // If a waypoint is within the snap range, hide the cursor
+    if (closestWaypoint) {
+      map.getContainer().style.cursor = 'none';
+    } else {
+      map.getContainer().style.cursor = 'default';
+    }
+  });
+
+  return null; // Render nothing directly, cursor visibility is controlled by changing cursor style
+}
+
+
+
 export default function MapView(props) {
   const [map, setMap] = useState(null);
   const [creatingWaypoint, setCreatingWaypoint] = useState(false);
@@ -353,6 +395,7 @@ export default function MapView(props) {
   return (
     <MapContainer bounds={bounds()} zoom={19} worldCopyJump={true} ref={mapRef} attributionControl={false}>
       <TileLayer attribution={OSM_ATTR.attribution} url={OSM_ATTR.url} />
+      <CustomCursor activity={props.activity} />
       <LayersControl position="topright">
         <LayersControl.Overlay checked name="Waypoints">
           <LayerGroup>
