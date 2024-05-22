@@ -1,12 +1,12 @@
 #
 # To launch Postgres and web containers:
 #   $ docker-compose up
-# First time, also run:
-#   $ docker exec -it authoring-tool-web python manage.py collectstatic --noinput
-#   $ docker exec -it authoring-tool-web python manage.py migrate
-#
-version: '3.7'
+# to create a superuser:
+#   $ docker-compose exec web python manage.py createsuperuser
 
+volumes:
+  data:
+  
 services:
   web:
     build: ./
@@ -14,14 +14,22 @@ services:
       - 8000:8000
     env_file:
       - ./.env
+    volumes:
+      - ${FILES_DIR}:/app/backend/files
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   postgres:
-    image: postgres:13.0-alpine
+    image: postgres:16-alpine
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
+      - POSTGRES_USER=${PSQL_DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${PSQL_DB_PASS:-postgres}
+      - POSTGRES_DB=${PSQL_DB_NAME:-postgres}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
