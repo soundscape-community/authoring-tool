@@ -155,7 +155,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # This section is added to support serving the frontend files
-INSTALLED_APPS.extend(["whitenoise.runserver_nostatic"])
+#INSTALLED_APPS.extend(["whitenoise.runserver_nostatic"])
 
 # Must insert after SecurityMiddleware, which is first in settings/common.py
 MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")

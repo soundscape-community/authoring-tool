@@ -1,8 +1,9 @@
 #
 # To launch Postgres and web containers:
+#   Edit the .env file to set the environment variables
 #   $ docker-compose up
 # to create a superuser:
-#   $ docker-compose exec web python manage.py createsuperuser
+#   $ docker-compose exec web /venv/bin/python manage.py createsuperuser
 
 volumes:
   data:

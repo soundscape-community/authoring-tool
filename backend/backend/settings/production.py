@@ -32,6 +32,3 @@ MEDIA_URL = 'files/'
 
 # Used for storing local user-uploaded files
 MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL)
-
-
-ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(' ')
