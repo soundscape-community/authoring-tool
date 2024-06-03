@@ -33,6 +33,7 @@ DEBUG = True
 
 # Configure the allowed domain names using the environment variable (seperated by ',')
 ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(',') if 'ALLOWED_HOSTS' in os.environ else []
+CSRF_TRUSTED_ORIGINS = os.environ['CSRF_TRUSTED_ORIGINS'].split(',') if 'CSRF_TRUSTED_ORIGINS' in os.environ else []
 
 # Configure the domain name using the environment variable that Azure automatically creates for us.
 if 'WEBSITE_HOSTNAME' in os.environ:

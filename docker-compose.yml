@@ -1,0 +1,36 @@
+#
+# To launch Postgres and web containers:
+#   Copy sample.env to .env and edit to set the environment variables
+#   $ docker-compose up -d
+# to create a superuser:
+#   $ docker-compose exec web /venv/bin/python manage.py createsuperuser
+
+volumes:
+  data:
+  
+services:
+  web:
+    build: ./
+    ports:
+      - 127.0.0.1:${LOCALHOST_PORT}:8000
+    env_file:
+      - ./.env
+    volumes:
+      - ${FILES_DIR}:/app/backend/files
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    volumes:
+      - data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${PSQL_DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${PSQL_DB_PASS:-postgres}
+      - POSTGRES_DB=${PSQL_DB_NAME:-postgres}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

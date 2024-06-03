@@ -25,3 +25,10 @@ DATABASES = {
 # AZURE_ACCOUNT_KEY = os.environ['AZURE_STORAGE_ACCOUNT_KEY']
 # AZURE_CONTAINER = os.environ['AZURE_STORAGE_ACCOUNT_CONTAINER']
 # AZURE_LOCATION = os.environ['AZURE_STORAGE_ACCOUNT_LOCATION']
+
+# Used for serving local user-uploaded files
+# I.g., "http://127.0.0.1:8000/files/{file_path}"
+MEDIA_URL = 'files/'
+
+# Used for storing local user-uploaded files
+MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL)
