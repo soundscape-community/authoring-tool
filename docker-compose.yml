@@ -1,7 +1,7 @@
 #
 # To launch Postgres and web containers:
-#   Edit the .env file to set the environment variables
-#   $ docker-compose up
+#   Copy sample.env to .env and edit to set the environment variables
+#   $ docker-compose up -d
 # to create a superuser:
 #   $ docker-compose exec web /venv/bin/python manage.py createsuperuser
 
@@ -12,7 +12,7 @@ services:
   web:
     build: ./
     ports:
-      - 8000:8000
+      - 127.0.0.1:${LOCALHOST_PORT}:8000
     env_file:
       - ./.env
     volumes:
