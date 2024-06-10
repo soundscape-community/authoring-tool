@@ -4,7 +4,7 @@ django==4.0.8                      # Django framework
 djangorestframework==3.13.1        # REST API support for
 Pillow==9.3.0                      # Required for the ImageField model field
 psycopg2==2.9.3                    # PostgreSQL database adapter
-gpxpy==1.5.0                       # GPX file parser and GPS track manipulation library
+gpxpy @ https://codeload.github.com/RDMurray/gpxpy/zip/refs/heads/escape # GPX file parser and GPS track manipulation library
 django-storages[azure]===1.13.1    # File database for images and GPX files
 whitenoise==6.2.0                  # Serve static files (also used to serve frontend files)
 
