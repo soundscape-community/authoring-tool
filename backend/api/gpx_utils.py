@@ -270,7 +270,7 @@ def gpx_to_activity(gpx_file: str, user) -> Activity:
 
     if gpxsc_meta != None:
         if gpxsc_meta.get('expires'):
-            activity.expires = bool(gpxsc_meta.get('expires'))
+            activity.expires = gpxsc_meta.get('expires').lower() == 'true'
 
         if gpxsc_meta.get('start', None):
             activity.start = gpxpy.gpxfield.parse_time(gpxsc_meta.get('start'))
