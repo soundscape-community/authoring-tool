@@ -10,7 +10,7 @@ export default function GPXCard({ gpx }) {
       <Card.Header>GPX File Details</Card.Header>
       <Card.Body>
         {`Name: ${gpx.metadata.name ?? 'none'}`} <br />
-        {`Description: ${gpx.metadata.desc ?? 'none'}`} <br />
+        {`Description: ${gpx.metadata.description ?? 'none'}`} <br />
         {`Author: ${gpx.metadata.author?.name ?? 'none'}`} <br />
         {`Time: ${gpx.metadata.time ?? 'none'}`} <br />
         {`Waypoints: ${gpx.waypoints.length}`} <br />
