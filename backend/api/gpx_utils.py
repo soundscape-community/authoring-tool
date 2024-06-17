@@ -5,10 +5,12 @@ import os
 import io
 import requests
 import enum
+from urllib.parse import urljoin
 
 from django.db import transaction
 from django.core.files import File
 from django.core.files.images import ImageFile
+from django.conf import settings
 
 import gpxpy
 import gpxpy.gpx
@@ -215,8 +217,8 @@ def waypoint_to_gpx(waypoint: Waypoint, type: WaypointType = WaypointType.waypoi
 
 @transaction.atomic
 def gpx_to_activity(gpx_file: str, user) -> Activity:
-    user_id = user.get('id')
-    if user_id == None:
+    user_id = user.id
+    if user_id is None:
         raise Exception("GPX import error: missing required user ID")
 
     gpx = gpxpy.parse(gpx_file)
@@ -251,7 +253,8 @@ def gpx_to_activity(gpx_file: str, user) -> Activity:
     # Image
     if gpx.link and gpx.link_type == 'image':
         # Wait for image to download...
-        image_response = requests.get(gpx.link)
+        link = urljoin(settings.FILE_UPLOAD_BASE_URL, gpx.link)
+        image_response = requests.get(link)
 
         if image_response.status_code == 200 and image_response.content != None:
             filename = os.path.basename(gpx.link)
@@ -342,6 +345,7 @@ def gpx_to_waypoint(gpx_waypoint: gpxpy.gpx.GPXWaypoint, waypoint_group: Waypoin
             if href == None:
                 continue
 
+            href = urljoin(settings.FILE_UPLOAD_BASE_URL, href)
             media_response = requests.get(href)
 
             if media_response.status_code != 200 or media_response.content == None:
