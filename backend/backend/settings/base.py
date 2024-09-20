@@ -170,3 +170,6 @@ WHITENOISE_ROOT = os.path.join(BASE_DIR, FRONTEND_DIR, "root")
 FRONTEND_DIR_STATIC = os.path.join(FRONTEND_DIR, 'assets')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, FRONTEND_DIR_STATIC)]
 # End of frontend section
+
+# Base URL for file uploads.
+FILE_UPLOAD_BASE_URL = os.getenv('FILE_UPLOAD_BASE_URL', 'https://share.soundscape.services')

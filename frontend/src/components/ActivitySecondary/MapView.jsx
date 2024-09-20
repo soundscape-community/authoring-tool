@@ -129,7 +129,6 @@ function WaypointCreationControl({ value, onChange }) {
 }
 
 export default function MapView(props) {
-  const [map, setMap] = useState(null);
   const [creatingWaypoint, setCreatingWaypoint] = useState(false);
   const [geolocationPermissionGranted, setGeolocationPermissionGranted] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
@@ -145,11 +144,11 @@ export default function MapView(props) {
     if (mapRef.current) {
       configureMapCursor();
     }
-  }, [map]);
+  }, [mapRef]);
 
   useEffect(() => {
-    if (map && props.mapOverlay !== props.mapOverlay) {
-      map.fitBounds(bounds());
+    if (mapRef.current ) {
+      mapRef.current.fitBounds(bounds());
     }
   }, [props.mapOverlay]);
 
@@ -330,7 +329,7 @@ export default function MapView(props) {
   }
 
   function configureMapCursor() {
-    if (!map) {
+    if (!mapRef.current) {
       return;
     }
 

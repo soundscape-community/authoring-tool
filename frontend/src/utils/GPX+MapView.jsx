@@ -9,14 +9,14 @@ export const GPXMapOverlaysBounds = (gpx) => {
     return [];
   }
 
-  let bounds = gpx.waypoints.map((waypoint) => [waypoint.lat, waypoint.lon]);
+  let bounds = gpx.waypoints.map((waypoint) => [waypoint.latitude, waypoint.longitude]);
 
   gpx.routes.forEach((route) => {
-    bounds = bounds.concat(route.points.map((point) => [point.lat, point.lon]));
+    bounds = bounds.concat(route.points.map((point) => [point.latitude, point.longitude]));
   });
 
   gpx.tracks.forEach((track) => {
-    bounds = bounds.concat(track.points.map((point) => [point.lat, point.lon]));
+    bounds = bounds.concat(track.points.map((point) => [point.latitude, point.longitude]));
   });
 
   return bounds;
@@ -34,8 +34,8 @@ export const GPXMapOverlays = (gpx) => {
 
     const overlay = (
       <Marker
-        key={`${waypoint.lat},${waypoint.lon},${index}`}
-        position={[waypoint.lat, waypoint.lon]}
+        key={`${waypoint.latitude},${waypoint.longitude},${index}`}
+        position={[waypoint.latitude, waypoint.longitude]}
         title={name}
         draggable={false}>
         <Tooltip>{name}</Tooltip>
@@ -46,7 +46,7 @@ export const GPXMapOverlays = (gpx) => {
   });
 
   gpx.routes.forEach((route, index) => {
-    const coordinates = route.points.map((point) => [point.lat, point.lon]);
+    const coordinates = route.points.map((point) => [point.latitude, point.longitude]);
     if (coordinates.length > 0) {
       const name = route.name ?? 'Route';
 
@@ -68,7 +68,7 @@ export const GPXMapOverlays = (gpx) => {
   });
 
   gpx.tracks.forEach((track, index) => {
-    const coordinates = track.points.map((point) => [point.lat, point.lon]);
+    const coordinates = track.points.map((point) => [point.latitude, point.longitude]);
     if (coordinates.length > 0) {
       const name = track.name ?? 'Track';
 
