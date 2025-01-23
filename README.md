@@ -55,6 +55,12 @@ Soundscape Authoring Tool is a web app which allows users to create routed activ
 
 * [Exporting from the Authoring Web App](./exporting.md)
 
+### Open in Codeanywhere
+
+To deploy this project to Codeanywhere, click this button:
+
+ [![Open in Codeanywhere](https://codeanywhere.com/img/open-in-codeanywhere-btn.svg)](https://app.codeanywhere.com/#https://github.com/soundscape-community/authoring-tool)
+
 ### GitHub Codespaces on the web
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/soundscape-community/authoring-tool/tree/rd-devcontainer?quickstart=1)
