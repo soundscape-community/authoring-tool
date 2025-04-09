@@ -56,6 +56,7 @@ INSTALLED_APPS = [
 
     'api.apps.ApiConfig',
     'frontend.apps.FrontendConfig',
+    'users',
 
     # 'corsheaders',
 
@@ -122,6 +123,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTH_USER_MODEL = 'users.User'
 
 REST_AUTH = {
     'USE_JWT': True,
