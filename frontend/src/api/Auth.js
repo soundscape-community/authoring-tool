@@ -63,7 +63,14 @@ class Auth {
     this.idToken = 'fixme';
     return await this.fetchAuthInfo();
   }
-    
+
+  async signup(username, email, password1, password2) {
+    let res = await axios.post('registration', { username, email, password1, password2 });
+    res = res.data;
+    this.idToken = 'fixme';
+    return await this.fetchAuthInfo();
+  }
+
 };
 
 export default new Auth();

@@ -1,6 +1,12 @@
-.wrapper {
+.sign_in_wrapper {
     width: 100%; /* Full width */
     height: 100vh; /* Full height of the viewport */
+    background-color: white;
+}
+
+.sign_up_wrapper {
+    width: 100%;
+    height: 100vh;
     background-color: white;
 }
 
@@ -22,11 +28,25 @@
     align-self: center;
 }
 
-.button {
+.button_container {
+    display: flex;
+    width: 99.5%;
+}
+
+.button_sign_in {
     background-color: #253d62;
     border-radius: 3px;
-    padding: 1% 5%;
+    padding: 2.5% 5%;
     color: white;
+}
+
+.button_login {
+    background-color: #253d62;
+    border-radius: 3px;
+    padding: 2.5% 5%;
+    color: white;
+    margin-right: 5px;
+    width: 50%;
 }
 
 .error {
