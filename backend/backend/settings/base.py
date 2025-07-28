@@ -141,7 +141,7 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_L10N = True
+
 
 USE_TZ = True
 
@@ -164,7 +164,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # Must insert after SecurityMiddleware, which is first in settings/common.py
 MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": os.path.join(BASE_DIR, "files/activities"),
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 FRONTEND_DIR = "../frontend/serve"
 TEMPLATES[0]["DIRS"] = [os.path.join(BASE_DIR, FRONTEND_DIR)]
