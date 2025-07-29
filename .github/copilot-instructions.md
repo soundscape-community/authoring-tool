@@ -13,8 +13,7 @@ This is a Django + React web application for creating routed activities (GPS-bas
 
 ### Environment Setup
 - Backend uses `uv` for Python project management in `backend/` directory
-- Always `cd backend/` when working with Python dependencies or Django commands
-- **Important**: `uv` commands run from `backend/` (project root), Django commands run from `backend/backend/` (Django app root)
+- **Important**: ALL backend commands (uv AND Django) run from `backend/` directory only
 - Settings are environment-specific: `backend/backend/settings/{local,development,production}.py`
 - For local development: Set `DJANGO_SETTINGS_MODULE=backend.settings.local`
 - Environment variables in `backend/.env/` files (create from sample.env)
@@ -33,15 +32,15 @@ This is a Django + React web application for creating routed activities (GPS-bas
 ### Critical Startup Sequence
 **For Development:**
 1. Install backend deps: `cd backend && uv sync`
-2. Run migrations: `cd backend/backend && uv run python manage.py migrate`
-3. Create superuser: `cd backend/backend && uv run python manage.py createsuperuser`
-4. Start Django: `cd backend/backend && uv run python manage.py runserver`
+2. Run migrations: `uv run python -Wd backend/manage.py migrate`
+3. Create superuser: `uv run python -Wd backend/manage.py createsuperuser`
+4. Start Django: `uv run python -Wd backend/manage.py runserver`
 5. Start frontend: `cd frontend && npm run start` (in separate terminal)
 
 **For Production:**
 1-3. Same as development
 4. Build frontend: `cd frontend && npm run build`
-5. Start Django: `cd backend/backend && uv run python manage.py runserver`
+5. Start Django: `uv run python -Wd backend/manage.py runserver`
 
 ## Project-Specific Patterns
 
@@ -89,7 +88,7 @@ PSQL_DB_NAME, PSQL_DB_USER, PSQL_DB_PASS, PSQL_DB_HOST, PSQL_DB_PORT
 ## Testing & Debugging
 
 ### Running Tests
-- Backend: `cd backend/backend && uv run python manage.py test`
+- Backend: `uv run python -Wd backend/manage.py test`
 - Frontend: Standard React testing patterns
 
 ### Common Debug Points
