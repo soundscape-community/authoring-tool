@@ -14,6 +14,7 @@ This is a Django + React web application for creating routed activities (GPS-bas
 ### Environment Setup
 - Backend uses `uv` for Python project management in `backend/` directory
 - **Important**: ALL backend commands (uv AND Django) run from `backend/` directory only
+- **Critical**: Each terminal command starts fresh - always set working directory AND environment variables inline
 - Settings are environment-specific: `backend/backend/settings/{local,development,production}.py`
 - For local development: Set `DJANGO_SETTINGS_MODULE=backend.settings.local`
 - Environment variables in `backend/.env/` files (create from sample.env)
@@ -31,16 +32,16 @@ This is a Django + React web application for creating routed activities (GPS-bas
 
 ### Critical Startup Sequence
 **For Development:**
-1. Install backend deps: `cd backend && uv sync`
-2. Run migrations: `uv run python -Wd backend/manage.py migrate`
-3. Create superuser: `uv run python -Wd backend/manage.py createsuperuser`
-4. Start Django: `uv run python -Wd backend/manage.py runserver`
-5. Start frontend: `cd frontend && npm run start` (in separate terminal)
+1. Install backend deps: `cd $(git rev-parse --show-toplevel)/backend && uv sync`
+2. Run migrations: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py migrate`
+3. Create superuser: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py createsuperuser`
+4. Start Django: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py runserver`
+5. Start frontend: `cd $(git rev-parse --show-toplevel)/frontend && npm run start` (in separate terminal)
 
 **For Production:**
 1-3. Same as development
-4. Build frontend: `cd frontend && npm run build`
-5. Start Django: `uv run python -Wd backend/manage.py runserver`
+4. Build frontend: `cd $(git rev-parse --show-toplevel)/frontend && npm run build`
+5. Start Django: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py runserver`
 
 ## Project-Specific Patterns
 
@@ -88,7 +89,7 @@ PSQL_DB_NAME, PSQL_DB_USER, PSQL_DB_PASS, PSQL_DB_HOST, PSQL_DB_PORT
 ## Testing & Debugging
 
 ### Running Tests
-- Backend: `uv run python -Wd backend/manage.py test`
+- Backend: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py test`
 - Frontend: Standard React testing patterns
 
 ### Common Debug Points
