@@ -38,6 +38,20 @@ def _ensure_waypoint_index(instance: Waypoint) -> None:
         instance.index = 0 if max_index is None else max_index + 1
 
 
+def _render_media_preview(media_obj, max_height: str = "200px"):
+    """Render media preview HTML for admin display."""
+    if media_obj and getattr(media_obj, "media", None):
+        url = media_obj.media.url
+        if getattr(media_obj, "type", None) == MediaType.IMAGE:
+            return format_html(
+                '<img src="{}" style="max-height: {}; object-fit: contain;" />',
+                url,
+                max_height,
+            )
+        return format_html('<a href="{}" target="_blank">{}</a>', url, media_obj.media.name)
+    return _("No media uploaded")
+
+
 class LoggingInlineFormSet(BaseInlineFormSet):
     """Inline formset that logs validation errors."""
 
@@ -45,7 +59,7 @@ class LoggingInlineFormSet(BaseInlineFormSet):
         valid = super().is_valid()
         if not valid:
             logger = logging.getLogger(__name__)
-            logger.info(
+            logger.warning(
                 "Inline formset %s invalid. non_form_errors=%s errors=%s",
                 self.__class__.__name__,
                 self.non_form_errors(),
@@ -77,18 +91,9 @@ class WaypointMediaInline(admin.TabularInline):
     ordering = ("index",)
     show_change_link = True
 
+    @admin.display(description=_("Preview"))
     def media_preview(self, obj):
-        if obj and obj.media:
-            url = obj.media.url
-            if obj.type == MediaType.IMAGE:
-                return format_html(
-                    '<img src="{}" style="max-height: 160px; object-fit: contain;" />',
-                    url,
-                )
-            return format_html('<a href="{}" target="_blank">{}</a>', url, obj.media.name)
-        return _("No media uploaded")
-
-    media_preview.short_description = _("Preview")
+        return _render_media_preview(obj, max_height="160px")
 
 
 class WaypointInline(admin.TabularInline):
@@ -134,7 +139,6 @@ class ActivityAdminForm(forms.ModelForm):
         user_model = get_user_model()
         queryset = user_model.objects.all().order_by("username")
         self.fields["author_user"].queryset = queryset
-        self.fields["author_id"].required = False
         if "author_name" in self.fields:
             self.fields["author_name"].required = False
         if "id" in self.fields:
@@ -152,12 +156,25 @@ class ActivityAdminForm(forms.ModelForm):
             "Required numeric id of the author account. Use the selector above to auto-fill."
         )
 
+    def full_clean(self):
+        """Ensure author_id is populated from the selector before field validation."""
+        if self.data:
+            author_id_key = self.add_prefix("author_id")
+            author_user_key = self.add_prefix("author_user")
+            if not self.data.get(author_id_key) and self.data.get(author_user_key):
+                mutable_data = self.data.copy()
+                mutable_data[author_id_key] = self.data.get(author_user_key)
+                if hasattr(mutable_data, "_mutable"):
+                    mutable_data._mutable = False
+                self.data = mutable_data
+        super().full_clean()
+
     def clean(self):
         cleaned_data = super().clean()
         user = cleaned_data.get("author_user")
         author_id = cleaned_data.get("author_id")
         logger = logging.getLogger(__name__)
-        logger.info(
+        logger.debug(
             "ActivityAdminForm clean initial author_id=%r user=%r", author_id, user
         )
 
@@ -166,7 +183,7 @@ class ActivityAdminForm(forms.ModelForm):
         if not cleaned_data.get("author_id"):
             self.add_error("author_id", _("Author id is required. Choose an author account or enter the id."))
 
-        logger.info(
+        logger.debug(
             "ActivityAdminForm errors after validation: %s", self.errors.as_data()
         )
 
@@ -265,6 +282,7 @@ class ActivityAdmin(ReadonlyOnChangeMixin, admin.ModelAdmin):
         ),
     )
 
+    @admin.display(description=_("Featured image"))
     def featured_image_preview(self, obj):
         if obj and obj.image:
             return format_html(
@@ -272,8 +290,6 @@ class ActivityAdmin(ReadonlyOnChangeMixin, admin.ModelAdmin):
                 obj.image.url,
             )
         return _("No image uploaded")
-
-    featured_image_preview.short_description = _("Featured image")
 
 
 @admin.register(WaypointGroup)
@@ -371,17 +387,8 @@ class WaypointMediaAdmin(ReadonlyOnChangeMixin, admin.ModelAdmin):
             return obj.waypoint.group.activity
         return "-"
 
+    @admin.display(description=_("Preview"))
     def media_preview(self, obj):
-        if obj and obj.media:
-            url = obj.media.url
-            if obj.type == MediaType.IMAGE:
-                return format_html(
-                    '<img src="{}" style="max-height: 200px; object-fit: contain;" />',
-                    url,
-                )
-            return format_html('<a href="{}" target="_blank">{}</a>', url, obj.media.name)
-        return _("No media uploaded")
-
-    media_preview.short_description = _("Preview")
+        return _render_media_preview(obj, max_height="200px")
 
 
