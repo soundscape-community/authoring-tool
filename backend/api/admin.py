@@ -51,7 +51,7 @@ class LoggingInlineFormSet(BaseInlineFormSet):
         valid = super().is_valid()
         if not valid:
             logger = logging.getLogger(__name__)
-            logger.warning(
+            logger.info(
                 "Inline formset %s invalid. non_form_errors=%s errors=%s",
                 self.__class__.__name__,
                 self.non_form_errors(),
@@ -163,7 +163,7 @@ class ActivityAdminForm(forms.ModelForm):
         user = cleaned_data.get("author_user")
         author_id = cleaned_data.get("author_id")
         logger = logging.getLogger(__name__)
-        logger.warning(
+        logger.info(
             "ActivityAdminForm clean initial author_id=%r user=%r", author_id, user
         )
 
@@ -172,7 +172,7 @@ class ActivityAdminForm(forms.ModelForm):
         if not cleaned_data.get("author_id"):
             self.add_error("author_id", _("Author id is required. Choose an author account or enter the id."))
 
-        logger.warning(
+        logger.info(
             "ActivityAdminForm errors after validation: %s", self.errors.as_data()
         )
 
