@@ -11,6 +11,8 @@ backend/.env
 backend/.auth
 backend/.venv
 
+.venv
+
 
 
 
