@@ -1,5 +1,6 @@
-# Copyright (c) Microsoft Corporation.
+# Copyright (c) Soundscape Community Contributors.
 # Licensed under the MIT License.
+# This is AI generated.
 
 from __future__ import annotations
 
