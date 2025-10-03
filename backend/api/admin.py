@@ -39,13 +39,7 @@ def _ensure_waypoint_index(instance: Waypoint) -> None:
 
 
 class LoggingInlineFormSet(BaseInlineFormSet):
-    """Inline formset that logs validation errors and relaxes PK requirements."""
-
-    def add_fields(self, form, index):  # type: ignore[override]
-        super().add_fields(form, index)
-        pk_name = form._meta.model._meta.pk.name
-        if pk_name in form.fields:
-            form.fields[pk_name].required = False
+    """Inline formset that logs validation errors."""
 
     def is_valid(self):  # type: ignore[override]
         valid = super().is_valid()
