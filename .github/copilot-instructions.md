@@ -38,10 +38,6 @@ This is a Django + React web application for creating routed activities (GPS-bas
 4. Start Django: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py runserver`
 5. Start frontend: `cd $(git rev-parse --show-toplevel)/frontend && npm run start` (in separate terminal)
 
-**For Production:**
-1-3. Same as development
-4. Build frontend: `cd $(git rev-parse --show-toplevel)/frontend && npm run build`
-5. Start Django: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py runserver`
 
 ## Project-Specific Patterns
 
@@ -94,7 +90,6 @@ PSQL_DB_NAME, PSQL_DB_USER, PSQL_DB_PASS, PSQL_DB_HOST, PSQL_DB_PORT
 
 ### Common Debug Points
 - Check `backend/db.sqlite3` exists after migrations
-- Verify frontend build succeeded: `backend/frontend/serve/index.html` should exist
 - CORS issues: Frontend dev server proxies to backend via Vite config
 - File uploads: Check `MEDIA_ROOT` and `MEDIA_URL` settings
 
