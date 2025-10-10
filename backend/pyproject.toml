@@ -1,0 +1,31 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Django REST API backend for the Soundscape Authoring Tool"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "autopep8>=2.3.2",
+    "cryptography>=45.0.5",
+    "dj-rest-auth>=7.0.1",
+    "django==5.2.*",
+    "django-cors-headers>=4.7.0",
+    "djangorestframework>=3.16.0",
+    "djangorestframework-simplejwt>=5.5.1",
+    "gunicorn>=21.2.0",
+    "gpxpy>=1.6.2",
+    "markdown>=3.8.2",
+    "pillow>=11.3.0",
+    "pip>=25.1.1",
+    "psycopg2>=2.9.10",
+    "pygments>=2.19.2",
+    "pytz>=2025.2",
+    "requests>=2.32.4",
+    "whitenoise>=6.9.0",
+]
+
+[tool.uv.sources]
+# Override gpxpy to use a fork that escapes xml charactors correctly. 
+# see https://github.com/tkrajina/gpxpy/pull/282
+# The PR has been merged but not released yet.
+gpxpy = { git = "https://github.com/RDMurray/gpxpy", rev = "escape" }

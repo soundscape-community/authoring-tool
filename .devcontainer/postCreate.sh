@@ -1,7 +1,19 @@
 #!/usr/bin/env bash
-# install the backend dependencies
-pip3 install --user -r backend/requirements.txt
-python3 backend/manage.py migrate
+set -euo pipefail
+
+# install uv locally for managing backend dependencies
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+
+# install the backend dependencies with uv and run migrations
+(
+	cd backend
+	uv sync
+	DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py migrate
+)
 
 # install the frontend dependencies
-(cd frontend&& npm ci )
+(
+	cd frontend
+	npm ci
+)
