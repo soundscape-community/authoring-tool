@@ -11,8 +11,8 @@ chown -R user:user /app/backend/files
 mkdir -p /app/backend/staticfiles
 chown -R user:user /app/backend/staticfiles
 
-gosu user python manage.py collectstatic --noinput
-gosu user python manage.py migrate
+gosu user env PATH="$PATH" python manage.py collectstatic --noinput
+gosu user env PATH="$PATH" python manage.py migrate
 
 # Execute the main command
-exec gosu user "$@"
+gosu user env PATH="$PATH" "$@"

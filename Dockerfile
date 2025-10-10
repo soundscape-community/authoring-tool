@@ -27,8 +27,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update &&\
     apt-get --no-install-recommends install libpq5 zlib1g libjpeg62-turbo gosu -y
 
-COPY --from=backend-deps /app/.venv /app/.venv
 COPY backend/ /app
+COPY --from=backend-deps /app/.venv /app/.venv
 COPY docker-entrypoint.sh /
 COPY --from=build-frontend /app/frontend/dist /app/frontend/serve
 WORKDIR /app

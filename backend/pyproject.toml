@@ -25,4 +25,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
+# Override gpxpy to use a fork that escapes xml charactors correctly. 
+# see https://github.com/tkrajina/gpxpy/pull/282
+# The PR has been merged but not released yet.
 gpxpy = { git = "https://github.com/RDMurray/gpxpy", rev = "escape" }
