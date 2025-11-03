@@ -61,7 +61,11 @@ INSTALLED_APPS = [
     # 'corsheaders',
 
     'rest_framework',
-    'dj_rest_auth'
+    'dj_rest_auth',
+
+    # Health check
+    'health_check',
+    'health_check.db',
 ]
 
 REST_FRAMEWORK = {
