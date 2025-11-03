@@ -22,6 +22,7 @@ dependencies = [
     "pytz>=2025.2",
     "requests>=2.32.4",
     "whitenoise>=6.9.0",
+    "django-health-check>=3.20.0",
 ]
 
 [tool.uv.sources]
