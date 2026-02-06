@@ -8,6 +8,7 @@ import { Download, MapPin, Plus } from 'react-feather';
 import TableHeader from '../Table/TableHeader';
 import TableRow from '../Table/TableRow';
 import TableRowEmpty from '../Table/TableRowEmpty';
+import FoldersPanel from './FoldersPanel';
 
 function ActivityRow({ activity, onClick }) {
   return <TableRow title={activity.name} subtitle={activity.description} onClick={onClick.bind(this, activity)} />;
@@ -45,13 +46,21 @@ export default function ActivitiesTable(props) {
   );
 
   return (
-    <div className="col-5 col-xs-1 col-sm-6 col-md-4 col-lg-3 p-0 border-end" id="primary">
-      <div className="d-flex flex-column">
-        <TableHeader title="My Activities" subheaderView={subheaderView} />
-        <ListGroup className="border-bottom" variant="flush">
-          {props.activities.length > 0 ? activityRows : <ActivityRowEmpty key="empty-row-activity" />}
-        </ListGroup>
+    <>
+      <FoldersPanel
+        folders={props.folders}
+        selectedFolderId={props.selectedFolderId}
+        onFolderSelect={props.onFolderSelect}
+        onFolderCreate={props.onFolderCreate}
+      />
+      <div className="col-4 col-xs-1 col-sm-5 col-md-4 col-lg-3 p-0 border-end" id="primary">
+        <div className="d-flex flex-column">
+          <TableHeader title="My Activities" subheaderView={subheaderView} />
+          <ListGroup className="border-bottom" variant="flush">
+            {props.activities.length > 0 ? activityRows : <ActivityRowEmpty key="empty-row-activity" />}
+          </ListGroup>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from api.models import Folder, FolderPermission, Group, GroupMembership
+from api.models import Activity, Folder, FolderPermission, Group, GroupMembership
 
 
 class FolderApiTests(APITestCase):
@@ -53,3 +53,27 @@ class FolderApiTests(APITestCase):
 
         self.assertEqual(membership_response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(membership_response.data["user"], self.member.id)
+
+    def test_unfoldered_filter_returns_only_unfoldered(self):
+        Activity.objects.create(
+            author_id=str(self.owner.id),
+            author_name="Owner",
+            description="Unfoldered",
+            name="Unfoldered Activity",
+        )
+        folder = Folder.objects.create(name="Root", owner=self.owner)
+        Activity.objects.create(
+            author_id=str(self.owner.id),
+            author_name="Owner",
+            description="Foldered",
+            name="Foldered Activity",
+            folder=folder,
+        )
+
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.get("/api/v1/activities/?folder_id=none")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        activity_names = {item["name"] for item in response.data}
+        self.assertIn("Unfoldered Activity", activity_names)
+        self.assertNotIn("Foldered Activity", activity_names)

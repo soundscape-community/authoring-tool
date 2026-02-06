@@ -59,8 +59,12 @@ class API {
 
   // Activities
 
-  async getActivities() {
-    return axios.get('activities/').then((data) => {
+  async getActivities(folderId = null) {
+    const params = {};
+    if (folderId) {
+      params.folder_id = folderId;
+    }
+    return axios.get('activities/', { params }).then((data) => {
       return data.map((data) => new Activity(data));
     });
   }
@@ -127,6 +131,30 @@ class API {
     return axios.post(`activities/${activityId}/publish/`).then((data) => {
       return new Activity(data);
     });
+  }
+
+  // Folders
+
+  async getFolders() {
+    return axios.get('folders/');
+  }
+
+  async createFolder(folder) {
+    return axios.post('folders/', folder);
+  }
+
+  async updateFolder(folder) {
+    return axios.put(`folders/${folder.id}/`, folder);
+  }
+
+  async deleteFolder(folderId) {
+    return axios.delete(`folders/${folderId}/`);
+  }
+
+  // Folder permissions
+
+  async getFolderPermissions() {
+    return axios.get('folder_permissions/');
   }
 
   // Waypoints

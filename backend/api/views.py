@@ -59,7 +59,10 @@ class ActivityViewSet(ModelViewSet):
         queryset = Activity.objects.filter(author_id=user_id)
         folder_id = self.request.query_params.get("folder_id")
         if folder_id:
-            queryset = queryset.filter(folder_id=folder_id)
+            if folder_id == "none":
+                queryset = queryset.filter(folder__isnull=True)
+            else:
+                queryset = queryset.filter(folder_id=folder_id)
         return queryset
 
     def get_serializer_class(self):

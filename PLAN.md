@@ -107,9 +107,10 @@
 ## Status
 - Phase 1: Completed (models, permissions utility, migrations, backend tests)
 - Phase 2: Completed (API endpoints, serializers, and API tests)
-- Phase 3: Not started
+- Phase 3: In progress (initial folder-aware UI and activity assignment)
 - Phase 4: Not started
 
 ## Progress Notes
 - Phase 1 delivered backend data models, permission resolution utility, migrations, and initial backend tests.
 - Phase 2 delivered folder/group/permission APIs, activity folder filtering, and API test coverage.
+- Phase 3 started with a folder list panel, activity filtering, and folder selection in activity forms.

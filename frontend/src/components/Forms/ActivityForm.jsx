@@ -35,6 +35,7 @@ export default function ActivityForm(props) {
       expires: activity.expires || undefined,
       image_url: activity.image_url || undefined,
       image_alt: activity.image_alt || undefined,
+      folder: activity.folder || '',
 
       image_file: undefined,
       image_filename: undefined,
@@ -68,6 +69,10 @@ export default function ActivityForm(props) {
             activity.image = activity.image_file;
             delete activity.image_file;
             delete activity.image_filename;
+          }
+
+          if (activity.folder === '') {
+            activity.folder = null;
           }
 
           props.onSubmit(activity).finally(() => {
@@ -131,6 +136,26 @@ export default function ActivityForm(props) {
                 isInvalid={touched.author_name && !!errors.author_name}
               />
               <Form.Control.Feedback type="invalid">{errors.author_name}</Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label className="me-2" aria-hidden="true">
+                Folder
+              </Form.Label>
+              <Form.Select
+                name="folder"
+                aria-label="Folder"
+                value={values.folder ?? ''}
+                onChange={handleChange}
+                onBlur={handleBlur}
+              >
+                <option value="">Unfoldered</option>
+                {(props.folders || []).map((folder) => (
+                  <option key={folder.id} value={folder.id}>
+                    {folder.name}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -285,4 +310,3 @@ export default function ActivityForm(props) {
       </Formik>
     );
   }
-

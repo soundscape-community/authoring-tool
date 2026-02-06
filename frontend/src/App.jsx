@@ -41,6 +41,8 @@ export default class App extends React.Component {
 
       user: {},
       activities: [], // Holds activities metadata excluding waypoints
+      folders: [],
+      selectedFolderId: null,
       selectedActivity: null, // Holds the selected activity including it's waypoints
       selectedWaypoint: null,
       editing: false,
@@ -83,6 +85,9 @@ export default class App extends React.Component {
     this.activityDeleted = this.activityDeleted.bind(this);
     this.activityDuplicated = this.activityDuplicated.bind(this);
     this.activityPublished = this.activityPublished.bind(this);
+    this.folderSelected = this.folderSelected.bind(this);
+    this.folderCreated = this.folderCreated.bind(this);
+    this.loadFolders = this.loadFolders.bind(this);
 
     // Waypoints
 
@@ -104,6 +109,7 @@ export default class App extends React.Component {
         this.setState({
           user,
         });
+        this.loadFolders();
         this.loadActivities();
       })
       .catch((error) => {
@@ -178,7 +184,7 @@ export default class App extends React.Component {
   loadActivities() {
     const toastId = showLoading('Loading activities...');
 
-    API.getActivities()
+    API.getActivities(this.state.selectedFolderId)
       .then((activities) => {
         this.setState({
           activities,
@@ -201,6 +207,54 @@ export default class App extends React.Component {
       editing: false,
       mapOverlay: null,
     });
+  }
+
+  ///////////////////////////////////////////////////////////
+  // FOLDERS
+  ///////////////////////////////////////////////////////////
+
+  loadFolders() {
+    API.getFolders()
+      .then((folders) => {
+        this.setState({ folders });
+      })
+      .catch((error) => {
+        error.title = 'Error loading folders';
+        showError(error);
+      });
+  }
+
+  folderSelected(folderId) {
+    this.setState(
+      {
+        selectedFolderId: folderId,
+        selectedActivity: null,
+        selectedWaypoint: null,
+        editing: false,
+      },
+      () => this.loadActivities(),
+    );
+  }
+
+  folderCreated() {
+    const folderName = window.prompt('Folder name');
+    if (!folderName) {
+      return;
+    }
+
+    const parent =
+      this.state.selectedFolderId && this.state.selectedFolderId !== 'none'
+        ? this.state.selectedFolderId
+        : null;
+
+    API.createFolder({ name: folderName, parent })
+      .then(() => {
+        this.loadFolders();
+      })
+      .catch((error) => {
+        error.title = 'Error creating folder';
+        showError(error);
+      });
   }
 
   activitySelected(activity) {
@@ -469,6 +523,10 @@ export default class App extends React.Component {
                   ) : (
                     <ActivitiesTable
                       activities={this.state.activities}
+                      folders={this.state.folders}
+                      selectedFolderId={this.state.selectedFolderId}
+                      onFolderSelect={this.folderSelected}
+                      onFolderCreate={this.folderCreated}
                       onActivitySelected={this.activitySelected}
                       onActivityCreate={() => {
                         this.setState({ showModalActivityCreate: true });
@@ -525,6 +583,7 @@ export default class App extends React.Component {
               <ActivityUpdateModal
                 show={this.state.showModalActivityCreate}
                 creating={true}
+                folders={this.state.folders}
                 onCancel={this.dismissModal.bind(this, 'showModalActivityCreate')}
                 onDone={this.activityCreated}
               />
@@ -539,6 +598,7 @@ export default class App extends React.Component {
                 show={this.state.showModalActivityUpdate}
                 creating={false}
                 activity={this.state.selectedActivity}
+                folders={this.state.folders}
                 onCancel={this.dismissModal.bind(this, 'showModalActivityUpdate')}
                 onDone={this.activityUpdated}
               />

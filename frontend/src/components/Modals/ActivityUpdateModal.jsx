@@ -63,6 +63,7 @@ export default function ActivityUpdateModal(props) {
       <Modal.Body>
         <ActivityForm
           activity={props.activity}
+          folders={props.folders}
           onSubmit={props.creating ? createActivity : updateActivity}
         />
         {error && <ErrorAlert error={error} />}
