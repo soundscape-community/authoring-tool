@@ -1,11 +1,11 @@
-# Soundscape Authoring Tool - AI Coding Agent Instructions
+# Soundscape Authoring Tool - Agent Instructions
 
 ## Architecture Overview
 
 This is a Django + React web application for creating routed activities (GPS-based tours) for the Soundscape iOS app. The system converts between internal data models and GPX format for export/import.
 
 ### Key Components
-- **Backend**: Django REST API with SQLite (local) / PostgreSQL (production)
+- **Backend**: Django REST API with SQLite (local) / PostgreSQL (development/production)
 - **Frontend**: React SPA built with Vite, served by Django in production
 - **Core Domain**: Activities contain WaypointGroups (ordered/unordered/geofence) which contain Waypoints with optional media
 
@@ -17,7 +17,7 @@ This is a Django + React web application for creating routed activities (GPS-bas
 - **Critical**: Each terminal command starts fresh - always set working directory AND environment variables inline
 - Settings are environment-specific: `backend/backend/settings/{local,development,production}.py`
 - For local development: Set `DJANGO_SETTINGS_MODULE=backend.settings.local`
-- Environment variables in `backend/.env/` files (create from sample.env)
+- Environment variables in `backend/.env/` files (create from sample.env and install.md)
 
 ### Dependency Management
 - Use `uv add <package>` to add new Python dependencies (from `backend/` directory)
@@ -37,7 +37,6 @@ This is a Django + React web application for creating routed activities (GPS-bas
 3. Create superuser: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py createsuperuser`
 4. Start Django: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py runserver`
 5. Start frontend: `cd $(git rev-parse --show-toplevel)/frontend && npm run start` (in separate terminal)
-
 
 ## Project-Specific Patterns
 
@@ -106,3 +105,7 @@ PSQL_DB_NAME, PSQL_DB_USER, PSQL_DB_PASS, PSQL_DB_HOST, PSQL_DB_PORT
 - WEBSITE_HOSTNAME auto-added to ALLOWED_HOSTS
 
 When modifying this codebase, pay special attention to the Activity lifecycle (creation → editing → publishing), the GPX import/export functionality, and the React state management patterns that coordinate between the activity list and detail views.
+
+## Folder Planning
+
+The implementation plan for activity folders (including permissions, nesting, migration strategy, and UI expectations) lives in `PLAN.md`. Keep that plan up-to-date as work progresses, and after each implementation phase run tests, commit changes, and refresh the plan’s next steps.

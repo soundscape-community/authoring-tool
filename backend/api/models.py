@@ -4,6 +4,7 @@
 import os
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
@@ -101,6 +102,7 @@ class Activity(CommonModel):
     image_alt = models.TextField(blank=True, null=True)
     last_published = models.DateTimeField(blank=True, null=True)
     unpublished_changes = models.BooleanField(default=False)
+    folder = models.ForeignKey("Folder", blank=True, null=True, on_delete=models.SET_NULL, related_name="activities")
 
     class Meta:
         ordering = ['-created']
@@ -310,3 +312,73 @@ class UserPermissions(models.Model):
 
     def __str__(self):
         return '{0} allow app: {1}, allow api {2}'.format(self.user_email, self.allow_app, self.allow_api)
+
+
+class Group(CommonModel):
+    name = models.TextField()
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="owned_groups")
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class GroupMembership(CommonModel):
+    class Role(models.TextChoices):
+        MEMBER = "member", _("Member")
+        ADMIN = "admin", _("Admin")
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="group_memberships")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="memberships")
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.MEMBER)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "group"], name="unique_group_membership"),
+        ]
+
+    def __str__(self):
+        return f"{self.user} -> {self.group}"
+
+
+class Folder(CommonModel):
+    name = models.TextField()
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="folders")
+    parent = models.ForeignKey("self", blank=True, null=True, on_delete=models.CASCADE, related_name="children")
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(fields=["owner", "parent", "name"], name="unique_folder_name_per_parent"),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class FolderPermission(CommonModel):
+    class PrincipalType(models.TextChoices):
+        USER = "user", _("User")
+        GROUP = "group", _("Group")
+
+    class Access(models.TextChoices):
+        READ = "read", _("Read")
+        WRITE = "write", _("Write")
+
+    folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name="permissions")
+    principal_type = models.CharField(max_length=10, choices=PrincipalType.choices)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.CASCADE, related_name="folder_permissions"
+    )
+    group = models.ForeignKey(Group, blank=True, null=True, on_delete=models.CASCADE, related_name="folder_permissions")
+    access = models.CharField(max_length=10, choices=Access.choices)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["folder", "principal_type", "user", "group"], name="unique_folder_principal"),
+        ]
+
+    def __str__(self):
+        return f"{self.folder} -> {self.principal_type}:{self.user or self.group} ({self.access})"

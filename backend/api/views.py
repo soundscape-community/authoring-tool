@@ -16,8 +16,30 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 
-from .models import Waypoint, WaypointGroup, WaypointMedia, MediaType, Activity, WaypointGroupType
-from .serializers import ActivityListSerializer, ActivityDetailSerializer, WaypointGroupSerializer, WaypointSerializer, WaypointMediaSerializer
+from .models import (
+    Activity,
+    Folder,
+    FolderPermission,
+    Group,
+    GroupMembership,
+    MediaType,
+    Waypoint,
+    WaypointGroup,
+    WaypointGroupType,
+    WaypointMedia,
+)
+from .permissions import resolve_folder_access
+from .serializers import (
+    ActivityListSerializer,
+    ActivityDetailSerializer,
+    FolderPermissionSerializer,
+    FolderSerializer,
+    GroupMembershipSerializer,
+    GroupSerializer,
+    WaypointGroupSerializer,
+    WaypointSerializer,
+    WaypointMediaSerializer,
+)
 from .model_utils import duplicate_activity, shift_waypoints_after_delete
 from .gpx_utils import activity_to_gpx, gpx_to_activity
 
@@ -35,6 +57,9 @@ class ActivityViewSet(ModelViewSet):
         if user_id == None:
             raise ValidationError('Missing user id')
         queryset = Activity.objects.filter(author_id=user_id)
+        folder_id = self.request.query_params.get("folder_id")
+        if folder_id:
+            queryset = queryset.filter(folder_id=folder_id)
         return queryset
 
     def get_serializer_class(self):
@@ -51,10 +76,23 @@ class ActivityViewSet(ModelViewSet):
             raise ValidationError('Missing user id')
 
         with transaction.atomic():
+            folder = serializer.validated_data.get("folder")
+            if folder:
+                access = resolve_folder_access(self.request.user, folder)
+                if not access.can_write:
+                    raise ValidationError("No write access to folder")
             instance = serializer.save(author_id=user_id)
             # Create default empty waypoint groups
             WaypointGroup(activity=instance, name='Default', type=WaypointGroupType.ORDERED).save()
             WaypointGroup(activity=instance, name='Points of Interest', type=WaypointGroupType.UNORDERED).save()
+
+    def perform_update(self, serializer):
+        folder = serializer.validated_data.get("folder")
+        if folder:
+            access = resolve_folder_access(self.request.user, folder)
+            if not access.can_write:
+                raise ValidationError("No write access to folder")
+        serializer.save()
 
     @action(detail=True, methods=['POST'], name='Duplicate')
     def duplicate(self, request, pk=None):
@@ -214,3 +252,133 @@ class WaypointViewSet(ModelViewSet):
 class WaypointMediaViewSet(ModelViewSet):
     queryset = WaypointMedia.objects.all()
     serializer_class = WaypointMediaSerializer
+
+
+class FolderViewSet(ModelViewSet):
+    queryset = Folder.objects.all()
+    serializer_class = FolderSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return Folder.objects.none()
+
+        folders = Folder.objects.all().select_related("parent", "owner")
+        accessible_ids = []
+        for folder in folders:
+            if folder.owner_id == user.id:
+                accessible_ids.append(folder.id)
+                continue
+            access = resolve_folder_access(user, folder)
+            if access.can_read:
+                accessible_ids.append(folder.id)
+        return folders.filter(id__in=accessible_ids)
+
+    def perform_create(self, serializer):
+        parent = serializer.validated_data.get("parent")
+        if parent:
+            access = resolve_folder_access(self.request.user, parent)
+            if not access.can_write:
+                raise ValidationError("No write access to parent folder")
+        serializer.save(owner=self.request.user)
+
+    def perform_update(self, serializer):
+        parent = serializer.validated_data.get("parent")
+        if parent:
+            access = resolve_folder_access(self.request.user, parent)
+            if not access.can_write:
+                raise ValidationError("No write access to parent folder")
+        access = resolve_folder_access(self.request.user, serializer.instance)
+        if not access.can_write:
+            raise ValidationError("No write access to folder")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        access = resolve_folder_access(self.request.user, instance)
+        if not access.can_write:
+            raise ValidationError("No write access to folder")
+        instance.delete()
+
+
+class FolderPermissionViewSet(ModelViewSet):
+    queryset = FolderPermission.objects.all()
+    serializer_class = FolderPermissionSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return FolderPermission.objects.none()
+
+        folders = Folder.objects.all().select_related("parent", "owner")
+        writable_ids = []
+        for folder in folders:
+            if folder.owner_id == user.id:
+                writable_ids.append(folder.id)
+                continue
+            access = resolve_folder_access(user, folder)
+            if access.can_write:
+                writable_ids.append(folder.id)
+        return FolderPermission.objects.filter(folder_id__in=writable_ids)
+
+    def perform_create(self, serializer):
+        folder = serializer.validated_data["folder"]
+        access = resolve_folder_access(self.request.user, folder)
+        if not access.can_write and folder.owner_id != self.request.user.id:
+            raise ValidationError("No permission to modify folder sharing")
+        serializer.save()
+
+    def perform_update(self, serializer):
+        folder = serializer.instance.folder
+        access = resolve_folder_access(self.request.user, folder)
+        if not access.can_write and folder.owner_id != self.request.user.id:
+            raise ValidationError("No permission to modify folder sharing")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        folder = instance.folder
+        access = resolve_folder_access(self.request.user, folder)
+        if not access.can_write and folder.owner_id != self.request.user.id:
+            raise ValidationError("No permission to modify folder sharing")
+        instance.delete()
+
+
+class GroupViewSet(ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return Group.objects.none()
+        return Group.objects.filter(owner=user)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
+class GroupMembershipViewSet(ModelViewSet):
+    queryset = GroupMembership.objects.all()
+    serializer_class = GroupMembershipSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return GroupMembership.objects.none()
+        return GroupMembership.objects.filter(group__owner=user)
+
+    def perform_create(self, serializer):
+        group = serializer.validated_data["group"]
+        if group.owner_id != self.request.user.id:
+            raise ValidationError("No permission to manage group memberships")
+        serializer.save()
+
+    def perform_update(self, serializer):
+        group = serializer.instance.group
+        if group.owner_id != self.request.user.id:
+            raise ValidationError("No permission to manage group memberships")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.group.owner_id != self.request.user.id:
+            raise ValidationError("No permission to manage group memberships")
+        instance.delete()
