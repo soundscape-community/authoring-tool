@@ -7,7 +7,7 @@ import logging
 from django.http import HttpResponse
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from django.db import transaction
+from django.db import models, transaction
 from django.utils import timezone
 
 from rest_framework.viewsets import ModelViewSet
@@ -90,7 +90,12 @@ class ActivityViewSet(ModelViewSet):
             WaypointGroup(activity=instance, name='Points of Interest', type=WaypointGroupType.UNORDERED).save()
 
     def perform_update(self, serializer):
+        current_folder = serializer.instance.folder
         folder = serializer.validated_data.get("folder")
+        if current_folder and folder != current_folder:
+            current_access = resolve_folder_access(self.request.user, current_folder)
+            if not current_access.can_write:
+                raise ValidationError("No write access to current folder")
         if folder:
             access = resolve_folder_access(self.request.user, folder)
             if not access.can_write:
@@ -266,16 +271,48 @@ class FolderViewSet(ModelViewSet):
         if not user or not user.is_authenticated:
             return Folder.objects.none()
 
-        folders = Folder.objects.all().select_related("parent", "owner")
+        folders = list(Folder.objects.all().select_related("parent", "owner"))
+        if not folders:
+            return Folder.objects.none()
+
+        ancestor_map = {}
+        all_ancestor_ids = set()
+
+        for folder in folders:
+            ancestors = []
+            current = folder
+            depth = 0
+            seen_ids = set()
+            while current is not None and depth < 100:
+                if current.id in seen_ids:
+                    break
+                seen_ids.add(current.id)
+                ancestors.append(current.id)
+                current = current.parent
+                depth += 1
+            ancestor_map[folder.id] = ancestors
+            all_ancestor_ids.update(ancestors)
+
+        group_ids = list(GroupMembership.objects.filter(user_id=user.id).values_list("group_id", flat=True))
+        permissions = FolderPermission.objects.filter(folder_id__in=all_ancestor_ids).filter(
+            models.Q(principal_type=FolderPermission.PrincipalType.USER, user_id=user.id)
+            | models.Q(principal_type=FolderPermission.PrincipalType.GROUP, group_id__in=group_ids)
+        )
+        perm_map = {}
+        for permission in permissions:
+            perm_map.setdefault(permission.folder_id, []).append(permission)
+
         accessible_ids = []
         for folder in folders:
             if folder.owner_id == user.id:
                 accessible_ids.append(folder.id)
                 continue
-            access = resolve_folder_access(user, folder)
-            if access.can_read:
+            ancestors = ancestor_map.get(folder.id, [])
+            if any(ancestor_id in perm_map for ancestor_id in ancestors):
                 accessible_ids.append(folder.id)
-        return folders.filter(id__in=accessible_ids)
+
+        # Follow-up: replace ancestor traversal with a recursive CTE if needed for larger hierarchies.
+        return Folder.objects.filter(id__in=accessible_ids)
 
     def perform_create(self, serializer):
         parent = serializer.validated_data.get("parent")

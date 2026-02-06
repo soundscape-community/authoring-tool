@@ -79,6 +79,35 @@ class FolderSerializer(serializers.ModelSerializer):
 
 
 class FolderPermissionSerializer(serializers.ModelSerializer):
+    def validate(self, attrs):
+        principal_type = attrs.get("principal_type")
+        user = attrs.get("user")
+        group = attrs.get("group")
+
+        if self.instance:
+            principal_type = principal_type or self.instance.principal_type
+            if user is None and "user" not in attrs:
+                user = self.instance.user
+            if group is None and "group" not in attrs:
+                group = self.instance.group
+
+        if principal_type == FolderPermission.PrincipalType.USER:
+            if user is None or group is not None:
+                raise serializers.ValidationError(
+                    "User principal requires user set and group unset."
+                )
+        elif principal_type == FolderPermission.PrincipalType.GROUP:
+            if group is None or user is not None:
+                raise serializers.ValidationError(
+                    "Group principal requires group set and user unset."
+                )
+        elif user is not None or group is not None:
+            raise serializers.ValidationError(
+                "Folder permission must specify a user or group principal."
+            )
+
+        return attrs
+
     class Meta:
         model = FolderPermission
         fields = ['id', 'folder', 'principal_type', 'user', 'group', 'access', 'created', 'updated']

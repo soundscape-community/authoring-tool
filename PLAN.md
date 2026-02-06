@@ -26,7 +26,8 @@
    - Fields: `id`, `name`, `owner`, `parent` (self FK), `created`, `updated`
    - Root folder: `parent = null`, `owner = user`
 3. **FolderPermission**
-   - Fields: `id`, `folder`, `principal_type` (`user`|`group`), `principal_id`, `access` (`read`|`write`)
+   - Fields: `id`, `folder`, `principal_type` (`user`|`group`), `user` (nullable), `group` (nullable), `access` (`read`|`write`)
+   - `principal_type` indicates which FK is populated (exactly one of `user` or `group`).
    - Inherited permissions: computed by tree traversal on reads (store explicit grants only)
 
 ### Activity Changes

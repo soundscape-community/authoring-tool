@@ -9,6 +9,7 @@ from django.db import models
 from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 
 # Constants
@@ -351,7 +352,16 @@ class Folder(CommonModel):
     class Meta:
         ordering = ["name"]
         constraints = [
-            models.UniqueConstraint(fields=["owner", "parent", "name"], name="unique_folder_name_per_parent"),
+            models.UniqueConstraint(
+                fields=["owner", "parent", "name"],
+                condition=models.Q(parent__isnull=False),
+                name="unique_folder_name_per_parent",
+            ),
+            models.UniqueConstraint(
+                fields=["owner", "name"],
+                condition=models.Q(parent__isnull=True),
+                name="unique_root_folder_name_per_owner",
+            ),
         ]
 
     def __str__(self):
@@ -377,8 +387,38 @@ class FolderPermission(CommonModel):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["folder", "principal_type", "user", "group"], name="unique_folder_principal"),
+            models.UniqueConstraint(
+                fields=["folder", "user"],
+                condition=models.Q(principal_type="user"),
+                name="unique_folder_user_permission",
+            ),
+            models.UniqueConstraint(
+                fields=["folder", "group"],
+                condition=models.Q(principal_type="group"),
+                name="unique_folder_group_permission",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    (models.Q(user__isnull=False) & models.Q(group__isnull=True))
+                    | (models.Q(user__isnull=True) & models.Q(group__isnull=False))
+                ),
+                name="folder_permission_single_principal",
+            ),
         ]
 
     def __str__(self):
         return f"{self.folder} -> {self.principal_type}:{self.user or self.group} ({self.access})"
+
+    def clean(self):
+        if self.principal_type == self.PrincipalType.USER:
+            if self.user is None or self.group is not None:
+                raise ValidationError("User principal requires user set and group unset.")
+        elif self.principal_type == self.PrincipalType.GROUP:
+            if self.group is None or self.user is not None:
+                raise ValidationError("Group principal requires group set and user unset.")
+        elif self.user is not None or self.group is not None:
+            raise ValidationError("Folder permission must specify a user or group principal.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)

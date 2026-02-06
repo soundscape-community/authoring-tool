@@ -15,11 +15,17 @@ class FolderAccess:
     can_write: bool
 
 
-def _iter_folder_ancestors(folder: Folder) -> Iterable[Folder]:
+def _iter_folder_ancestors(folder: Folder, max_depth: int = 100) -> Iterable[Folder]:
     current: Optional[Folder] = folder
-    while current is not None:
+    seen_ids = set()
+    depth = 0
+    while current is not None and depth < max_depth:
+        if current.id in seen_ids:
+            break
+        seen_ids.add(current.id)
         yield current
         current = current.parent
+        depth += 1
 
 
 def _access_from_permissions(permissions: Iterable[FolderPermission]) -> FolderAccess:
