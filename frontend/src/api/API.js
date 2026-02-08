@@ -117,6 +117,12 @@ class API {
     });
   }
 
+  async updateActivityPartial(activity) {
+    return axios.patch(`activities/${activity.id}/`, activity).then((data) => {
+      return new Activity(data);
+    });
+  }
+
   async deleteActivity(activityId) {
     return axios.delete(`activities/${activityId}/`);
   }
@@ -155,6 +161,42 @@ class API {
 
   async getFolderPermissions() {
     return axios.get('folder_permissions/');
+  }
+
+  async createFolderPermission(permission) {
+    return axios.post('folder_permissions/', permission);
+  }
+
+  async updateFolderPermission(permission) {
+    return axios.put(`folder_permissions/${permission.id}/`, permission);
+  }
+
+  async deleteFolderPermission(permissionId) {
+    return axios.delete(`folder_permissions/${permissionId}/`);
+  }
+
+  // Groups
+
+  async getGroups() {
+    return axios.get('groups/');
+  }
+
+  async createGroup(group) {
+    return axios.post('groups/', group);
+  }
+
+  // Group memberships
+
+  async getGroupMemberships() {
+    return axios.get('group_memberships/');
+  }
+
+  async createGroupMembership(membership) {
+    return axios.post('group_memberships/', membership);
+  }
+
+  async deleteGroupMembership(membershipId) {
+    return axios.delete(`group_memberships/${membershipId}/`);
   }
 
   // Waypoints

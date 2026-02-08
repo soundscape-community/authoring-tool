@@ -23,6 +23,9 @@ import WaypointUpdateModal from './components/Modals/WaypointUpdateModal';
 import ActivityLinkModal from './components/Modals/ActivityLinkModal';
 import MapOverlayModal from './components/Modals/MapOverlayModal';
 import ActivityImportModal from './components/Modals/ActivityImportModal';
+import FolderDeleteModal from './components/Modals/FolderDeleteModal';
+import FolderRenameModal from './components/Modals/FolderRenameModal';
+import FolderShareModal from './components/Modals/FolderShareModal';
 import InvalidWindowSizeAlert from './components/Main/InvalidWindowSizeAlert';
 import PrivacyAlertModal from './components/Modals/PrivacyAlertModal';
 import Login from './components/auth/Login';
@@ -52,6 +55,9 @@ export default class App extends React.Component {
       // Activity modals
       showModalPrivacyAlert: this.shouldShowPrivacyAlert,
       showModalMapOverlay: false,
+      showModalFolderRename: false,
+      showModalFolderDelete: false,
+      showModalFolderShare: false,
       showModalActivityCreate: false,
       showModalActivityImport: false,
       showModalActivityUpdate: false,
@@ -87,6 +93,11 @@ export default class App extends React.Component {
     this.activityPublished = this.activityPublished.bind(this);
     this.folderSelected = this.folderSelected.bind(this);
     this.folderCreated = this.folderCreated.bind(this);
+    this.folderRenameModal = this.folderRenameModal.bind(this);
+    this.folderDeleteModal = this.folderDeleteModal.bind(this);
+    this.folderShareModal = this.folderShareModal.bind(this);
+    this.folderRenamed = this.folderRenamed.bind(this);
+    this.folderDeleted = this.folderDeleted.bind(this);
     this.loadFolders = this.loadFolders.bind(this);
 
     // Waypoints
@@ -255,6 +266,136 @@ export default class App extends React.Component {
         error.title = 'Error creating folder';
         showError(error);
       });
+  }
+
+  getSelectedFolder() {
+    return this.state.folders.find((folder) => folder.id === this.state.selectedFolderId) || null;
+  }
+
+  getDescendantFolderIds(rootId) {
+    const childrenMap = new Map();
+    this.state.folders.forEach((folder) => {
+      const parentId = folder.parent || null;
+      if (!childrenMap.has(parentId)) {
+        childrenMap.set(parentId, []);
+      }
+      childrenMap.get(parentId).push(folder.id);
+    });
+
+    const ids = new Set();
+    const queue = [rootId];
+
+    while (queue.length > 0) {
+      const currentId = queue.shift();
+      if (!currentId || ids.has(currentId)) {
+        continue;
+      }
+      ids.add(currentId);
+      const children = childrenMap.get(currentId) || [];
+      children.forEach((childId) => queue.push(childId));
+    }
+
+    return Array.from(ids);
+  }
+
+  buildActivityFolderUpdatePayload(activity, folderId) {
+    return {
+      id: activity.id,
+      author_id: activity.author_id,
+      author_name: activity.author_name,
+      author_email: activity.author_email,
+      name: activity.name,
+      description: activity.description,
+      type: activity.type,
+      start: activity.start,
+      end: activity.end,
+      expires: activity.expires,
+      image_alt: activity.image_alt,
+      folder: folderId,
+    };
+  }
+
+  folderRenameModal() {
+    if (!this.state.selectedFolderId || this.state.selectedFolderId === 'none') {
+      return;
+    }
+
+    this.setState({ showModalFolderRename: true });
+  }
+
+  folderDeleteModal() {
+    if (!this.state.selectedFolderId || this.state.selectedFolderId === 'none') {
+      return;
+    }
+
+    this.setState({ showModalFolderDelete: true });
+  }
+
+  folderShareModal() {
+    if (!this.state.selectedFolderId || this.state.selectedFolderId === 'none') {
+      return;
+    }
+
+    this.setState({ showModalFolderShare: true });
+  }
+
+  folderRenamed() {
+    this.setState({ showModalFolderRename: false });
+    this.loadFolders();
+  }
+
+  async moveActivitiesToUnfoldered(folderId) {
+    const folderIds = this.getDescendantFolderIds(folderId);
+    if (folderIds.length === 0) {
+      return;
+    }
+
+    const activityLists = await Promise.all(folderIds.map((id) => API.getActivities(id)));
+    const activities = activityLists.flat();
+    if (activities.length === 0) {
+      return;
+    }
+
+    await Promise.all(
+      activities.map((activity) =>
+        API.updateActivityPartial(this.buildActivityFolderUpdatePayload(activity, null)),
+      ),
+    );
+  }
+
+  async folderDeleted({ moveActivities }) {
+    const folder = this.getSelectedFolder();
+    if (!folder) {
+      return;
+    }
+
+    const toastId = showLoading('Deleting folder...');
+
+    try {
+      if (moveActivities) {
+        await this.moveActivitiesToUnfoldered(folder.id);
+      }
+      await API.deleteFolder(folder.id);
+      this.setState(
+        {
+          showModalFolderDelete: false,
+          selectedFolderId: null,
+          selectedActivity: null,
+          selectedWaypoint: null,
+          editing: false,
+        },
+        () => {
+          this.loadFolders();
+          this.loadActivities();
+        },
+      );
+    } catch (error) {
+      error.title = 'Error deleting folder';
+      showError(error);
+      throw error;
+    } finally {
+      dismissLoading(toastId);
+    }
   }
 
   activitySelected(activity) {
@@ -527,6 +668,9 @@ export default class App extends React.Component {
                       selectedFolderId={this.state.selectedFolderId}
                       onFolderSelect={this.folderSelected}
                       onFolderCreate={this.folderCreated}
+                      onFolderRename={this.folderRenameModal}
+                      onFolderDelete={this.folderDeleteModal}
+                      onFolderShare={this.folderShareModal}
                       onActivitySelected={this.activitySelected}
                       onActivityCreate={() => {
                         this.setState({ showModalActivityCreate: true });
@@ -579,6 +723,26 @@ export default class App extends React.Component {
               />
 
               {/* Activities */}
+
+              <FolderRenameModal
+                show={this.state.showModalFolderRename}
+                folder={this.getSelectedFolder()}
+                onCancel={this.dismissModal.bind(this, 'showModalFolderRename')}
+                onRename={this.folderRenamed}
+              />
+
+              <FolderDeleteModal
+                show={this.state.showModalFolderDelete}
+                folder={this.getSelectedFolder()}
+                onCancel={this.dismissModal.bind(this, 'showModalFolderDelete')}
+                onDelete={this.folderDeleted}
+              />
+
+              <FolderShareModal
+                show={this.state.showModalFolderShare}
+                folder={this.getSelectedFolder()}
+                onCancel={this.dismissModal.bind(this, 'showModalFolderShare')}
+              />
 
               <ActivityUpdateModal
                 show={this.state.showModalActivityCreate}
