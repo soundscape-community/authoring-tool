@@ -7,6 +7,11 @@ export default defineConfig({
   plugins: [
     react(), 
   ],
+  test: {
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.js',
+    globals: true,
+  },
   server: {
     proxy: {
       '^(/admin|/api|/api-auth|/dj-rest-auth|/files|/.auth)/.*': {
