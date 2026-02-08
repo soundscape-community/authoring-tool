@@ -27,7 +27,7 @@ Before diving into frontend development, make sure you have the backend services
 
 To start the development server, run:
 `npm run start`
-This will launch the server on `http://127.0.0.1:8000/`, where you can view and test your changes in real-time.
+This will launch the server on `http://127.0.0.1:3000/`, where you can view and test your changes in real-time.
 
 Note: if you use `npm run start` and the backend is not running, you will see a blank page. This is because the frontend is trying to fetch data from the backend, which is not running. **so you should run the backend server first and then run the frontend server**
 
@@ -43,6 +43,11 @@ Note: If you are using the backend server, you should do `npm run build` when yo
 ## Development Workflow
 
 When developing new features or fixing bugs, create a new branch from `main`. Use descriptive branch names that reflect the changes being made.
+
+## Testing
+
+Run the frontend unit tests with:
+`npm test -- --run`
 
 ## Building for Production
 

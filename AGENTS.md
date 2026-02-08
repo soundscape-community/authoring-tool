@@ -85,7 +85,7 @@ PSQL_DB_NAME, PSQL_DB_USER, PSQL_DB_PASS, PSQL_DB_HOST, PSQL_DB_PORT
 
 ### Running Tests
 - Backend: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py test`
-- Frontend: Standard React testing patterns
+- Frontend: `cd $(git rev-parse --show-toplevel)/frontend && npm test -- --run`
 
 ### Common Debug Points
 - Check `backend/db.sqlite3` exists after migrations

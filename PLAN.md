@@ -85,6 +85,7 @@
   1. Run relevant tests.
   2. Commit changes.
   3. Update this plan with progress + next steps.
+- Make regular commits after each progress item, not just at phase boundaries.
 
 ## Testing Emphasis
 - Backend tests are the most important signal that the plan is progressing correctly.
@@ -108,10 +109,16 @@
 ## Status
 - Phase 1: Completed (models, permissions utility, migrations, backend tests)
 - Phase 2: Completed (API endpoints, serializers, and API tests)
-- Phase 3: In progress (initial folder-aware UI and activity assignment)
-- Phase 4: Not started
+- Phase 3: Completed (folder-aware UI, sharing, and accessibility improvements)
+- Phase 4: In progress (tests and docs updates)
 
 ## Progress Notes
 - Phase 1 delivered backend data models, permission resolution utility, migrations, and initial backend tests.
 - Phase 2 delivered folder/group/permission APIs, activity folder filtering, and API test coverage.
 - Phase 3 started with a folder list panel, activity filtering, and folder selection in activity forms.
+- Phase 3 added a nested folder tree with expand/collapse, breadcrumb navigation, and subfolder listings in the activities pane.
+- Phase 3 added folder rename/delete flows with confirmation and optional activity moves to Unfoldered.
+- Phase 3 added a sharing modal for folder permissions and group management.
+- Phase 3 added keyboard navigation (arrow keys + roving tabindex) for the folder tree.
+- Phase 3 added high-value frontend tests for folder navigation and sharing validation.
+- Phase 4 added frontend test tooling and updated frontend/agent documentation for test commands.
