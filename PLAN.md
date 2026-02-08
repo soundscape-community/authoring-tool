@@ -112,6 +112,13 @@
 - Phase 3: Completed (folder-aware UI, sharing, and accessibility improvements)
 - Phase 4: In progress (tests and docs updates)
 
+## Code Review Issues
+- Activities are filtered strictly by `author_id`, which prevents shared folder access from showing activities (fixed).
+- Folder updates allow cycles (self/descendant parents), which can corrupt the folder tree (fix in progress).
+- Debug logging remains in backend activity creation and frontend activity API calls (fix in progress).
+- Folder listing loads all folders and walks ancestry in Python; may need a recursive query for large trees (open).
+- Group membership roles are stored but not enforced anywhere (open).
+
 ## Progress Notes
 - Phase 1 delivered backend data models, permission resolution utility, migrations, and initial backend tests.
 - Phase 2 delivered folder/group/permission APIs, activity folder filtering, and API test coverage.
@@ -123,3 +130,4 @@
 - Phase 3 added high-value frontend tests for folder navigation and sharing validation.
 - Phase 4 added frontend test tooling and updated frontend/agent documentation for test commands.
 - Phase 4 updated activity authorization to honor folder permissions (with new backend tests).
+- Phase 4 added folder cycle validation, removed debug logging in APIs, and added backend tests for cycle prevention.
