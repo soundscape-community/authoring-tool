@@ -28,7 +28,7 @@ from .models import (
     WaypointGroupType,
     WaypointMedia,
 )
-from .permissions import resolve_folder_access
+from .permissions import get_accessible_folder_ids, resolve_folder_access
 from .serializers import (
     ActivityListSerializer,
     ActivityDetailSerializer,
@@ -53,17 +53,25 @@ class ActivityViewSet(ModelViewSet):
     queryset = Activity.objects.all()
 
     def get_queryset(self):
-        user_id = self.request.user.id
-        if user_id == None:
-            raise ValidationError('Missing user id')
-        queryset = Activity.objects.filter(author_id=user_id)
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return Activity.objects.none()
+
+        user_id = str(user.id)
         folder_id = self.request.query_params.get("folder_id")
+        accessible_folder_ids = get_accessible_folder_ids(user)
+        accessible_folder_ids_str = {str(folder_id) for folder_id in accessible_folder_ids}
+
         if folder_id:
             if folder_id == "none":
-                queryset = queryset.filter(folder__isnull=True)
-            else:
-                queryset = queryset.filter(folder_id=folder_id)
-        return queryset
+                return Activity.objects.filter(author_id=user_id, folder__isnull=True)
+            if folder_id in accessible_folder_ids_str:
+                return Activity.objects.filter(folder_id=folder_id)
+            return Activity.objects.none()
+
+        return Activity.objects.filter(
+            models.Q(author_id=user_id) | models.Q(folder_id__in=accessible_folder_ids)
+        ).distinct()
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -91,16 +99,27 @@ class ActivityViewSet(ModelViewSet):
 
     def perform_update(self, serializer):
         current_folder = serializer.instance.folder
-        folder = serializer.validated_data.get("folder")
-        if current_folder and folder != current_folder:
+        if current_folder:
             current_access = resolve_folder_access(self.request.user, current_folder)
             if not current_access.can_write:
-                raise ValidationError("No write access to current folder")
-        if folder:
+                raise ValidationError("No write access to folder")
+
+        folder = serializer.validated_data.get("folder")
+        if folder and folder != current_folder:
             access = resolve_folder_access(self.request.user, folder)
             if not access.can_write:
                 raise ValidationError("No write access to folder")
         serializer.save()
+
+    def perform_destroy(self, instance):
+        user = self.request.user
+        if instance.folder:
+            access = resolve_folder_access(user, instance.folder)
+            if not access.can_write:
+                raise ValidationError("No write access to folder")
+        elif not user or not user.is_authenticated or str(instance.author_id) != str(user.id):
+            raise ValidationError("No permission to delete activity")
+        instance.delete()
 
     @action(detail=True, methods=['POST'], name='Duplicate')
     def duplicate(self, request, pk=None):
@@ -270,47 +289,7 @@ class FolderViewSet(ModelViewSet):
         user = self.request.user
         if not user or not user.is_authenticated:
             return Folder.objects.none()
-
-        folders = list(Folder.objects.all().select_related("parent", "owner"))
-        if not folders:
-            return Folder.objects.none()
-
-        ancestor_map = {}
-        all_ancestor_ids = set()
-
-        for folder in folders:
-            ancestors = []
-            current = folder
-            depth = 0
-            seen_ids = set()
-            while current is not None and depth < 100:
-                if current.id in seen_ids:
-                    break
-                seen_ids.add(current.id)
-                ancestors.append(current.id)
-                current = current.parent
-                depth += 1
-            ancestor_map[folder.id] = ancestors
-            all_ancestor_ids.update(ancestors)
-
-        group_ids = list(GroupMembership.objects.filter(user_id=user.id).values_list("group_id", flat=True))
-        permissions = FolderPermission.objects.filter(folder_id__in=all_ancestor_ids).filter(
-            models.Q(principal_type=FolderPermission.PrincipalType.USER, user_id=user.id)
-            | models.Q(principal_type=FolderPermission.PrincipalType.GROUP, group_id__in=group_ids)
-        )
-        perm_map = {}
-        for permission in permissions:
-            perm_map.setdefault(permission.folder_id, []).append(permission)
-
-        accessible_ids = []
-        for folder in folders:
-            if folder.owner_id == user.id:
-                accessible_ids.append(folder.id)
-                continue
-            ancestors = ancestor_map.get(folder.id, [])
-            if any(ancestor_id in perm_map for ancestor_id in ancestors):
-                accessible_ids.append(folder.id)
-
+        accessible_ids = get_accessible_folder_ids(user)
         # Follow-up: replace ancestor traversal with a recursive CTE if needed for larger hierarchies.
         return Folder.objects.filter(id__in=accessible_ids)
 
