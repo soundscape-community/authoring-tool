@@ -122,3 +122,4 @@
 - Phase 3 added keyboard navigation (arrow keys + roving tabindex) for the folder tree.
 - Phase 3 added high-value frontend tests for folder navigation and sharing validation.
 - Phase 4 added frontend test tooling and updated frontend/agent documentation for test commands.
+- Phase 4 updated activity authorization to honor folder permissions (with new backend tests).
