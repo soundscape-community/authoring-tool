@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 import os
-import logging
 
 from django.http import HttpResponse
 from django.core.exceptions import ValidationError
@@ -80,8 +79,6 @@ class ActivityViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         # Make sure the user id is valid and append it to the activity
-        logging.info("hi")
-        print(logging.warning("hi"))
         user_id = self.request.user.id
         if user_id == None:
             raise ValidationError('Missing user id')
@@ -285,6 +282,23 @@ class FolderViewSet(ModelViewSet):
     queryset = Folder.objects.all()
     serializer_class = FolderSerializer
 
+    def _validate_parent(self, folder, parent):
+        if not parent:
+            return
+        if folder and parent.id == folder.id:
+            raise ValidationError("Folder cannot be its own parent")
+        current = parent
+        depth = 0
+        seen_ids = set()
+        while current is not None and depth < 100:
+            if current.id in seen_ids:
+                break
+            if folder and current.id == folder.id:
+                raise ValidationError("Folder cannot be moved under its descendant")
+            seen_ids.add(current.id)
+            current = current.parent
+            depth += 1
+
     def get_queryset(self):
         user = self.request.user
         if not user or not user.is_authenticated:
@@ -299,6 +313,7 @@ class FolderViewSet(ModelViewSet):
             access = resolve_folder_access(self.request.user, parent)
             if not access.can_write:
                 raise ValidationError("No write access to parent folder")
+        self._validate_parent(None, parent)
         serializer.save(owner=self.request.user)
 
     def perform_update(self, serializer):
@@ -307,6 +322,7 @@ class FolderViewSet(ModelViewSet):
             access = resolve_folder_access(self.request.user, parent)
             if not access.can_write:
                 raise ValidationError("No write access to parent folder")
+        self._validate_parent(serializer.instance, parent)
         access = resolve_folder_access(self.request.user, serializer.instance)
         if not access.can_write:
             raise ValidationError("No write access to folder")

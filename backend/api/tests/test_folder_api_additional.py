@@ -141,6 +141,23 @@ class FolderApiAdditionalTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_update_folder_rejects_cycles(self):
+        self.client.force_authenticate(user=self.owner)
+
+        response = self.client.patch(
+            f"/api/v1/folders/{self.root.id}/",
+            {"parent": str(self.child.id)},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.patch(
+            f"/api/v1/folders/{self.root.id}/",
+            {"parent": str(self.root.id)},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_activity_folder_filter(self):
         Activity.objects.create(
             author_id=str(self.owner.id),
