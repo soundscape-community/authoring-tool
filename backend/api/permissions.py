@@ -66,6 +66,14 @@ def resolve_folder_access(user, folder: Folder) -> FolderAccess:
     )
 
 
+def can_write_activity(user, activity) -> bool:
+    if not user or not user.is_authenticated:
+        return False
+    if activity.folder:
+        return resolve_folder_access(user, activity.folder).can_write
+    return str(activity.author_id) == str(user.id)
+
+
 def get_accessible_folder_ids(user, max_depth: int = 100) -> set:
     if not user or not user.is_authenticated:
         return set()

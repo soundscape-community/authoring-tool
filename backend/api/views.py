@@ -27,7 +27,7 @@ from .models import (
     WaypointGroupType,
     WaypointMedia,
 )
-from .permissions import get_accessible_folder_ids, resolve_folder_access
+from .permissions import can_write_activity, get_accessible_folder_ids, resolve_folder_access
 from .serializers import (
     ActivityListSerializer,
     ActivityDetailSerializer,
@@ -46,6 +46,15 @@ def gpx_response(content, filename):
     response = HttpResponse(content, content_type='application/gpx+xml')
     response['Content-Disposition'] = 'attachment; filename="{0}.gpx"'.format(filename)
     return response
+
+
+def get_accessible_activity_queryset(user):
+    if not user or not user.is_authenticated:
+        return Activity.objects.none()
+    accessible_folder_ids = get_accessible_folder_ids(user)
+    return Activity.objects.filter(
+        models.Q(author_id=str(user.id)) | models.Q(folder_id__in=accessible_folder_ids)
+    ).distinct()
 
 
 class ActivityViewSet(ModelViewSet):
@@ -68,9 +77,7 @@ class ActivityViewSet(ModelViewSet):
                 return Activity.objects.filter(folder_id=folder_id)
             return Activity.objects.none()
 
-        return Activity.objects.filter(
-            models.Q(author_id=user_id) | models.Q(folder_id__in=accessible_folder_ids)
-        ).distinct()
+        return get_accessible_activity_queryset(user)
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -120,7 +127,7 @@ class ActivityViewSet(ModelViewSet):
 
     @action(detail=True, methods=['POST'], name='Duplicate')
     def duplicate(self, request, pk=None):
-        activity = Activity.objects.get(id=pk)
+        activity = self.get_object()
         duplicated = duplicate_activity(activity)
 
         queryset = Activity.objects.get(id=duplicated.id)
@@ -129,7 +136,9 @@ class ActivityViewSet(ModelViewSet):
 
     @action(detail=True, methods=['POST'], name='Publish')
     def publish(self, request, pk=None):
-        activity: Activity = Activity.objects.get(id=pk)
+        activity: Activity = self.get_object()
+        if not can_write_activity(request.user, activity):
+            raise ValidationError("No write access to activity")
 
         content = activity_to_gpx(activity)
         content_bytes = bytes(content, 'utf-8')
@@ -147,7 +156,7 @@ class ActivityViewSet(ModelViewSet):
 
     @action(detail=True, methods=['GET'], name='Export GPX')
     def export_gpx(self, request, pk=None):
-        activity = Activity.objects.get(id=pk)
+        activity = self.get_object()
         content = activity_to_gpx(activity)
         return gpx_response(content, activity.name)
 
@@ -175,16 +184,42 @@ class WaypointGroupViewSet(ModelViewSet):
     queryset = WaypointGroup.objects.all()
     serializer_class = WaypointGroupSerializer
 
+    def get_queryset(self):
+        return WaypointGroup.objects.filter(activity__in=get_accessible_activity_queryset(self.request.user))
+
+    def perform_create(self, serializer):
+        activity = serializer.validated_data["activity"]
+        if not can_write_activity(self.request.user, activity):
+            raise ValidationError("No write access to activity")
+        serializer.save()
+
+    def perform_update(self, serializer):
+        if not can_write_activity(self.request.user, serializer.instance.activity):
+            raise ValidationError("No write access to activity")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if not can_write_activity(self.request.user, instance.activity):
+            raise ValidationError("No write access to activity")
+        instance.delete()
+
 
 class WaypointViewSet(ModelViewSet):
     queryset = Waypoint.objects.all()
     serializer_class = WaypointSerializer
+
+    def get_queryset(self):
+        return Waypoint.objects.filter(
+            group__activity__in=get_accessible_activity_queryset(self.request.user)
+        )
 
     # Lifecycle
 
     def perform_create(self, serializer):
         with transaction.atomic():
             group: WaypointGroup = serializer.validated_data['group']
+            if not can_write_activity(self.request.user, group.activity):
+                raise ValidationError("No write access to activity")
             if group.type == WaypointGroupType.ORDERED:
                 newWaypointIndex = group.newWaypointIndex
                 serializer.save(index=newWaypointIndex)
@@ -223,6 +258,8 @@ class WaypointViewSet(ModelViewSet):
     @transaction.atomic
     def perform_update(self, serializer):
         group = serializer.instance.group
+        if not can_write_activity(self.request.user, group.activity):
+            raise ValidationError("No write access to activity")
 
         if group.type == WaypointGroupType.UNORDERED:
             # No need to update index, save.
@@ -265,6 +302,8 @@ class WaypointViewSet(ModelViewSet):
 
     def perform_destroy(self, instance):
         group: WaypointGroup = instance.group
+        if not can_write_activity(self.request.user, group.activity):
+            raise ValidationError("No write access to activity")
         deleted_index = instance.index
 
         instance.delete()
@@ -276,6 +315,22 @@ class WaypointViewSet(ModelViewSet):
 class WaypointMediaViewSet(ModelViewSet):
     queryset = WaypointMedia.objects.all()
     serializer_class = WaypointMediaSerializer
+
+    def get_queryset(self):
+        return WaypointMedia.objects.filter(
+            waypoint__group__activity__in=get_accessible_activity_queryset(self.request.user)
+        )
+
+    def perform_update(self, serializer):
+        activity = serializer.instance.waypoint.group.activity
+        if not can_write_activity(self.request.user, activity):
+            raise ValidationError("No write access to activity")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if not can_write_activity(self.request.user, instance.waypoint.group.activity):
+            raise ValidationError("No write access to activity")
+        instance.delete()
 
 
 class FolderViewSet(ModelViewSet):
