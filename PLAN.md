@@ -138,3 +138,4 @@
 - Phase 4 granted staff read/write access to all activities (including unfoldered) and documented permission notes.
 - Phase 4 concluded with optional follow-ups: folder access query optimization via recursive CTE and any future role expansion.
 - Phase 4 added bulk activity selection with move/delete toolbar actions.
+- Phase 4 refined the folder tree root to display as "/" (unfoldered) and removed the all-activities entry.

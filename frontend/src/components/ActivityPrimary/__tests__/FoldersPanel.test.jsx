@@ -53,14 +53,14 @@ describe('FoldersPanel', () => {
       />,
     );
 
-    const allRow = screen.getByRole('treeitem', { name: 'All activities' });
-    const unfolderedRow = screen.getByRole('treeitem', { name: 'Unfoldered' });
+    const rootRow = screen.getByRole('treeitem', { name: '/' });
+    const rootFolderRow = screen.getByRole('treeitem', { name: 'Root' });
 
-    allRow.focus();
+    rootRow.focus();
     await act(async () => {
       await user.keyboard('{ArrowDown}');
     });
 
-    expect(document.activeElement).toBe(unfolderedRow);
+    expect(document.activeElement).toBe(rootFolderRow);
   });
 });

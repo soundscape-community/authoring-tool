@@ -266,10 +266,7 @@ export default class App extends React.Component {
       return;
     }
 
-    const parent =
-      this.state.selectedFolderId && this.state.selectedFolderId !== 'none'
-        ? this.state.selectedFolderId
-        : null;
+    const parent = this.state.selectedFolderId ? this.state.selectedFolderId : null;
 
     API.createFolder({ name: folderName, parent })
       .then(() => {
@@ -329,7 +326,7 @@ export default class App extends React.Component {
   }
 
   folderRenameModal() {
-    if (!this.state.selectedFolderId || this.state.selectedFolderId === 'none') {
+    if (!this.state.selectedFolderId) {
       return;
     }
 
@@ -337,7 +334,7 @@ export default class App extends React.Component {
   }
 
   folderDeleteModal() {
-    if (!this.state.selectedFolderId || this.state.selectedFolderId === 'none') {
+    if (!this.state.selectedFolderId) {
       return;
     }
 
@@ -345,7 +342,7 @@ export default class App extends React.Component {
   }
 
   folderShareModal() {
-    if (!this.state.selectedFolderId || this.state.selectedFolderId === 'none') {
+    if (!this.state.selectedFolderId) {
       return;
     }
 

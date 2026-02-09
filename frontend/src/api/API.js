@@ -61,7 +61,9 @@ class API {
 
   async getActivities(folderId = null) {
     const params = {};
-    if (folderId) {
+    if (folderId === null) {
+      params.folder_id = 'none';
+    } else if (folderId) {
       params.folder_id = folderId;
     }
     return axios.get('activities/', { params }).then((data) => {

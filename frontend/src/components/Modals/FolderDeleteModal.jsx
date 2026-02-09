@@ -46,11 +46,11 @@ export default function FolderDeleteModal(props) {
       </Modal.Header>
       <Modal.Body>
         <p>{`Are you sure you want to delete the folder named "${props.folder?.name}"?`}</p>
-        <p className="text-muted mb-3">This will delete any subfolders. Activities can be moved to Unfoldered.</p>
+        <p className="text-muted mb-3">This will delete any subfolders. Activities can be moved to /.</p>
         <Form.Check
           type="checkbox"
           id="folder-delete-move-activities"
-          label="Move activities to Unfoldered"
+          label="Move activities to /"
           checked={moveActivities}
           onChange={(event) => setMoveActivities(event.target.checked)}
         />

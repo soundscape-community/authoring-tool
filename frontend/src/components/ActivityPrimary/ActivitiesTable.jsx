@@ -121,10 +121,6 @@ function getFolderPath(foldersById, folderId) {
 }
 
 function getChildFolders(folders, parentId) {
-  if (parentId === 'none') {
-    return [];
-  }
-
   const normalizedParentId = parentId || null;
   return (folders || []).filter((folder) => (folder.parent || null) === normalizedParentId);
 }
@@ -134,7 +130,7 @@ export default function ActivitiesTable(props) {
   const selectedFolderId = props.selectedFolderId;
 
   const folderPath = React.useMemo(() => {
-    if (!selectedFolderId || selectedFolderId === 'none') {
+    if (!selectedFolderId) {
       return [];
     }
     return getFolderPath(foldersById, selectedFolderId);
@@ -144,19 +140,10 @@ export default function ActivitiesTable(props) {
     const items = [
       {
         id: null,
-        label: 'All activities',
+        label: '/',
         active: selectedFolderId === null,
       },
     ];
-
-    if (selectedFolderId === 'none') {
-      items.push({
-        id: 'none',
-        label: 'Unfoldered',
-        active: true,
-      });
-      return items;
-    }
 
     folderPath.forEach((folder, index) => {
       items.push({

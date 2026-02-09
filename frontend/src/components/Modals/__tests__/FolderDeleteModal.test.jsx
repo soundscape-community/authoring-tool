@@ -18,7 +18,7 @@ describe('FolderDeleteModal', () => {
       />,
     );
 
-    const checkbox = screen.getByLabelText('Move activities to Unfoldered');
+    const checkbox = screen.getByLabelText('Move activities to /');
     expect(checkbox).toBeChecked();
 
     await act(async () => {
