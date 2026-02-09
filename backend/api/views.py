@@ -418,15 +418,34 @@ class FolderPermissionViewSet(ModelViewSet):
         if user.is_staff:
             return FolderPermission.objects.all()
 
-        folders = Folder.objects.all().select_related("parent", "owner")
-        writable_ids = []
-        for folder in folders:
-            if folder.owner_id == user.id:
-                writable_ids.append(folder.id)
-                continue
-            access = resolve_folder_access(user, folder)
-            if access.can_write:
-                writable_ids.append(folder.id)
+        # Owned folders are always writable.
+        owned_ids = set(Folder.objects.filter(owner=user).values_list("id", flat=True))
+
+        # Folders with explicit WRITE permission for this user or their groups.
+        group_ids = list(GroupMembership.objects.filter(user_id=user.id).values_list("group_id", flat=True))
+        write_perm_folder_ids = set(
+            FolderPermission.objects.filter(
+                models.Q(principal_type=FolderPermission.PrincipalType.USER, user_id=user.id)
+                | models.Q(principal_type=FolderPermission.PrincipalType.GROUP, group_id__in=group_ids),
+                access=FolderPermission.Access.WRITE,
+            ).values_list("folder_id", flat=True)
+        )
+
+        writable_ids = owned_ids | write_perm_folder_ids
+
+        # Include descendants that inherit write access.
+        frontier = set(writable_ids)
+        while frontier:
+            child_ids = set(
+                Folder.objects.filter(parent_id__in=frontier)
+                .exclude(id__in=writable_ids)
+                .values_list("id", flat=True)
+            )
+            if not child_ids:
+                break
+            writable_ids |= child_ids
+            frontier = child_ids
+
         return FolderPermission.objects.filter(folder_id__in=writable_ids)
 
     def perform_create(self, serializer):
