@@ -112,7 +112,7 @@
 - Phase 1: Completed (models, permissions utility, migrations, backend tests)
 - Phase 2: Completed (API endpoints, serializers, and API tests)
 - Phase 3: Completed (folder-aware UI, sharing, and accessibility improvements)
-- Phase 4: In progress (tests and docs updates)
+- Phase 4: Completed (tests and docs updates; performance optimization and role expansion remain optional follow-ups)
 
 ## Code Review Issues
 - Activities are filtered strictly by `author_id`, which prevents shared folder access from showing activities (fixed).
@@ -136,3 +136,4 @@
 - Phase 4 hardened activity/waypoint access control (write checks + tests for waypoint creation).
 - Phase 4 enforced group admin role for membership management, granted staff global visibility, and made root folder names globally unique.
 - Phase 4 granted staff read/write access to all activities (including unfoldered) and documented permission notes.
+- Phase 4 concluded with optional follow-ups: folder access query optimization via recursive CTE and any future role expansion.
