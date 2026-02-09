@@ -116,8 +116,8 @@
 - Activities are filtered strictly by `author_id`, which prevents shared folder access from showing activities (fixed).
 - Folder updates allow cycles (self/descendant parents), which can corrupt the folder tree (fixed).
 - Debug logging remains in backend activity creation and frontend activity API calls (fixed).
-- Folder listing loads all folders and walks ancestry in Python; may need a recursive query for large trees (open).
-- Group membership roles are stored but not enforced anywhere (open).
+- Folder listing loads all folders and walks ancestry in Python; may need a recursive query for large trees (open; consider a recursive CTE when scale demands).
+- Group membership roles are stored but not enforced anywhere (fixed).
 
 ## Progress Notes
 - Phase 1 delivered backend data models, permission resolution utility, migrations, and initial backend tests.
@@ -132,3 +132,4 @@
 - Phase 4 updated activity authorization to honor folder permissions (with new backend tests).
 - Phase 4 added folder cycle validation, removed debug logging in APIs, and added backend tests for cycle prevention.
 - Phase 4 hardened activity/waypoint access control (write checks + tests for waypoint creation).
+- Phase 4 enforced group admin role for membership management, granted staff global visibility, and made root folder names globally unique.
