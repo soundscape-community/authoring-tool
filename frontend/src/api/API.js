@@ -187,6 +187,13 @@ class API {
     return axios.delete(`group_memberships/${membershipId}/`);
   }
 
+  // Users
+
+  async searchUsers(search = '') {
+    const params = search ? { search } : {};
+    return axios.get('users/', { params });
+  }
+
   // Waypoints
 
   async createWaypoint(waypoint) {

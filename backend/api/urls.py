@@ -10,6 +10,7 @@ from .views import (
     FolderViewSet,
     GroupMembershipViewSet,
     GroupViewSet,
+    UserViewSet,
     WaypointGroupViewSet,
     WaypointMediaViewSet,
     WaypointViewSet,
@@ -24,6 +25,7 @@ router.register(r'folders', FolderViewSet)
 router.register(r'folder_permissions', FolderPermissionViewSet)
 router.register(r'groups', GroupViewSet)
 router.register(r'group_memberships', GroupMembershipViewSet)
+router.register(r'users', UserViewSet)
 
 urlpatterns = [
     path('v1/', include(router.urls)),

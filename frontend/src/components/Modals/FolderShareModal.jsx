@@ -1,7 +1,7 @@
 // Copyright (c) Soundscape Community Contributors.
 // Licensed under the MIT License.
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
@@ -10,6 +10,7 @@ import Table from 'react-bootstrap/Table';
 import API from '../../api/API';
 import { showLoading, dismissLoading } from '../../utils/Toast';
 import ErrorAlert from '../Main/ErrorAlert';
+import UserPicker from '../Forms/UserPicker';
 
 const ACCESS_OPTIONS = [
   { value: 'read', label: 'Read' },
@@ -22,14 +23,18 @@ export default function FolderShareModal(props) {
   const [memberships, setMemberships] = useState([]);
   const [error, setError] = useState(null);
 
-  const [userIdInput, setUserIdInput] = useState('');
+  // Add user permission state
+  const [selectedUser, setSelectedUser] = useState(null);
   const [userAccess, setUserAccess] = useState('read');
+
+  // Add group permission state
   const [groupIdInput, setGroupIdInput] = useState('');
   const [groupAccess, setGroupAccess] = useState('read');
 
+  // Manage groups state
   const [newGroupName, setNewGroupName] = useState('');
   const [membershipGroupId, setMembershipGroupId] = useState('');
-  const [membershipUserId, setMembershipUserId] = useState('');
+  const [membershipUser, setMembershipUser] = useState(null);
   const [membershipRole, setMembershipRole] = useState('member');
 
   const groupsById = useMemo(() => {
@@ -45,7 +50,19 @@ export default function FolderShareModal(props) {
     return permissions.filter((permission) => permission.folder === props.folder.id);
   }, [permissions, props.folder]);
 
-  const loadSharingData = () => {
+  const resetFormState = useCallback(() => {
+    setSelectedUser(null);
+    setUserAccess('read');
+    setGroupIdInput('');
+    setGroupAccess('read');
+    setNewGroupName('');
+    setMembershipGroupId('');
+    setMembershipUser(null);
+    setMembershipRole('member');
+    setError(null);
+  }, []);
+
+  const loadSharingData = useCallback(() => {
     if (!props.folder) {
       return;
     }
@@ -57,27 +74,24 @@ export default function FolderShareModal(props) {
         setPermissions(permissionList || []);
         setGroups(groupList || []);
         setMemberships(membershipList || []);
-        if (!groupIdInput && groupList.length > 0) {
-          setGroupIdInput(groupList[0].id);
-        }
-        if (!membershipGroupId && groupList.length > 0) {
-          setMembershipGroupId(groupList[0].id);
-        }
       })
-      .catch((error) => {
-        setError(error);
+      .catch((err) => {
+        setError(err);
       })
       .finally(() => {
         dismissLoading(toastId);
       });
-  };
+  }, [props.folder]);
 
   useEffect(() => {
     if (props.show) {
-      setError(null);
+      resetFormState();
+      setPermissions([]);
+      setGroups([]);
+      setMemberships([]);
       loadSharingData();
     }
-  }, [props.show, props.folder]);
+  }, [props.show, props.folder, loadSharingData, resetFormState]);
 
   const updatePermission = (permission, access) => {
     const payload = {
@@ -89,15 +103,22 @@ export default function FolderShareModal(props) {
       access,
     };
 
-    return API.updateFolderPermission(payload).then((updated) => {
-      setPermissions((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
-    });
+    API.updateFolderPermission(payload)
+      .then((updated) => {
+        setPermissions((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+      })
+      .catch((err) => setError(err));
   };
 
   const deletePermission = (permission) => {
-    return API.deleteFolderPermission(permission.id).then(() => {
-      setPermissions((prev) => prev.filter((item) => item.id !== permission.id));
-    });
+    if (!window.confirm('Remove this permission?')) {
+      return;
+    }
+    API.deleteFolderPermission(permission.id)
+      .then(() => {
+        setPermissions((prev) => prev.filter((item) => item.id !== permission.id));
+      })
+      .catch((err) => setError(err));
   };
 
   const addUserPermission = () => {
@@ -105,25 +126,24 @@ export default function FolderShareModal(props) {
       return;
     }
 
-    const userId = userIdInput.trim();
-    if (!userId) {
-      setError({ message: 'User ID is required.' });
+    if (!selectedUser) {
+      setError({ message: 'Select a user.' });
       return;
     }
 
     const payload = {
       folder: props.folder.id,
       principal_type: 'user',
-      user: userId,
+      user: selectedUser.id,
       access: userAccess,
     };
 
     API.createFolderPermission(payload)
       .then((created) => {
         setPermissions((prev) => prev.concat(created));
-        setUserIdInput('');
+        setSelectedUser(null);
       })
-      .catch((error) => setError(error));
+      .catch((err) => setError(err));
   };
 
   const addGroupPermission = () => {
@@ -147,7 +167,7 @@ export default function FolderShareModal(props) {
       .then((created) => {
         setPermissions((prev) => prev.concat(created));
       })
-      .catch((error) => setError(error));
+      .catch((err) => setError(err));
   };
 
   const createGroup = () => {
@@ -161,36 +181,37 @@ export default function FolderShareModal(props) {
       .then((group) => {
         setGroups((prev) => prev.concat(group));
         setNewGroupName('');
-        setGroupIdInput(group.id);
-        setMembershipGroupId(group.id);
       })
-      .catch((error) => setError(error));
+      .catch((err) => setError(err));
   };
 
   const addMembership = () => {
-    if (!membershipGroupId || !membershipUserId.trim()) {
-      setError({ message: 'Group and user ID are required.' });
+    if (!membershipGroupId || !membershipUser) {
+      setError({ message: 'Group and user are required.' });
       return;
     }
 
     API.createGroupMembership({
       group: membershipGroupId,
-      user: membershipUserId.trim(),
+      user: membershipUser.id,
       role: membershipRole,
     })
       .then((membership) => {
         setMemberships((prev) => prev.concat(membership));
-        setMembershipUserId('');
+        setMembershipUser(null);
       })
-      .catch((error) => setError(error));
+      .catch((err) => setError(err));
   };
 
   const removeMembership = (membership) => {
+    if (!window.confirm('Remove this member?')) {
+      return;
+    }
     API.deleteGroupMembership(membership.id)
       .then(() => {
         setMemberships((prev) => prev.filter((item) => item.id !== membership.id));
       })
-      .catch((error) => setError(error));
+      .catch((err) => setError(err));
   };
 
   const membershipGroups = useMemo(() => {
@@ -203,6 +224,19 @@ export default function FolderShareModal(props) {
     });
     return grouped;
   }, [memberships]);
+
+  /** Display name for a permission row's principal. */
+  const principalLabel = (permission) => {
+    if (permission.principal_type === 'user') {
+      return permission.user_detail?.username || permission.user;
+    }
+    return permission.group_detail?.name || groupsById.get(permission.group)?.name || permission.group;
+  };
+
+  /** Display name for a membership's user. */
+  const memberLabel = (membership) => {
+    return membership.user_detail?.username || membership.user;
+  };
 
   return (
     <Modal
@@ -239,12 +273,12 @@ export default function FolderShareModal(props) {
                 ) : (
                   folderPermissions.map((permission) => (
                     <tr key={permission.id}>
+                      <td>{principalLabel(permission)}</td>
                       <td>
-                        {permission.principal_type === 'user'
-                          ? permission.user
-                          : groupsById.get(permission.group)?.name || permission.group}
+                        <span className={`badge ${permission.principal_type === 'user' ? 'bg-info' : 'bg-secondary'}`}>
+                          {permission.principal_type}
+                        </span>
                       </td>
-                      <td>{permission.principal_type}</td>
                       <td>
                         <Form.Select
                           size="sm"
@@ -277,11 +311,12 @@ export default function FolderShareModal(props) {
               <h6>Add user access</h6>
               <div className="d-flex align-items-end gap-2">
                 <Form.Group className="flex-grow-1" controlId="folder-permission-user">
-                  <Form.Label>User ID</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={userIdInput}
-                    onChange={(event) => setUserIdInput(event.target.value)}
+                  <Form.Label>User</Form.Label>
+                  <UserPicker
+                    id="folder-permission-user-picker"
+                    value={selectedUser}
+                    onChange={setSelectedUser}
+                    placeholder="Search by username..."
                   />
                 </Form.Group>
                 <Form.Group controlId="folder-permission-user-access">
@@ -294,7 +329,7 @@ export default function FolderShareModal(props) {
                     ))}
                   </Form.Select>
                 </Form.Group>
-                <Button variant="primary" onClick={addUserPermission}>
+                <Button variant="primary" onClick={addUserPermission} disabled={!selectedUser}>
                   Add
                 </Button>
               </div>
@@ -324,7 +359,7 @@ export default function FolderShareModal(props) {
                     ))}
                   </Form.Select>
                 </Form.Group>
-                <Button variant="primary" onClick={addGroupPermission}>
+                <Button variant="primary" onClick={addGroupPermission} disabled={!groupIdInput}>
                   Add
                 </Button>
               </div>
@@ -362,11 +397,12 @@ export default function FolderShareModal(props) {
                   </Form.Select>
                 </Form.Group>
                 <Form.Group className="flex-grow-1" controlId="folder-group-membership-user">
-                  <Form.Label>User ID</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={membershipUserId}
-                    onChange={(event) => setMembershipUserId(event.target.value)}
+                  <Form.Label>User</Form.Label>
+                  <UserPicker
+                    id="folder-membership-user-picker"
+                    value={membershipUser}
+                    onChange={setMembershipUser}
+                    placeholder="Search by username..."
                   />
                 </Form.Group>
                 <Form.Group controlId="folder-group-membership-role">
@@ -376,7 +412,7 @@ export default function FolderShareModal(props) {
                     <option value="admin">Admin</option>
                   </Form.Select>
                 </Form.Group>
-                <Button variant="outline-primary" onClick={addMembership}>
+                <Button variant="outline-primary" onClick={addMembership} disabled={!membershipGroupId || !membershipUser}>
                   Add member
                 </Button>
               </div>
@@ -399,7 +435,7 @@ export default function FolderShareModal(props) {
                           ) : (
                             (membershipGroups.get(group.id) || []).map((membership) => (
                               <div key={membership.id} className="d-flex align-items-center gap-2 mb-1">
-                                <span>{membership.user}</span>
+                                <span>{memberLabel(membership)}</span>
                                 <span className="text-muted">({membership.role})</span>
                                 <Button
                                   size="sm"

@@ -2,12 +2,15 @@
 # Licensed under the MIT License.
 # Copyright (c) Soundscape Community Contributors.
 
+from django.contrib.auth import get_user_model
+from django.db.models import Q as UserQ
 from django.http import HttpResponse
 from django.core.files.base import ContentFile
 from django.db import models, transaction
 from django.utils import timezone
 
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.mixins import ListModelMixin
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
@@ -32,6 +35,7 @@ from .serializers import (
     FolderSerializer,
     GroupMembershipSerializer,
     GroupSerializer,
+    UserSerializer,
     WaypointGroupSerializer,
     WaypointSerializer,
     WaypointMediaSerializer,
@@ -533,3 +537,28 @@ class GroupMembershipViewSet(ModelViewSet):
         if not can_manage_group(self.request.user, instance.group):
             raise ValidationError("No permission to manage group memberships")
         instance.delete()
+
+
+User = get_user_model()
+
+
+class UserViewSet(ListModelMixin, GenericViewSet):
+    """Read-only list of users with search support.
+
+    Returns ``{id, username}`` for all users.  Accepts an optional
+    ``?search=`` query parameter that filters by username (case-insensitive
+    substring match).  Results are capped at 25 rows.
+    """
+
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return User.objects.none()
+        qs = User.objects.order_by("username")
+        search = self.request.query_params.get("search", "").strip()
+        if search:
+            qs = qs.filter(UserQ(username__icontains=search))
+        return qs[:25]

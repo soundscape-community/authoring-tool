@@ -4,6 +4,8 @@
 
 from rest_framework import serializers
 
+from django.contrib.auth import get_user_model
+
 from .models import (
     Activity,
     Folder,
@@ -14,6 +16,8 @@ from .models import (
     Waypoint,
     WaypointMedia,
 )
+
+User = get_user_model()
 
 
 class WaypointMediaSerializer(serializers.ModelSerializer):
@@ -99,6 +103,19 @@ class FolderSerializer(serializers.ModelSerializer):
 
 
 class FolderPermissionSerializer(serializers.ModelSerializer):
+    user_detail = serializers.SerializerMethodField(read_only=True)
+    group_detail = serializers.SerializerMethodField(read_only=True)
+
+    def get_user_detail(self, obj):
+        if obj.user:
+            return {'id': obj.user.id, 'username': obj.user.username}
+        return None
+
+    def get_group_detail(self, obj):
+        if obj.group:
+            return {'id': obj.group.id, 'name': obj.group.name}
+        return None
+
     def validate(self, attrs):
         principal_type = attrs.get("principal_type")
         user = attrs.get("user")
@@ -130,7 +147,7 @@ class FolderPermissionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FolderPermission
-        fields = ['id', 'folder', 'principal_type', 'user', 'group', 'access', 'created', 'updated']
+        fields = ['id', 'folder', 'principal_type', 'user', 'group', 'access', 'created', 'updated', 'user_detail', 'group_detail']
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -142,6 +159,20 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class GroupMembershipSerializer(serializers.ModelSerializer):
+    user_detail = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = GroupMembership
-        fields = ['id', 'group', 'user', 'role', 'created', 'updated']
+        fields = ['id', 'group', 'user', 'role', 'created', 'updated', 'user_detail']
+
+    def get_user_detail(self, obj):
+        if obj.user:
+            return {'id': obj.user.id, 'username': obj.user.username}
+        return None
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
+        read_only_fields = ['id', 'username']
