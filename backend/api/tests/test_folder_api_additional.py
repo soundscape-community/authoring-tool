@@ -296,7 +296,7 @@ class GroupMembershipApiTests(APITestCase):
         self.group = Group.objects.create(name="Team", owner=self.owner)
         GroupMembership.objects.create(user=self.admin, group=self.group, role=GroupMembership.Role.ADMIN)
 
-    def test_group_list_only_owner(self):
+    def test_group_list_visible_to_admins(self):
         self.client.force_authenticate(user=self.member)
         response = self.client.get("/api/v1/groups/")
 
@@ -327,10 +327,12 @@ class GroupMembershipApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        self.client.force_authenticate(user=self.owner)
+        # Verify a non-manager cannot add a *different* user (tests authorization, not uniqueness).
+        other_user = self.User.objects.create_user(username="other", password="pass")
+        self.client.force_authenticate(user=self.member)
         response = self.client.post(
             "/api/v1/group_memberships/",
-            {"group": str(self.group.id), "user": str(self.member.id), "role": "member"},
+            {"group": str(self.group.id), "user": str(other_user.id), "role": "member"},
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
