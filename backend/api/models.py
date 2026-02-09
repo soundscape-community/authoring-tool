@@ -112,19 +112,13 @@ class Activity(CommonModel):
     def __str__(self):
         return self.name
 
-    @receiver(pre_save)
+    @receiver(pre_save, sender='api.Activity')
     def checker(sender, instance, raw, using, update_fields, *args, **kwargs):
-        if isinstance(instance, Activity) == False:
-            return
-
         if update_fields is None or 'unpublished_changes' not in update_fields:
             instance.unpublished_changes = True
 
-    @receiver(post_delete)
+    @receiver(post_delete, sender='api.Activity')
     def delete_file(sender, instance, **kwargs):
-        if isinstance(instance, Activity) == False:
-            return
-
         instance.deletePublishedFile()
         instance.deleteFeaturedImageFile()
         instance.deleteWaypointsMediaDirectory()
@@ -168,7 +162,6 @@ class Activity(CommonModel):
     def child_entity_did_update(self):
         self.unpublished_changes = True
         self.save()
-        pass
 
     def storePublishedFile(self, content):
         self.deletePublishedFile()
@@ -202,11 +195,8 @@ class WaypointGroup(CommonModel):
     def __str__(self):
         return '{0} ({1})'.format(self.name, self.activity.name)
 
-    @receiver(pre_save)
+    @receiver(pre_save, sender='api.WaypointGroup')
     def checker(sender, instance, raw, using, update_fields, *args, **kwargs):
-        if isinstance(instance, WaypointGroup) == False:
-            return
-
         instance.activity.child_entity_did_update()
 
     @property
@@ -247,11 +237,8 @@ class Waypoint(CommonModel):
     def __str__(self):
         return '{0}. {1} ({2},{3})'.format(self.index, self.name, self.latitude, self.longitude)
 
-    @receiver(pre_save)
+    @receiver(pre_save, sender='api.Waypoint')
     def checker(sender, instance, raw, using, update_fields, *args, **kwargs):
-        if isinstance(instance, Waypoint) == False:
-            return
-
         activity = instance.group.activity
         activity.child_entity_did_update()
 
@@ -283,19 +270,13 @@ class WaypointMedia(CommonModel):
     class Meta:
         ordering = ['index']
 
-    @receiver(pre_save)
+    @receiver(pre_save, sender='api.WaypointMedia')
     def checker(sender, instance, raw, using, update_fields, *args, **kwargs):
-        if isinstance(instance, WaypointMedia) == False:
-            return
-
         activity = instance.waypoint.group.activity
         activity.child_entity_did_update()
 
-    @receiver(post_delete)
+    @receiver(post_delete, sender='api.WaypointMedia')
     def delete_file(sender, instance, **kwargs):
-        if isinstance(instance, WaypointMedia) == False:
-            return
-
         instance.delete_media_file()
 
     @property
