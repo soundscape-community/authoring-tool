@@ -43,6 +43,15 @@ from .serializers import (
 from .model_utils import duplicate_activity, shift_waypoints_after_delete
 from .gpx_utils import activity_to_gpx, gpx_to_activity
 
+
+class ActivityWritePermissionMixin:
+    """Shared helper that raises ValidationError when the user lacks write access."""
+
+    def _check_activity_write_permission(self, activity):
+        if not can_write_activity(self.request.user, activity):
+            raise ValidationError("No write access to activity")
+
+
 def gpx_response(content, filename):
     response = HttpResponse(content, content_type='application/gpx+xml')
     response['Content-Disposition'] = 'attachment; filename="{0}.gpx"'.format(filename)
@@ -185,7 +194,7 @@ class ActivityViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-class WaypointGroupViewSet(ModelViewSet):
+class WaypointGroupViewSet(ActivityWritePermissionMixin, ModelViewSet):
     queryset = WaypointGroup.objects.all()
     serializer_class = WaypointGroupSerializer
 
@@ -193,23 +202,19 @@ class WaypointGroupViewSet(ModelViewSet):
         return WaypointGroup.objects.filter(activity__in=get_accessible_activity_queryset(self.request.user))
 
     def perform_create(self, serializer):
-        activity = serializer.validated_data["activity"]
-        if not can_write_activity(self.request.user, activity):
-            raise ValidationError("No write access to activity")
+        self._check_activity_write_permission(serializer.validated_data["activity"])
         serializer.save()
 
     def perform_update(self, serializer):
-        if not can_write_activity(self.request.user, serializer.instance.activity):
-            raise ValidationError("No write access to activity")
+        self._check_activity_write_permission(serializer.instance.activity)
         serializer.save()
 
     def perform_destroy(self, instance):
-        if not can_write_activity(self.request.user, instance.activity):
-            raise ValidationError("No write access to activity")
+        self._check_activity_write_permission(instance.activity)
         instance.delete()
 
 
-class WaypointViewSet(ModelViewSet):
+class WaypointViewSet(ActivityWritePermissionMixin, ModelViewSet):
     queryset = Waypoint.objects.all()
     serializer_class = WaypointSerializer
 
@@ -223,8 +228,7 @@ class WaypointViewSet(ModelViewSet):
     def perform_create(self, serializer):
         with transaction.atomic():
             group: WaypointGroup = serializer.validated_data['group']
-            if not can_write_activity(self.request.user, group.activity):
-                raise ValidationError("No write access to activity")
+            self._check_activity_write_permission(group.activity)
             if group.type == WaypointGroupType.ORDERED:
                 newWaypointIndex = group.newWaypointIndex
                 serializer.save(index=newWaypointIndex)
@@ -263,8 +267,7 @@ class WaypointViewSet(ModelViewSet):
     @transaction.atomic
     def perform_update(self, serializer):
         group = serializer.instance.group
-        if not can_write_activity(self.request.user, group.activity):
-            raise ValidationError("No write access to activity")
+        self._check_activity_write_permission(group.activity)
 
         if group.type == WaypointGroupType.UNORDERED:
             # No need to update index, save.
@@ -282,10 +285,10 @@ class WaypointViewSet(ModelViewSet):
             return
 
         if updated_index < 0:
-            raise APIException("Waypoint index cannot be lower than 0")
+            raise ValidationError("Waypoint index cannot be lower than 0")
 
         if abs(current_index - updated_index) != 1:
-            raise APIException("At the moment a waypoint index can only be increased or decreased by 1")
+            raise ValidationError("At the moment a waypoint index can only be increased or decreased by 1")
 
         other_waypoint = Waypoint.objects.get(group=group, index=updated_index)
 
@@ -307,8 +310,7 @@ class WaypointViewSet(ModelViewSet):
 
     def perform_destroy(self, instance):
         group: WaypointGroup = instance.group
-        if not can_write_activity(self.request.user, group.activity):
-            raise ValidationError("No write access to activity")
+        self._check_activity_write_permission(group.activity)
         deleted_index = instance.index
 
         instance.delete()
@@ -317,7 +319,7 @@ class WaypointViewSet(ModelViewSet):
             shift_waypoints_after_delete(group, deleted_index)
 
 
-class WaypointMediaViewSet(ModelViewSet):
+class WaypointMediaViewSet(ActivityWritePermissionMixin, ModelViewSet):
     queryset = WaypointMedia.objects.all()
     serializer_class = WaypointMediaSerializer
 
@@ -334,19 +336,15 @@ class WaypointMediaViewSet(ModelViewSet):
             waypoint = Waypoint.objects.get(pk=waypoint_id)
         except Waypoint.DoesNotExist:
             raise ValidationError("Waypoint not found")
-        if not can_write_activity(self.request.user, waypoint.group.activity):
-            raise ValidationError("No write access to activity")
+        self._check_activity_write_permission(waypoint.group.activity)
         serializer.save(waypoint=waypoint)
 
     def perform_update(self, serializer):
-        activity = serializer.instance.waypoint.group.activity
-        if not can_write_activity(self.request.user, activity):
-            raise ValidationError("No write access to activity")
+        self._check_activity_write_permission(serializer.instance.waypoint.group.activity)
         serializer.save()
 
     def perform_destroy(self, instance):
-        if not can_write_activity(self.request.user, instance.waypoint.group.activity):
-            raise ValidationError("No write access to activity")
+        self._check_activity_write_permission(instance.waypoint.group.activity)
         instance.delete()
 
 
@@ -434,21 +432,21 @@ class FolderPermissionViewSet(ModelViewSet):
     def perform_create(self, serializer):
         folder = serializer.validated_data["folder"]
         access = resolve_folder_access(self.request.user, folder)
-        if not access.can_write and folder.owner_id != self.request.user.id:
+        if not access.can_write:
             raise ValidationError("No permission to modify folder sharing")
         serializer.save()
 
     def perform_update(self, serializer):
         folder = serializer.instance.folder
         access = resolve_folder_access(self.request.user, folder)
-        if not access.can_write and folder.owner_id != self.request.user.id:
+        if not access.can_write:
             raise ValidationError("No permission to modify folder sharing")
         serializer.save()
 
     def perform_destroy(self, instance):
         folder = instance.folder
         access = resolve_folder_access(self.request.user, folder)
-        if not access.can_write and folder.owner_id != self.request.user.id:
+        if not access.can_write:
             raise ValidationError("No permission to modify folder sharing")
         instance.delete()
 
