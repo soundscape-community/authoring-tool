@@ -36,7 +36,7 @@ WORKDIR /app
 ENV PYTHONPATH=/app
 ENV VIRTUAL_ENV=/app/.venv
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
-ENV DJANGO_SETTINGS_MODULE=backend.settings.local
+ENV DJANGO_SETTINGS_MODULE=backend.settings.production
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 CMD ["gunicorn", "backend.wsgi:application", "--bind", "0.0.0.0:8000"]
