@@ -27,11 +27,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # This value is the key to securing signed data.
 # SECURITY WARNING: keep the secret key used in production secret!
-# default to insecure secret key for local development
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-i45(4w6er1sabytg45#mai((%ea_36ojfr_ms3k6jin!+ikor')
+# No fallback here — each environment settings file must supply a key.
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Configure the allowed domain names using the environment variable (seperated by ',')
 ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(',') if 'ALLOWED_HOSTS' in os.environ else []
@@ -42,9 +42,8 @@ if 'WEBSITE_HOSTNAME' in os.environ:
     ALLOWED_HOSTS.append(os.environ['WEBSITE_HOSTNAME'])
 
 # Configure admins for getting notified of errors
-ADMINS = [('NAME', 'EMAIL')]
-# SERVER_EMAIL = 'django@author.yourdomain.com'
-SERVER_EMAIL = 'soundscape.buddhism103@passinbox.com'
+ADMINS = []
+SERVER_EMAIL = os.getenv('SERVER_EMAIL', 'root@localhost')
 
 # Application definition
 

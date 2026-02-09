@@ -3,7 +3,16 @@
 # Copyright (c) Soundscape Community Contributors.
 
 import os
+
+from django.core.exceptions import ImproperlyConfigured
+
 from .base import *
+
+if not SECRET_KEY:
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY environment variable is required in production. "
+        "Set it to a unique, unpredictable value."
+    )
 
 DEBUG = False
 

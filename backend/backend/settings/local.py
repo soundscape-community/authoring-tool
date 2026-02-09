@@ -5,6 +5,13 @@
 import os
 from .base import *
 
+# Allow running locally without DJANGO_SECRET_KEY pre-set in the environment.
+# base.py requires DJANGO_SECRET_KEY; local.py overrides with a dev-only key.
+SECRET_KEY = os.getenv(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-local-dev-key-do-not-use-in-production',
+)
+
 DEBUG = True
 
 DATABASES = {
