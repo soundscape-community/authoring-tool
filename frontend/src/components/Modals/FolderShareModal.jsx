@@ -310,7 +310,7 @@ export default function FolderShareModal(props) {
             <div className="border-top pt-3">
               <h6>Add user access</h6>
               <div className="d-flex align-items-end gap-2">
-                <Form.Group className="flex-grow-1" controlId="folder-permission-user">
+                <Form.Group className="flex-grow-1">
                   <Form.Label>User</Form.Label>
                   <UserPicker
                     id="folder-permission-user-picker"
@@ -396,7 +396,7 @@ export default function FolderShareModal(props) {
                     ))}
                   </Form.Select>
                 </Form.Group>
-                <Form.Group className="flex-grow-1" controlId="folder-group-membership-user">
+                <Form.Group className="flex-grow-1">
                   <Form.Label>User</Form.Label>
                   <UserPicker
                     id="folder-membership-user-picker"

@@ -1,139 +1,77 @@
 // Copyright (c) Soundscape Community Contributors.
 // Licensed under the MIT License.
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import Form from 'react-bootstrap/Form';
-import ListGroup from 'react-bootstrap/ListGroup';
+import React, { useCallback, useRef, useState } from 'react';
+import { AsyncTypeahead } from 'react-bootstrap-typeahead';
+
+import 'react-bootstrap-typeahead/css/Typeahead.css';
+import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
 
 import API from '../../api/API';
 
 /**
- * Typeahead user picker.  Searches users by username as the user types (with
- * debounce) and shows a dropdown of matching results.
+ * Accessible user picker backed by react-bootstrap-typeahead's AsyncTypeahead.
+ *
+ * Provides WAI-ARIA combobox semantics including screen reader announcements,
+ * arrow-key navigation, and typeahead hinting out of the box.
  *
  * Props:
  *  - value       {Object|null}  Selected user object ({id, username}) or null
  *  - onChange    {Function}      Called with user object on selection, or null on clear
  *  - placeholder {string}        Input placeholder text
- *  - id          {string}        HTML id for the input
+ *  - id          {string}        Required HTML id for a11y (aria-labelledby)
  *  - disabled    {boolean}
  */
 export default function UserPicker({ value, onChange, placeholder = 'Search users...', id, disabled }) {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const debounceRef = useRef(null);
-  const containerRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [options, setOptions] = useState([]);
+  const typeaheadRef = useRef(null);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const search = useCallback((searchQuery) => {
-    if (!searchQuery || searchQuery.length < 1) {
-      setResults([]);
-      setOpen(false);
-      return;
-    }
-    setLoading(true);
-    API.searchUsers(searchQuery)
+  const handleSearch = useCallback((query) => {
+    setIsLoading(true);
+    API.searchUsers(query)
       .then((users) => {
-        setResults(users || []);
-        setOpen(true);
+        setOptions(users || []);
       })
       .catch(() => {
-        setResults([]);
+        setOptions([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
-  const handleInputChange = (event) => {
-    const val = event.target.value;
-    setQuery(val);
-
-    // If user clears the field while a value was selected, clear the selection
-    if (value && val !== value.username) {
-      onChange(null);
-    }
-
-    // Debounce search
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-    debounceRef.current = setTimeout(() => search(val.trim()), 250);
-  };
-
-  const handleSelect = (user) => {
-    setQuery(user.username);
-    setOpen(false);
-    setResults([]);
-    onChange(user);
-  };
-
-  const handleFocus = () => {
-    // Re-open results if we have them and no selection
-    if (results.length > 0 && !value) {
-      setOpen(true);
-    }
-  };
-
-  // When value is cleared externally, reset the input
-  useEffect(() => {
-    if (!value) {
-      setQuery('');
-    }
-  }, [value]);
+  const handleChange = useCallback(
+    (selected) => {
+      if (selected.length > 0) {
+        onChange(selected[0]);
+      } else {
+        onChange(null);
+      }
+    },
+    [onChange],
+  );
 
   return (
-    <div ref={containerRef} className="position-relative">
-      <Form.Control
-        id={id}
-        type="text"
-        value={query}
-        onChange={handleInputChange}
-        onFocus={handleFocus}
-        placeholder={placeholder}
-        disabled={disabled}
-        autoComplete="off"
-      />
-      {open && results.length > 0 && (
-        <ListGroup
-          className="position-absolute w-100 shadow-sm"
-          style={{ zIndex: 1050, maxHeight: '200px', overflowY: 'auto' }}
-        >
-          {results.map((user) => (
-            <ListGroup.Item
-              key={user.id}
-              action
-              onClick={() => handleSelect(user)}
-              active={value && value.id === user.id}
-            >
-              {user.username}
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
-      )}
-      {open && !loading && results.length === 0 && query.length >= 1 && (
-        <ListGroup
-          className="position-absolute w-100 shadow-sm"
-          style={{ zIndex: 1050 }}
-        >
-          <ListGroup.Item className="text-muted">No users found</ListGroup.Item>
-        </ListGroup>
-      )}
-      {loading && (
-        <div className="position-absolute end-0 top-50 translate-middle-y pe-3" style={{ zIndex: 1051 }}>
-          <span className="spinner-border spinner-border-sm text-secondary" role="status" />
-        </div>
-      )}
-    </div>
+    <AsyncTypeahead
+      ref={typeaheadRef}
+      id={id}
+      isLoading={isLoading}
+      labelKey="username"
+      minLength={1}
+      onSearch={handleSearch}
+      onChange={handleChange}
+      options={options}
+      placeholder={placeholder}
+      selected={value ? [value] : []}
+      disabled={disabled}
+      clearButton
+      delay={250}
+      promptText="Type to search..."
+      searchText="Searching..."
+      emptyLabel="No users found"
+      useCache={false}
+    />
   );
 }
+
