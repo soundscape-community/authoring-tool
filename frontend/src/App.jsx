@@ -9,6 +9,7 @@ import { animateScroll } from 'react-scroll';
 import API from './api/API';
 import Auth from './api/Auth';
 import { showError, showLoading, dismissLoading } from './utils/Toast';
+import { buildFolderIndex, getDescendantIds } from './utils/folderIndex';
 import NavigationBar from './components/Main/NavigationBar';
 import Footer from './components/Main/Footer';
 import ActivityTable from './components/ActivityPrimary/ActivityTable';
@@ -185,14 +186,34 @@ export default class App extends React.Component {
     animateScroll.scrollToTop({ containerId: 'primary' });
   }
 
+  /**
+   * Reload the currently selected activity from the API.
+   * @param {Object} [stateOverrides] - Extra state merged into the setState call.
+   * @param {Function} [callback] - Optional callback passed to setState.
+   */
+  reloadSelectedActivity(stateOverrides = {}, callback = undefined) {
+    const { selectedActivity } = this.state;
+    const toastId = showLoading('Loading activity...');
+
+    API.getActivity(selectedActivity.id)
+      .then((activity) => {
+        this.setState({ selectedActivity: activity, ...stateOverrides }, callback);
+      })
+      .catch((error) => {
+        error.title = 'Error loading activity';
+        showError(error);
+      })
+      .finally(() => {
+        dismissLoading(toastId);
+      });
+  }
+
   ///////////////////////////////////////////////////////////
   // User
   ///////////////////////////////////////////////////////////
 
   setUser(user) {
-    console.log('setUser', user);
     this.setState({ user });
-    console.log('setUser', this.state.user);
   }
 
   async authenticate() {
@@ -283,29 +304,8 @@ export default class App extends React.Component {
   }
 
   getDescendantFolderIds(rootId) {
-    const childrenMap = new Map();
-    this.state.folders.forEach((folder) => {
-      const parentId = folder.parent || null;
-      if (!childrenMap.has(parentId)) {
-        childrenMap.set(parentId, []);
-      }
-      childrenMap.get(parentId).push(folder.id);
-    });
-
-    const ids = new Set();
-    const queue = [rootId];
-
-    while (queue.length > 0) {
-      const currentId = queue.shift();
-      if (!currentId || ids.has(currentId)) {
-        continue;
-      }
-      ids.add(currentId);
-      const children = childrenMap.get(currentId) || [];
-      children.forEach((childId) => queue.push(childId));
-    }
-
-    return Array.from(ids);
+    const { byParent } = buildFolderIndex(this.state.folders);
+    return Array.from(getDescendantIds(byParent, rootId));
   }
 
   buildActivityFolderUpdatePayload(activity, folderId) {
@@ -596,26 +596,7 @@ export default class App extends React.Component {
       showModalWaypointCreate: false,
     });
 
-    const { selectedActivity } = this.state;
-
-    const toastId = showLoading('Loading activity...');
-
-    API.getActivity(selectedActivity.id)
-      .then((activity) => {
-        this.setState(
-          {
-            selectedActivity: activity,
-          },
-          this.scrollToBottom,
-        );
-      })
-      .catch((error) => {
-        error.title = 'Error loading activity';
-        showError(error);
-      })
-      .finally(() => {
-        dismissLoading(toastId);
-      });
+    this.reloadSelectedActivity({}, this.scrollToBottom);
   }
 
   waypointUpdateModal(waypoint) {
@@ -630,23 +611,7 @@ export default class App extends React.Component {
       showModalWaypointUpdate: false,
     });
 
-    const { selectedActivity } = this.state;
-
-    const toastId = showLoading('Loading activity...');
-
-    API.getActivity(selectedActivity.id)
-      .then((activity) => {
-        this.setState({
-          selectedActivity: activity,
-        });
-      })
-      .catch((error) => {
-        error.title = 'Error loading activity';
-        showError(error);
-      })
-      .finally(() => {
-        dismissLoading(toastId);
-      });
+    this.reloadSelectedActivity();
   }
 
   waypointMovedUp = (waypoint) => {
@@ -664,18 +629,8 @@ export default class App extends React.Component {
     const toastId = showLoading('Updating waypoint...');
 
     API.updateWaypoint(updated)
-      .then((waypoint) => {
-        const { selectedActivity } = this.state;
-        API.getActivity(selectedActivity.id)
-          .then((activity) => {
-            this.setState({
-              selectedActivity: activity,
-            });
-          })
-          .catch((error) => {
-            error.title = 'Error loading activity';
-            showError(error);
-          });
+      .then(() => {
+        this.reloadSelectedActivity();
       })
       .catch((error) => {
         error.title = 'Error updating waypoint index';
@@ -698,24 +653,7 @@ export default class App extends React.Component {
       showModalWaypointDelete: false,
     });
 
-    const { selectedActivity } = this.state;
-
-    const toastId = showLoading('Deleting waypoint...');
-
-    API.getActivity(selectedActivity.id)
-      .then((activity) => {
-        this.setState({
-          selectedWaypoint: null,
-          selectedActivity: activity,
-        });
-      })
-      .catch((error) => {
-        error.title = 'Error loading activity';
-        showError(error);
-      })
-      .finally(() => {
-        dismissLoading(toastId);
-      });
+    this.reloadSelectedActivity({ selectedWaypoint: null });
   }
 
   mapOverlayUpdated = (mapOverlay) => {

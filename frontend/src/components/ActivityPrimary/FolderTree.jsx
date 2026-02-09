@@ -4,6 +4,7 @@
 import React from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { ChevronDown, ChevronRight, Folder as FolderIcon, Inbox } from 'react-feather';
+import { buildFolderIndex } from '../../utils/folderIndex';
 
 function FolderRow({
   active,
@@ -71,23 +72,10 @@ export default function FolderTree({
   className,
   variant = 'flush',
 }) {
-  const foldersById = React.useMemo(() => {
-    const map = new Map();
-    (folders || []).forEach((folder) => map.set(folder.id, folder));
-    return map;
-  }, [folders]);
-
-  const foldersByParent = React.useMemo(() => {
-    const map = new Map();
-    (folders || []).forEach((folder) => {
-      const parentId = folder.parent || null;
-      if (!map.has(parentId)) {
-        map.set(parentId, []);
-      }
-      map.get(parentId).push(folder);
-    });
-    map.forEach((value) => value.sort((a, b) => a.name.localeCompare(b.name)));
-    return map;
+  const { byId: foldersById, byParent: foldersByParent } = React.useMemo(() => {
+    const index = buildFolderIndex(folders);
+    index.byParent.forEach((value) => value.sort((a, b) => a.name.localeCompare(b.name)));
+    return index;
   }, [folders]);
 
   const [expandedIds, setExpandedIds] = React.useState(() => new Set());

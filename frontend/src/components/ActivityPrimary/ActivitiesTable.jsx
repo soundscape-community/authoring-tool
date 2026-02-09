@@ -11,6 +11,7 @@ import TableHeader from '../Table/TableHeader';
 import TableRow from '../Table/TableRow';
 import TableRowEmpty from '../Table/TableRowEmpty';
 import FoldersPanel from './FoldersPanel';
+import { buildFolderIndex } from '../../utils/folderIndex';
 
 function ActivityRow({ activity, selected, onClick, onToggle }) {
   return (
@@ -101,12 +102,6 @@ function BulkToolbar({
   );
 }
 
-function buildFolderIndex(folders) {
-  const map = new Map();
-  (folders || []).forEach((folder) => map.set(folder.id, folder));
-  return map;
-}
-
 function getFolderPath(foldersById, folderId) {
   const path = [];
   let currentId = folderId;
@@ -126,7 +121,7 @@ function getChildFolders(folders, parentId) {
 }
 
 export default function ActivitiesTable(props) {
-  const foldersById = React.useMemo(() => buildFolderIndex(props.folders), [props.folders]);
+  const foldersById = React.useMemo(() => buildFolderIndex(props.folders).byId, [props.folders]);
   const selectedFolderId = props.selectedFolderId;
 
   const folderPath = React.useMemo(() => {

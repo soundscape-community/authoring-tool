@@ -1,17 +1,10 @@
 // Copyright (c) Soundscape Community Contributors.
 // Licensed under the MIT License.
 
+import { buildFolderIndex } from './folderIndex';
+
 export function buildFolderOptions(folders) {
-  const foldersByParent = new Map();
-
-  (folders || []).forEach((folder) => {
-    const parentId = folder.parent || null;
-    if (!foldersByParent.has(parentId)) {
-      foldersByParent.set(parentId, []);
-    }
-    foldersByParent.get(parentId).push(folder);
-  });
-
+  const { byParent: foldersByParent } = buildFolderIndex(folders);
   foldersByParent.forEach((items) => items.sort((a, b) => a.name.localeCompare(b.name)));
 
   const results = [];

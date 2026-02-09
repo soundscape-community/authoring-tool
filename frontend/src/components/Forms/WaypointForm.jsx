@@ -89,8 +89,7 @@ export default class WaypointForm extends React.Component {
       waypointType: props.waypointType ?? props.waypoint.type,
     };
 
-    this.ImageDropzoneContent = this.ImageDropzoneContent.bind(this);
-    this.AudioDropzoneContent = this.AudioDropzoneContent.bind(this);
+    this.MediaDropzoneContent = this.MediaDropzoneContent.bind(this);
   }
 
   onSubmit = (values, { setSubmitting }) => {
@@ -131,30 +130,8 @@ export default class WaypointForm extends React.Component {
     return images >= MAX_MEDIA_FILES;
   }
 
-  ImageDropzoneContent({ isDragActive, isDragReject, values }) {
-    if (this.shouldDisableImageInput(values)) {
-      return (
-        <Alert className="mt-3" variant="secondary">
-          Max number of files reached
-        </Alert>
-      );
-    } else if (!isDragActive) {
-      return <p className="mt-3">Drag or click to select files</p>;
-    } else if (isDragActive && !isDragReject) {
-      return <p className="mt-3">Drop files</p>;
-    } else if (isDragActive && isDragReject) {
-      return (
-        <Alert className="mt-3" variant="warning">
-          Unsupported file type or too many files
-        </Alert>
-      );
-    }
-
-    return <></>;
-  }
-
-  AudioDropzoneContent({ isDragActive, isDragReject, values }) {
-    if (this.shouldDisableAudioInput(values)) {
+  MediaDropzoneContent({ isDragActive, isDragReject, disabled }) {
+    if (disabled) {
       return (
         <Alert className="mt-3" variant="secondary">
           Max number of files reached
@@ -380,10 +357,10 @@ export default class WaypointForm extends React.Component {
                                   className: `dropzone ${additionalClass}`,
                                 })}>
                                 <input {...getInputProps()} />
-                                <this.ImageDropzoneContent
+                                <this.MediaDropzoneContent
                                   isDragActive={isDragActive}
                                   isDragReject={isDragReject}
-                                  values={values}
+                                  disabled={this.shouldDisableImageInput(values)}
                                 />
                               </div>
                             </Container>
@@ -505,10 +482,10 @@ export default class WaypointForm extends React.Component {
                                   className: `dropzone ${additionalClass}`,
                                 })}>
                                 <input {...getInputProps()} />
-                                <this.AudioDropzoneContent
+                                <this.MediaDropzoneContent
                                   isDragActive={isDragActive}
                                   isDragReject={isDragReject}
-                                  values={values}
+                                  disabled={this.shouldDisableAudioInput(values)}
                                 />
                               </div>
                             </Container>

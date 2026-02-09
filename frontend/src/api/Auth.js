@@ -3,14 +3,11 @@
 // Copyright (c) Soundscape Community Contributors.
 
 import Axios from 'axios';
+import axiosDefaults from './axiosDefaults';
 
 const axios = Axios.create({
+  ...axiosDefaults,
   baseURL: '/dj-rest-auth/',
-  headers: {
-    'content-type': 'application/json',
-  },
-  xsrfCookieName: 'csrftoken',
-  xsrfHeaderName: 'X-CSRFToken'
 });
 
 class Auth {
@@ -18,7 +15,6 @@ class Auth {
     this.authResponse = null;
     this.userEmail = null;
     this.userName = null;
-    this.idToken = null;
   }
 
   get isAuthenticated() {
@@ -57,11 +53,6 @@ class Auth {
     let res = await axios.post('login/', { username, password });
     res = res.data;
 
-//    if (!res.key) {
-//      throw Error('Invalid authentication response. Should contain key.');
-//    }
-
-    this.idToken = 'fixme';
     return await this.fetchAuthInfo();
   }
     

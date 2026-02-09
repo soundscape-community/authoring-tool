@@ -5,14 +5,11 @@
 import Axios from 'axios';
 import auth from './Auth';
 import Activity from '../data/Activity';
+import axiosDefaults from './axiosDefaults';
 
 const axios = Axios.create({
+  ...axiosDefaults,
   baseURL: '/api/v1/',
-  headers: {
-    'content-type': 'application/json',
-  },
-  xsrfCookieName: 'csrftoken',
-  xsrfHeaderName: 'X-CSRFToken'
 });
 
 axios.interceptors.response.use(
@@ -202,14 +199,6 @@ class API {
     // We use FormData as the object may contain a file (featured image)
     const formData = objectToFormData(waypoint);
     return axios.put(`waypoints/${waypoint.id}/`, formData, multipartRequestConfig);
-  }
-
-  async updateWaypointIndex(waypoint, offset) {
-    const object = {
-      waypoint: waypoint,
-      offset: offset,
-    };
-    return axios.put(`waypoints/${waypoint.id}/`, object);
   }
 
   async deleteWaypoint(waypointId) {

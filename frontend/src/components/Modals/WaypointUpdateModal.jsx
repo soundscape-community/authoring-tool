@@ -6,7 +6,7 @@ import Modal from 'react-bootstrap/Modal';
 
 import WaypointForm from '../Forms/WaypointForm';
 import API from '../../api/API';
-import { showLoading, dismissLoading, showError } from '../../utils/Toast';
+import { showLoading, dismissLoading } from '../../utils/Toast';
 import Waypoint from '../../data/Waypoint';
 import ErrorAlert from '../Main/ErrorAlert';
 
@@ -27,7 +27,6 @@ export default function WaypointUpdateModal(props) {
         })
         .catch((error) => {
           dismissLoading(toastId);
-          showError(error);
           setError(error);
           reject();
         });
