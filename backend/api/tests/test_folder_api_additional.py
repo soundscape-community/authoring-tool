@@ -351,6 +351,15 @@ class StaffVisibilityTests(APITestCase):
         folder_ids = {item["id"] for item in response.data}
         self.assertIn(str(self.folder.id), folder_ids)
 
+    def test_staff_can_edit_folder(self):
+        self.client.force_authenticate(user=self.staff)
+        response = self.client.patch(
+            f"/api/v1/folders/{self.folder.id}/",
+            {"name": "Renamed"},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class ActivityFolderAccessTests(APITestCase):
     def setUp(self):

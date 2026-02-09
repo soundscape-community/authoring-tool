@@ -89,3 +89,20 @@ class ActivitySharingTests(APITestCase):
         self.assertEqual(list_response.status_code, status.HTTP_200_OK)
         activity_ids = {item["id"] for item in list_response.data}
         self.assertIn(str(self.activity.id), activity_ids)
+
+    def test_staff_can_edit_unfoldered_activity(self):
+        activity = Activity.objects.create(
+            author_id=str(self.owner.id),
+            author_name="Owner",
+            description="Unfoldered",
+            name="Unfoldered Activity",
+        )
+
+        self.client.force_authenticate(user=self.staff)
+        response = self.client.patch(
+            f"/api/v1/activities/{activity.id}/",
+            {"name": "Staff Updated"},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["name"], "Staff Updated")

@@ -46,6 +46,9 @@ def resolve_folder_access(user, folder: Folder) -> FolderAccess:
     if not user or not user.is_authenticated:
         return FolderAccess(can_read=False, can_write=False)
 
+    if user.is_staff:
+        return FolderAccess(can_read=True, can_write=True)
+
     if folder.owner_id == user.id:
         return FolderAccess(can_read=True, can_write=True)
 
@@ -69,6 +72,8 @@ def resolve_folder_access(user, folder: Folder) -> FolderAccess:
 def can_write_activity(user, activity) -> bool:
     if not user or not user.is_authenticated:
         return False
+    if user.is_staff:
+        return True
     if activity.folder:
         return resolve_folder_access(user, activity.folder).can_write
     return str(activity.author_id) == str(user.id)

@@ -51,6 +51,8 @@ def gpx_response(content, filename):
 def get_accessible_activity_queryset(user):
     if not user or not user.is_authenticated:
         return Activity.objects.none()
+    if user.is_staff:
+        return Activity.objects.all()
     accessible_folder_ids = get_accessible_folder_ids(user)
     return Activity.objects.filter(
         models.Q(author_id=str(user.id)) | models.Q(folder_id__in=accessible_folder_ids)
@@ -72,6 +74,8 @@ class ActivityViewSet(ModelViewSet):
 
         if folder_id:
             if folder_id == "none":
+                if user.is_staff:
+                    return Activity.objects.filter(folder__isnull=True)
                 return Activity.objects.filter(author_id=user_id, folder__isnull=True)
             if folder_id in accessible_folder_ids_str:
                 return Activity.objects.filter(folder_id=folder_id)
