@@ -220,7 +220,7 @@ class WaypointGroup(CommonModel):
 
         try:
             latest_waypoint = Waypoint.objects.filter(group=self).latest('index')
-        except:
+        except Waypoint.DoesNotExist:
             return 0
 
         return latest_waypoint.index+1
