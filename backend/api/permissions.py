@@ -104,50 +104,45 @@ def is_group_admin(user, group_id) -> bool:
 
 
 def get_accessible_folder_ids(user, max_depth: int = 100) -> set:
+    """Return IDs of all folders the user may access (read or write).
+
+    Instead of loading every folder in the database, we start from the
+    known "roots" of access (owned folders + folders with explicit
+    permissions) and walk *down* to collect descendants.
+    """
     if not user or not user.is_authenticated:
         return set()
 
     if user.is_staff:
         return set(Folder.objects.values_list("id", flat=True))
 
-    folders = list(Folder.objects.all().select_related("parent", "owner"))
-    if not folders:
-        return set()
+    # Folders directly owned by the user.
+    owned_ids = set(Folder.objects.filter(owner=user).values_list("id", flat=True))
 
-    ancestor_map = {}
-    all_ancestor_ids = set()
-
-    for folder in folders:
-        ancestors = []
-        current = folder
-        depth = 0
-        seen_ids = set()
-        while current is not None and depth < max_depth:
-            if current.id in seen_ids:
-                break
-            seen_ids.add(current.id)
-            ancestors.append(current.id)
-            current = current.parent
-            depth += 1
-        ancestor_map[folder.id] = ancestors
-        all_ancestor_ids.update(ancestors)
-
+    # Folders that have an explicit permission for this user or their groups.
     group_ids = list(GroupMembership.objects.filter(user_id=user.id).values_list("group_id", flat=True))
-    permissions = FolderPermission.objects.filter(folder_id__in=all_ancestor_ids).filter(
-        models.Q(principal_type=FolderPermission.PrincipalType.USER, user_id=user.id)
-        | models.Q(principal_type=FolderPermission.PrincipalType.GROUP, group_id__in=group_ids)
+    perm_folder_ids = set(
+        FolderPermission.objects.filter(
+            models.Q(principal_type=FolderPermission.PrincipalType.USER, user_id=user.id)
+            | models.Q(principal_type=FolderPermission.PrincipalType.GROUP, group_id__in=group_ids)
+        ).values_list("folder_id", flat=True)
     )
-    perm_map = {}
-    for permission in permissions:
-        perm_map.setdefault(permission.folder_id, []).append(permission)
 
-    accessible_ids = set()
-    for folder in folders:
-        if folder.owner_id == user.id:
-            accessible_ids.add(folder.id)
-            continue
-        ancestors = ancestor_map.get(folder.id, [])
-        if any(ancestor_id in perm_map for ancestor_id in ancestors):
-            accessible_ids.add(folder.id)
+    accessible = owned_ids | perm_folder_ids
 
-    return accessible_ids
+    # Walk down the folder tree to collect all descendants of accessible folders.
+    frontier = set(accessible)
+    depth = 0
+    while frontier and depth < max_depth:
+        child_ids = set(
+            Folder.objects.filter(parent_id__in=frontier)
+            .exclude(id__in=accessible)
+            .values_list("id", flat=True)
+        )
+        if not child_ids:
+            break
+        accessible |= child_ids
+        frontier = child_ids
+        depth += 1
+
+    return accessible
