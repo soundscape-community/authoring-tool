@@ -16,6 +16,8 @@
 - Root folder is private to the user and not shared.
 - Deleting a folder requires confirmation and offers to move activities out and make them private.
 - Sharing grants access immediately (no invites).
+- Staff users have read/write access to all folders and activities, including unfoldered activities.
+- Root folder names are globally unique across all users.
 
 ## Data Model (Backend)
 ### New Models
@@ -133,3 +135,4 @@
 - Phase 4 added folder cycle validation, removed debug logging in APIs, and added backend tests for cycle prevention.
 - Phase 4 hardened activity/waypoint access control (write checks + tests for waypoint creation).
 - Phase 4 enforced group admin role for membership management, granted staff global visibility, and made root folder names globally unique.
+- Phase 4 granted staff read/write access to all activities (including unfoldered) and documented permission notes.
