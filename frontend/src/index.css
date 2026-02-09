@@ -70,6 +70,14 @@ body {
   text-decoration: none;
 }
 
+.activity-row-selected {
+  background-color: rgba(13, 110, 253, 0.12);
+}
+
+.activity-toolbar {
+  background-color: #fff7e6;
+}
+
 .footer {
   background-color: #253d62;
   color: darkgray;

@@ -23,6 +23,8 @@ import WaypointUpdateModal from './components/Modals/WaypointUpdateModal';
 import ActivityLinkModal from './components/Modals/ActivityLinkModal';
 import MapOverlayModal from './components/Modals/MapOverlayModal';
 import ActivityImportModal from './components/Modals/ActivityImportModal';
+import ActivityBulkDeleteModal from './components/Modals/ActivityBulkDeleteModal';
+import ActivityBulkMoveModal from './components/Modals/ActivityBulkMoveModal';
 import FolderDeleteModal from './components/Modals/FolderDeleteModal';
 import FolderRenameModal from './components/Modals/FolderRenameModal';
 import FolderShareModal from './components/Modals/FolderShareModal';
@@ -51,6 +53,7 @@ export default class App extends React.Component {
       editing: false,
       mapOverlay: null,
       waypointCreateType: null,
+      selectedActivityIds: [],
 
       // Activity modals
       showModalPrivacyAlert: this.shouldShowPrivacyAlert,
@@ -65,6 +68,8 @@ export default class App extends React.Component {
       showModalActivityDuplicate: false,
       showModalActivityPublish: false,
       showModalActivityLink: false,
+      showModalActivityBulkDelete: false,
+      showModalActivityBulkMove: false,
 
       // Waypoints modals
       showModalWaypointCreate: false,
@@ -91,6 +96,12 @@ export default class App extends React.Component {
     this.activityDeleted = this.activityDeleted.bind(this);
     this.activityDuplicated = this.activityDuplicated.bind(this);
     this.activityPublished = this.activityPublished.bind(this);
+    this.activityToggleSelected = this.activityToggleSelected.bind(this);
+    this.activityToggleAll = this.activityToggleAll.bind(this);
+    this.activityBulkMoveModal = this.activityBulkMoveModal.bind(this);
+    this.activityBulkDeleteModal = this.activityBulkDeleteModal.bind(this);
+    this.activityBulkMove = this.activityBulkMove.bind(this);
+    this.activityBulkDelete = this.activityBulkDelete.bind(this);
     this.folderSelected = this.folderSelected.bind(this);
     this.folderCreated = this.folderCreated.bind(this);
     this.folderRenameModal = this.folderRenameModal.bind(this);
@@ -199,6 +210,7 @@ export default class App extends React.Component {
       .then((activities) => {
         this.setState({
           activities,
+          selectedActivityIds: [],
           //selectedActivity: activities[0],
         });
       })
@@ -242,6 +254,7 @@ export default class App extends React.Component {
         selectedActivity: null,
         selectedWaypoint: null,
         editing: false,
+        selectedActivityIds: [],
       },
       () => this.loadActivities(),
     );
@@ -449,6 +462,7 @@ export default class App extends React.Component {
   activityDeleted(activity) {
     this.setState({
       showModalActivityDelete: false,
+      selectedActivityIds: [],
     });
 
     this.showActivities();
@@ -475,6 +489,92 @@ export default class App extends React.Component {
     this.loadActivities();
 
     this.scrollToTop();
+  }
+
+  activityToggleSelected(activityId) {
+    this.setState((prevState) => {
+      const selectedActivityIds = prevState.selectedActivityIds.includes(activityId)
+        ? prevState.selectedActivityIds.filter((id) => id !== activityId)
+        : prevState.selectedActivityIds.concat(activityId);
+      return { selectedActivityIds };
+    });
+  }
+
+  activityToggleAll() {
+    this.setState((prevState) => {
+      if (prevState.selectedActivityIds.length === prevState.activities.length) {
+        return { selectedActivityIds: [] };
+      }
+      return { selectedActivityIds: prevState.activities.map((activity) => activity.id) };
+    });
+  }
+
+  activityBulkMoveModal() {
+    if (this.state.selectedActivityIds.length === 0) {
+      return;
+    }
+    this.setState({ showModalActivityBulkMove: true });
+  }
+
+  activityBulkDeleteModal() {
+    if (this.state.selectedActivityIds.length === 0) {
+      return;
+    }
+    this.setState({ showModalActivityBulkDelete: true });
+  }
+
+  async activityBulkMove(folderId) {
+    const { selectedActivityIds, activities } = this.state;
+    const selectedActivities = activities.filter((activity) => selectedActivityIds.includes(activity.id));
+    if (selectedActivities.length === 0) {
+      return;
+    }
+
+    const toastId = showLoading('Moving activities...');
+
+    try {
+      await Promise.all(
+        selectedActivities.map((activity) =>
+          API.updateActivityPartial(this.buildActivityFolderUpdatePayload(activity, folderId)),
+        ),
+      );
+      this.setState({
+        showModalActivityBulkMove: false,
+        selectedActivityIds: [],
+      });
+      this.loadActivities();
+    } catch (error) {
+      error.title = 'Error moving activities';
+      showError(error);
+      throw error;
+    } finally {
+      dismissLoading(toastId);
+    }
+  }
+
+  async activityBulkDelete() {
+    const { selectedActivityIds } = this.state;
+    if (selectedActivityIds.length === 0) {
+      return;
+    }
+
+    const toastId = showLoading('Deleting activities...');
+
+    try {
+      await Promise.all(selectedActivityIds.map((id) => API.deleteActivity(id)));
+      this.setState({
+        showModalActivityBulkDelete: false,
+        selectedActivityIds: [],
+      });
+      this.showActivities();
+      this.loadActivities();
+    } catch (error) {
+      error.title = 'Error deleting activities';
+      showError(error);
+      throw error;
+    } finally {
+      dismissLoading(toastId);
+    }
   }
 
   ///////////////////////////////////////////////////////////
@@ -666,12 +766,17 @@ export default class App extends React.Component {
                       activities={this.state.activities}
                       folders={this.state.folders}
                       selectedFolderId={this.state.selectedFolderId}
+                      selectedActivityIds={this.state.selectedActivityIds}
                       onFolderSelect={this.folderSelected}
                       onFolderCreate={this.folderCreated}
                       onFolderRename={this.folderRenameModal}
                       onFolderDelete={this.folderDeleteModal}
                       onFolderShare={this.folderShareModal}
                       onActivitySelected={this.activitySelected}
+                      onActivityToggle={this.activityToggleSelected}
+                      onActivityToggleAll={this.activityToggleAll}
+                      onBulkMove={this.activityBulkMoveModal}
+                      onBulkDelete={this.activityBulkDeleteModal}
                       onActivityCreate={() => {
                         this.setState({ showModalActivityCreate: true });
                       }}
@@ -756,6 +861,21 @@ export default class App extends React.Component {
                 show={this.state.showModalActivityImport}
                 onCancel={this.dismissModal.bind(this, 'showModalActivityImport')}
                 onDone={this.activityImported}
+              />
+
+              <ActivityBulkMoveModal
+                show={this.state.showModalActivityBulkMove}
+                folders={this.state.folders}
+                count={this.state.selectedActivityIds.length}
+                onCancel={this.dismissModal.bind(this, 'showModalActivityBulkMove')}
+                onMove={this.activityBulkMove}
+              />
+
+              <ActivityBulkDeleteModal
+                show={this.state.showModalActivityBulkDelete}
+                count={this.state.selectedActivityIds.length}
+                onCancel={this.dismissModal.bind(this, 'showModalActivityBulkDelete')}
+                onDelete={this.activityBulkDelete}
               />
 
               <ActivityUpdateModal
