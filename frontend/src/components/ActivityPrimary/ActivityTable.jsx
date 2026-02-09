@@ -150,7 +150,7 @@ export default function ActivityInfoTable(props) {
                   onDelete={props.onWaypointDelete}
                   onUpdate={props.onWaypointUpdate}
                   onMoveDown={index !== 0 ? props.onWaypointMovedDown : null}
-                  onMoveUp={index !== waypoints.length - 1 ? props.onWaypointMovedUp : null}
+                  onMoveUp={index !== pois.length - 1 ? props.onWaypointMovedUp : null}
                 />
               ))
             ) : (

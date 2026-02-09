@@ -18,12 +18,12 @@ function Login({ }) {
     try {
       await auth.login(username, password);
     } catch (error) {
-      console.log(error);
       error.title = 'Invalid login attempt'
-      showError(error); // do show error on frontend when unsuccessful login
+      showError(error);
+      return;
     }
     setUser(await auth.fetchAuthInfo());
-    window.location.reload(true);
+    window.location.reload();
   };
 
   const validationSchema = Yup.object().shape({

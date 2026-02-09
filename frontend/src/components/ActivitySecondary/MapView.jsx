@@ -144,7 +144,7 @@ export default function MapView(props) {
     if (mapRef.current) {
       configureMapCursor();
     }
-  }, [mapRef]);
+  }, [props.editing]);
 
   useEffect(() => {
     if (mapRef.current ) {
@@ -185,7 +185,7 @@ export default function MapView(props) {
       ]);
 
       if (props.activity.pois_group) {
-        coordinates.concat(
+        coordinates = coordinates.concat(
           props.activity.pois_group.waypoints.map((waypoint) => [waypoint.latitude, waypoint.longitude]),
         );
       }
@@ -333,10 +333,11 @@ export default function MapView(props) {
       return;
     }
 
-    if (props.editing && mapRef.current.style.cursor !== MapView.CURSOR_TYPE.CROSSHAIR) {
-      mapRef.current.style.cursor = MapView.CURSOR_TYPE.CROSSHAIR;
-    } else if (!props.editing && mapRef.current.style.cursor !== MapView.CURSOR_TYPE.DEFAULT) {
-      mapRef.current.style.cursor = MapView.CURSOR_TYPE.DEFAULT;
+    const container = mapRef.current.getContainer?.() ?? mapRef.current;
+    if (props.editing) {
+      container.style.cursor = 'crosshair';
+    } else {
+      container.style.cursor = '';
     }
   }
 

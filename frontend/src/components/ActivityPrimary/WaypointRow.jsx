@@ -72,7 +72,7 @@ export default function WaypointRow({ waypoint, editing, onSelect, onUpdate, onM
                 aria-label="Move Down"
                 onClick={onMoveDown ? onMoveDown.bind(this, waypoint) : null}
                 disabled={!onMoveDown}>
-                <ArrowUp color="white" size={16} style={{ verticalAlign: 'text-bottom' }} />
+                <ArrowDown color="white" size={16} style={{ verticalAlign: 'text-bottom' }} />
               </Button>
               <Button
                 className="mx-1"
@@ -81,7 +81,7 @@ export default function WaypointRow({ waypoint, editing, onSelect, onUpdate, onM
                 aria-label="Move Up"
                 onClick={onMoveUp ? onMoveUp.bind(this, waypoint) : null}
                 disabled={!onMoveUp}>
-                <ArrowDown color="white" size={16} style={{ verticalAlign: 'text-bottom' }} />
+                <ArrowUp color="white" size={16} style={{ verticalAlign: 'text-bottom' }} />
               </Button>
             </>
           )}

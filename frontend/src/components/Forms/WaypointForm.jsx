@@ -413,9 +413,7 @@ export default class WaypointForm extends React.Component {
 
                                     API.deleteWaypointMedia(image.id)
                                       .then(() => {
-                                        const images = values.images;
-                                        images.splice(i, 1);
-                                        setFieldValue('images', images);
+                                        setFieldValue('images', values.images.filter((_, idx) => idx !== i));
                                       })
                                       .catch((error) => {
                                         dismissLoading(toastId);
@@ -452,13 +450,8 @@ export default class WaypointForm extends React.Component {
                                   variant="danger"
                                   size="sm"
                                   onClick={() => {
-                                    const images = values.image_files;
-                                    images.splice(i, 1);
-                                    setFieldValue('image_files', images);
-
-                                    let image_file_alts = values.image_file_alts;
-                                    image_file_alts.splice(i, 1);
-                                    setFieldValue('image_file_alts', image_file_alts);
+                                    setFieldValue('image_files', values.image_files.filter((_, idx) => idx !== i));
+                                    setFieldValue('image_file_alts', values.image_file_alts.filter((_, idx) => idx !== i));
                                   }}>
                                   Delete
                                 </Button>
@@ -549,9 +542,7 @@ export default class WaypointForm extends React.Component {
 
                                     API.deleteWaypointMedia(audio_clip.id)
                                       .then(() => {
-                                        const audio_clips = values.audio_clips;
-                                        audio_clips.splice(i, 1);
-                                        setFieldValue('audio_clips', audio_clips);
+                                        setFieldValue('audio_clips', values.audio_clips.filter((_, idx) => idx !== i));
                                       })
                                       .catch((error) => {
                                         dismissLoading(toastId);
@@ -591,13 +582,8 @@ export default class WaypointForm extends React.Component {
                                 variant="danger"
                                 size="sm"
                                 onClick={() => {
-                                  const audio_clip_files = values.audio_clip_files;
-                                  audio_clip_files.splice(i, 1);
-                                  setFieldValue('audio_clip_files', audio_clip_files);
-
-                                  let audio_clip_file_texts = values.audio_clip_file_texts;
-                                  audio_clip_file_texts.splice(i, 1);
-                                  setFieldValue('audio_clip_file_texts', audio_clip_file_texts);
+                                  setFieldValue('audio_clip_files', values.audio_clip_files.filter((_, idx) => idx !== i));
+                                  setFieldValue('audio_clip_file_texts', values.audio_clip_file_texts.filter((_, idx) => idx !== i));
                                 }}>
                                 Delete
                               </Button>
