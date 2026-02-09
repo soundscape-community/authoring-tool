@@ -6,8 +6,8 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 
-from api.models import FolderPermission, Waypoint, WaypointGroup, WaypointGroupType
-from api.tests.base import FolderAPITestCase
+from api.models import Folder, FolderPermission, Waypoint, WaypointGroup, WaypointGroupType
+from api.tests.base import FolderAPITestCase, User
 
 
 class WaypointAccessTests(FolderAPITestCase):
@@ -91,3 +91,65 @@ class WaypointAccessTests(FolderAPITestCase):
             format="multipart",
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_read_access_blocks_waypoint_update(self):
+        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.READ)
+        waypoint = self._create_waypoint()
+        self.client.force_authenticate(user=self.member)
+
+        response = self.client.patch(
+            f"/api/v1/waypoints/{waypoint.id}/",
+            {"name": "New Name"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_read_access_blocks_waypoint_delete(self):
+        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.READ)
+        waypoint = self._create_waypoint()
+        self.client.force_authenticate(user=self.member)
+
+        response = self.client.delete(f"/api/v1/waypoints/{waypoint.id}/")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_write_access_allows_waypoint_update(self):
+        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.WRITE)
+        waypoint = self._create_waypoint()
+        self.client.force_authenticate(user=self.member)
+
+        response = self.client.patch(
+            f"/api/v1/waypoints/{waypoint.id}/",
+            {"name": "New Name", "index": 0},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_write_access_allows_waypoint_delete(self):
+        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.WRITE)
+        waypoint = self._create_waypoint()
+        self.client.force_authenticate(user=self.member)
+
+        response = self.client.delete(f"/api/v1/waypoints/{waypoint.id}/")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class UnauthenticatedAccessTests(FolderAPITestCase):
+    """Verify all API endpoints reject unauthenticated requests."""
+
+    def test_activities_requires_auth(self):
+        response = self.client.get("/api/v1/activities/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_folders_requires_auth(self):
+        response = self.client.get("/api/v1/folders/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_waypoints_requires_auth(self):
+        response = self.client.get("/api/v1/waypoints/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_groups_requires_auth(self):
+        response = self.client.get("/api/v1/groups/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_folder_permissions_requires_auth(self):
+        response = self.client.get("/api/v1/folder_permissions/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
