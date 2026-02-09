@@ -137,3 +137,4 @@
 - Phase 4 enforced group admin role for membership management, granted staff global visibility, and made root folder names globally unique.
 - Phase 4 granted staff read/write access to all activities (including unfoldered) and documented permission notes.
 - Phase 4 concluded with optional follow-ups: folder access query optimization via recursive CTE and any future role expansion.
+- Phase 4 added bulk activity selection with move/delete toolbar actions.
