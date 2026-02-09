@@ -326,6 +326,18 @@ class WaypointMediaViewSet(ModelViewSet):
             waypoint__group__activity__in=get_accessible_activity_queryset(self.request.user)
         )
 
+    def perform_create(self, serializer):
+        waypoint_id = self.request.data.get("waypoint")
+        if not waypoint_id:
+            raise ValidationError("Missing waypoint")
+        try:
+            waypoint = Waypoint.objects.get(pk=waypoint_id)
+        except Waypoint.DoesNotExist:
+            raise ValidationError("Waypoint not found")
+        if not can_write_activity(self.request.user, waypoint.group.activity):
+            raise ValidationError("No write access to activity")
+        serializer.save(waypoint=waypoint)
+
     def perform_update(self, serializer):
         activity = serializer.instance.waypoint.group.activity
         if not can_write_activity(self.request.user, activity):
