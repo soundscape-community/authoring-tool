@@ -1,4 +1,4 @@
-# Copyright (c) Soundscape Community Contributers.
+# Copyright (c) Soundscape Community Contributors.
 from decimal import Decimal
 
 from django import forms

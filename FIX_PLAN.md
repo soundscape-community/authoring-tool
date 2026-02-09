@@ -1,4 +1,4 @@
-<!-- Copyright (c) Soundscape Community Contributers. -->
+<!-- Copyright (c) Soundscape Community Contributors. -->
 # Fix Plan — Code Review Remediation
 
 _Created 2026-02-09. References issues from `CODE_REVIEW.md`._

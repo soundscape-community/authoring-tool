@@ -1,4 +1,4 @@
-// Copyright (c) Soundscape Community Contributers.
+// Copyright (c) Soundscape Community Contributors.
 // Licensed under the MIT License.
 
 import React, { useMemo } from 'react';

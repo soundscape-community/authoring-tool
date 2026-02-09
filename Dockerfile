@@ -1,4 +1,4 @@
-# Copyright (c) Soundscape Community Contributers.
+# Copyright (c) Soundscape Community Contributors.
 # To run:
 #   docker build . -t authoring-tool
 #   docker run -p 8000:8000 -it --rm authoring-tool 

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-// Copyright (c) Soundscape Community Contributers.
+// Copyright (c) Soundscape Community Contributors.
 
 import Axios from 'axios';
 import auth from './Auth';

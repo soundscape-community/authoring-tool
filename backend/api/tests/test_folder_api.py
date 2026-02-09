@@ -1,4 +1,4 @@
-# Copyright (c) Soundscape Community Contributers.
+# Copyright (c) Soundscape Community Contributors.
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase

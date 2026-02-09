@@ -1,4 +1,4 @@
-// Copyright (c) Soundscape Community Contributers.
+// Copyright (c) Soundscape Community Contributors.
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';

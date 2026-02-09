@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "soundscape-authoring",
-  "copyright": "Copyright (c) Soundscape Community Contributers.",
+  "copyright": "Copyright (c) Soundscape Community Contributors.",
   "version": "2.0.0",
   "private": true,
   "scripts": {

@@ -1,4 +1,4 @@
-<!-- Copyright (c) Soundscape Community Contributers. -->
+<!-- Copyright (c) Soundscape Community Contributors. -->
 # Code Review — AI Coding Issues & Technical Debt
 
 _Generated 2026-02-09_
@@ -265,7 +265,7 @@ Only referenced by disabled middleware. Still creates a database table.
 ### 44. Misspelled copyright in `admin.py`
 **File:** `backend/api/admin.py` (lines 1–2)
 
-Line 1 says "Contributers" (typo), line 2 says "Contributors" (correct). Two separate copyright lines.
+Line 1 says "Contributors" (typo), line 2 says "Contributors" (correct). Two separate copyright lines.
 
 ### 45. Frontend: `updateWaypointIndex()` API method is never called
 **File:** `frontend/src/api/API.js` (lines 206–212)

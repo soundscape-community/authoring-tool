@@ -1,4 +1,4 @@
-// Copyright (c) Soundscape Community Contributers.
+// Copyright (c) Soundscape Community Contributors.
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

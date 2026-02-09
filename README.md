@@ -1,4 +1,4 @@
-<!-- Copyright (c) Soundscape Community Contributers. -->
+<!-- Copyright (c) Soundscape Community Contributors. -->
 # Soundscape Authoring Tool
 
 <!-- PROJECT LOGO -->
