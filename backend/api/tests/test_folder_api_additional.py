@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from api.models import Activity, Folder, FolderPermission, Group, GroupMembership
+from api.permissions import can_manage_group
 
 
 class FolderApiAdditionalTests(APITestCase):
@@ -11,6 +12,7 @@ class FolderApiAdditionalTests(APITestCase):
         self.owner = self.User.objects.create_user(username="owner", password="pass")
         self.member = self.User.objects.create_user(username="member", password="pass")
         self.other = self.User.objects.create_user(username="other", password="pass")
+        self.staff = self.User.objects.create_user(username="staff", password="pass", is_staff=True)
 
         self.group = Group.objects.create(name="Editors", owner=self.owner)
         GroupMembership.objects.create(user=self.member, group=self.group)
@@ -182,6 +184,13 @@ class FolderApiAdditionalTests(APITestCase):
         self.assertIn("Rooted Activity", activity_names)
         self.assertNotIn("Child Activity", activity_names)
 
+    def test_root_folder_name_unique_globally(self):
+        other_owner = self.User.objects.create_user(username="other-owner", password="pass")
+        self.client.force_authenticate(user=other_owner)
+        response = self.client.post("/api/v1/folders/", {"name": "Root"}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class FolderPermissionApiTests(APITestCase):
     def setUp(self):
@@ -281,8 +290,10 @@ class GroupMembershipApiTests(APITestCase):
         self.User = get_user_model()
         self.owner = self.User.objects.create_user(username="owner", password="pass")
         self.member = self.User.objects.create_user(username="member", password="pass")
+        self.admin = self.User.objects.create_user(username="admin", password="pass")
 
         self.group = Group.objects.create(name="Team", owner=self.owner)
+        GroupMembership.objects.create(user=self.admin, group=self.group, role=GroupMembership.Role.ADMIN)
 
     def test_group_list_only_owner(self):
         self.client.force_authenticate(user=self.member)
@@ -291,7 +302,14 @@ class GroupMembershipApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
 
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get("/api/v1/groups/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
     def test_membership_requires_owner(self):
+        self.assertTrue(can_manage_group(self.admin, self.group))
         self.client.force_authenticate(user=self.member)
         response = self.client.post(
             "/api/v1/group_memberships/",
@@ -300,13 +318,38 @@ class GroupMembershipApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        self.client.force_authenticate(user=self.owner)
+        self.client.force_authenticate(user=self.admin)
         response = self.client.post(
             "/api/v1/group_memberships/",
             {"group": str(self.group.id), "user": str(self.member.id), "role": "member"},
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.post(
+            "/api/v1/group_memberships/",
+            {"group": str(self.group.id), "user": str(self.member.id), "role": "member"},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class StaffVisibilityTests(APITestCase):
+    def setUp(self):
+        self.User = get_user_model()
+        self.owner = self.User.objects.create_user(username="owner", password="pass")
+        self.staff = self.User.objects.create_user(username="staff", password="pass", is_staff=True)
+
+        self.folder = Folder.objects.create(name="Root", owner=self.owner)
+
+    def test_staff_can_see_all_folders(self):
+        self.client.force_authenticate(user=self.staff)
+        response = self.client.get("/api/v1/folders/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        folder_ids = {item["id"] for item in response.data}
+        self.assertIn(str(self.folder.id), folder_ids)
 
 
 class ActivityFolderAccessTests(APITestCase):

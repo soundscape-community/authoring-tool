@@ -358,9 +358,9 @@ class Folder(CommonModel):
                 name="unique_folder_name_per_parent",
             ),
             models.UniqueConstraint(
-                fields=["owner", "name"],
+                fields=["name"],
                 condition=models.Q(parent__isnull=True),
-                name="unique_root_folder_name_per_owner",
+                name="unique_root_folder_name_global",
             ),
         ]
 

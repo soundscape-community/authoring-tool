@@ -73,6 +73,25 @@ class ActivityDetailSerializer(serializers.ModelSerializer):
 class FolderSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
 
+    def validate(self, attrs):
+        name = attrs.get("name")
+        parent = attrs.get("parent")
+        instance = getattr(self, "instance", None)
+
+        if instance and name is None:
+            name = instance.name
+        if instance and "parent" not in attrs:
+            parent = instance.parent
+
+        if name and parent is None:
+            existing = Folder.objects.filter(parent__isnull=True, name=name)
+            if instance:
+                existing = existing.exclude(id=instance.id)
+            if existing.exists():
+                raise serializers.ValidationError("Root folder names must be globally unique.")
+
+        return attrs
+
     class Meta:
         model = Folder
         fields = ['id', 'name', 'owner', 'parent', 'created', 'updated']

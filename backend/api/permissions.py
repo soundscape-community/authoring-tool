@@ -74,9 +74,36 @@ def can_write_activity(user, activity) -> bool:
     return str(activity.author_id) == str(user.id)
 
 
+def can_manage_group(user, group) -> bool:
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_staff:
+        return True
+    if group.owner_id == user.id:
+        return True
+    return GroupMembership.objects.filter(
+        group_id=group.id,
+        user_id=user.id,
+        role=GroupMembership.Role.ADMIN,
+    ).exists()
+
+
+def is_group_admin(user, group_id) -> bool:
+    if not user or not user.is_authenticated:
+        return False
+    return GroupMembership.objects.filter(
+        group_id=group_id,
+        user_id=user.id,
+        role=GroupMembership.Role.ADMIN,
+    ).exists()
+
+
 def get_accessible_folder_ids(user, max_depth: int = 100) -> set:
     if not user or not user.is_authenticated:
         return set()
+
+    if user.is_staff:
+        return set(Folder.objects.values_list("id", flat=True))
 
     folders = list(Folder.objects.all().select_related("parent", "owner"))
     if not folders:

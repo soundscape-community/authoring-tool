@@ -10,6 +10,7 @@ class ActivitySharingTests(APITestCase):
         self.User = get_user_model()
         self.owner = self.User.objects.create_user(username="owner", password="pass")
         self.member = self.User.objects.create_user(username="member", password="pass")
+        self.staff = self.User.objects.create_user(username="staff", password="pass", is_staff=True)
 
         self.group = Group.objects.create(name="Editors", owner=self.owner)
         GroupMembership.objects.create(user=self.member, group=self.group)
@@ -80,3 +81,11 @@ class ActivitySharingTests(APITestCase):
 
         delete_response = self.client.delete(f"/api/v1/activities/{self.activity.id}/")
         self.assertEqual(delete_response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_staff_can_view_activity(self):
+        self.client.force_authenticate(user=self.staff)
+        list_response = self.client.get("/api/v1/activities/")
+
+        self.assertEqual(list_response.status_code, status.HTTP_200_OK)
+        activity_ids = {item["id"] for item in list_response.data}
+        self.assertIn(str(self.activity.id), activity_ids)

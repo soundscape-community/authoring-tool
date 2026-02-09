@@ -27,7 +27,7 @@ from .models import (
     WaypointGroupType,
     WaypointMedia,
 )
-from .permissions import can_write_activity, get_accessible_folder_ids, resolve_folder_access
+from .permissions import can_manage_group, can_write_activity, get_accessible_folder_ids, is_group_admin, resolve_folder_access
 from .serializers import (
     ActivityListSerializer,
     ActivityDetailSerializer,
@@ -358,6 +358,8 @@ class FolderViewSet(ModelViewSet):
         user = self.request.user
         if not user or not user.is_authenticated:
             return Folder.objects.none()
+        if user.is_staff:
+            return Folder.objects.all()
         accessible_ids = get_accessible_folder_ids(user)
         # Follow-up: replace ancestor traversal with a recursive CTE if needed for larger hierarchies.
         return Folder.objects.filter(id__in=accessible_ids)
@@ -398,6 +400,8 @@ class FolderPermissionViewSet(ModelViewSet):
         user = self.request.user
         if not user or not user.is_authenticated:
             return FolderPermission.objects.none()
+        if user.is_staff:
+            return FolderPermission.objects.all()
 
         folders = Folder.objects.all().select_related("parent", "owner")
         writable_ids = []
@@ -440,7 +444,12 @@ class GroupViewSet(ModelViewSet):
         user = self.request.user
         if not user or not user.is_authenticated:
             return Group.objects.none()
-        return Group.objects.filter(owner=user)
+        if user.is_staff:
+            return Group.objects.all()
+        return Group.objects.filter(
+            models.Q(owner=user)
+            | models.Q(memberships__user=user, memberships__role=GroupMembership.Role.ADMIN)
+        ).distinct()
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -454,21 +463,26 @@ class GroupMembershipViewSet(ModelViewSet):
         user = self.request.user
         if not user or not user.is_authenticated:
             return GroupMembership.objects.none()
-        return GroupMembership.objects.filter(group__owner=user)
+        if user.is_staff:
+            return GroupMembership.objects.all()
+        return GroupMembership.objects.filter(
+            models.Q(group__owner=user)
+            | models.Q(group__memberships__user=user, group__memberships__role=GroupMembership.Role.ADMIN)
+        ).distinct()
 
     def perform_create(self, serializer):
         group = serializer.validated_data["group"]
-        if group.owner_id != self.request.user.id:
+        if not can_manage_group(self.request.user, group):
             raise ValidationError("No permission to manage group memberships")
         serializer.save()
 
     def perform_update(self, serializer):
         group = serializer.instance.group
-        if group.owner_id != self.request.user.id:
+        if not can_manage_group(self.request.user, group):
             raise ValidationError("No permission to manage group memberships")
         serializer.save()
 
     def perform_destroy(self, instance):
-        if instance.group.owner_id != self.request.user.id:
+        if not can_manage_group(self.request.user, instance.group):
             raise ValidationError("No permission to manage group memberships")
         instance.delete()
