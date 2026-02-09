@@ -7,20 +7,21 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 
 import ErrorAlert from '../Main/ErrorAlert';
+import FolderTree from '../ActivityPrimary/FolderTree';
 
 export default function ActivityBulkMoveModal(props) {
-  const [selectedFolderId, setSelectedFolderId] = useState('');
+  const [selectedFolderId, setSelectedFolderId] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (props.show) {
-      setSelectedFolderId('');
+      setSelectedFolderId(null);
       setError(null);
     }
   }, [props.show]);
 
   const handleMove = () => {
-    const target = selectedFolderId === '' ? null : selectedFolderId;
+    const target = selectedFolderId || null;
     Promise.resolve(props.onMove(target))
       .then(() => {
         setError(null);
@@ -45,14 +46,12 @@ export default function ActivityBulkMoveModal(props) {
         <p className="mb-3">Move {props.count} selected activities to:</p>
         <Form.Group controlId="bulk-move-folder">
           <Form.Label>Folder</Form.Label>
-          <Form.Select value={selectedFolderId} onChange={(event) => setSelectedFolderId(event.target.value)}>
-            <option value="">Unfoldered</option>
-            {(props.folders || []).map((folder) => (
-              <option key={folder.id} value={folder.id}>
-                {folder.name}
-              </option>
-            ))}
-          </Form.Select>
+          <FolderTree
+            folders={props.folders}
+            selectedFolderId={selectedFolderId}
+            onFolderSelect={setSelectedFolderId}
+            className="folder-tree folder-tree-modal border rounded"
+          />
         </Form.Group>
         {error && <ErrorAlert error={error} />}
       </Modal.Body>

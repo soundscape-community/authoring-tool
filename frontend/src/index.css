@@ -48,34 +48,120 @@ body {
 }
 
 #primary {
-  background-color: rgb(249, 244, 244);
+  background-color: #f6f7f9;
 }
 
 #secondary {
   background-color: white;
 }
 
+#folders {
+  background-color: #fbfcfe;
+  border-right: 1px solid #e3e7ef;
+}
+
+.folder-header {
+  background-color: #f4f6fa;
+}
+
+.folder-tree {
+  border-top: 1px solid #e7e9ee;
+}
+
+.folder-tree .list-group-item {
+  border: none;
+  border-radius: 0;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.95rem;
+  color: #1f2a44;
+}
+
+.folder-tree .list-group-item + .list-group-item {
+  border-top: 1px solid #edf0f4;
+}
+
+.folder-tree .list-group-item:hover {
+  background-color: #f1f4f9;
+}
+
+.folder-tree .list-group-item.active {
+  background-color: #e6f0ff;
+  color: #0f2b57;
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 #2f6fed;
+  border-color: transparent;
+}
+
+.folder-tree .list-group-item:focus-visible {
+  outline: 2px solid #2f6fed;
+  outline-offset: -2px;
+}
+
+.folder-tree-modal {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
 .folder-toggle,
 .folder-toggle-placeholder {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
   line-height: 1;
+}
+
+.folder-toggle {
+  color: #6b7c93;
+}
+
+.folder-toggle svg {
+  stroke-width: 2.25;
 }
 
 .folder-toggle-placeholder {
   display: inline-block;
 }
 
+.folder-breadcrumb {
+  background-color: #f4f6fa;
+  border-top: 1px solid #e8ecf2;
+  border-bottom: 1px solid #e8ecf2;
+}
+
 .folder-breadcrumb .btn-link {
   text-decoration: none;
+  color: #1f4b91;
 }
 
 .activity-row-selected {
-  background-color: rgba(13, 110, 253, 0.12);
+  background-color: rgba(15, 43, 87, 0.08);
+  box-shadow: inset 3px 0 0 rgba(47, 111, 237, 0.8);
+}
+
+.activity-row {
+  border-bottom: 1px solid #e8ecf2;
+}
+
+.activity-row p {
+  margin-bottom: 0.35rem;
+}
+
+.activity-row:hover {
+  background-color: #f2f6ff;
+}
+
+.activity-row input[type='checkbox'] {
+  accent-color: #2f6fed;
 }
 
 .activity-toolbar {
-  background-color: #fff7e6;
+  background-color: #f3f5f8;
+  border-bottom: 1px solid #e2e6ed;
+}
+
+.activity-toolbar .btn {
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-weight: 600;
 }
 
 .footer {

@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Form, Button, Image } from 'react-bootstrap';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import Activity from '../../data/Activity';
+import { buildFolderOptions } from '../../utils/folderOptions';
 
 const activitySchema = yup.object().shape({
   name: yup.string().trim().required('Name is a required field'),
@@ -24,6 +25,7 @@ const activitySchema = yup.object().shape({
 
 export default function ActivityForm(props) {
     const activity = props.activity ?? {};
+  const folderOptions = useMemo(() => buildFolderOptions(props.folders), [props.folders]);
 
     const initialValues = {
       name: activity.name || '',
@@ -149,10 +151,10 @@ export default function ActivityForm(props) {
                 onChange={handleChange}
                 onBlur={handleBlur}
               >
-                <option value="">Unfoldered</option>
-                {(props.folders || []).map((folder) => (
+                <option value="">/</option>
+                {folderOptions.map((folder) => (
                   <option key={folder.id} value={folder.id}>
-                    {folder.name}
+                    {`${'-- '.repeat(folder.depth)}${folder.label}`}
                   </option>
                 ))}
               </Form.Select>
