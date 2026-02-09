@@ -2,12 +2,15 @@
 # Licensed under the MIT License.
 # Copyright (c) Soundscape Community Contributors.
 
-import os
+import ipaddress
 import io
-import requests
+import logging
+import os
 import enum
-from urllib.parse import urljoin
+import socket
+from urllib.parse import urljoin, urlparse
 
+import requests
 from django.db import transaction
 from django.core.files import File
 from django.core.files.images import ImageFile
@@ -19,14 +22,65 @@ import gpxpy.gpxfield
 
 from .models import Activity, MediaType, WaypointGroup, Waypoint, ActivityType, WaypointMedia, WaypointGroupType
 
+logger = logging.getLogger(__name__)
+
 try:
     # Load LXML or fallback to cET or ET
     import lxml.etree as mod_etree  # type: ignore
-except:
+except ImportError:
     try:
         import xml.etree.cElementTree as mod_etree  # type: ignore
-    except:
+    except ImportError:
         import xml.etree.ElementTree as mod_etree  # type: ignore
+
+
+# ---------------------------------------------------------------------------
+# URL validation helpers (SSRF protection)
+# ---------------------------------------------------------------------------
+
+_MAX_DOWNLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
+_DOWNLOAD_TIMEOUT = 10  # seconds
+
+
+def _is_private_ip(hostname: str) -> bool:
+    """Return True if *hostname* resolves to a private/reserved IP address."""
+    try:
+        infos = socket.getaddrinfo(hostname, None)
+    except socket.gaierror:
+        return True  # unresolvable → reject
+    for family, _type, _proto, _canonname, sockaddr in infos:
+        ip = ipaddress.ip_address(sockaddr[0])
+        if ip.is_private or ip.is_reserved or ip.is_loopback or ip.is_link_local:
+            return True
+    return False
+
+
+def _validate_url(url: str) -> None:
+    """Raise ``ValueError`` if *url* is not a safe HTTP(S) URL."""
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError(f"URL scheme '{parsed.scheme}' is not allowed (only http/https)")
+    hostname = parsed.hostname
+    if not hostname:
+        raise ValueError("URL has no hostname")
+    if _is_private_ip(hostname):
+        raise ValueError(f"URL resolves to a private/reserved IP address: {hostname}")
+
+
+def _safe_download(url: str) -> bytes:
+    """Download *url* safely with timeout, size limit, and SSRF protection."""
+    _validate_url(url)
+    response = requests.get(url, timeout=_DOWNLOAD_TIMEOUT, stream=True)
+    response.raise_for_status()
+    chunks = []
+    downloaded = 0
+    for chunk in response.iter_content(chunk_size=65536):
+        downloaded += len(chunk)
+        if downloaded > _MAX_DOWNLOAD_BYTES:
+            response.close()
+            raise ValueError(f"Download exceeds maximum allowed size of {_MAX_DOWNLOAD_BYTES} bytes")
+        chunks.append(chunk)
+    return b"".join(chunks)
 
 GPXSC = 'https://microsoft.com/Soundscape'
 GPXSC_NS = '{gpxsc}'
@@ -253,16 +307,16 @@ def gpx_to_activity(gpx_file: str, user) -> Activity:
 
     # Image
     if gpx.link and gpx.link_type == 'image':
-        # Wait for image to download...
         link = urljoin(settings.FILE_UPLOAD_BASE_URL, gpx.link)
-        image_response = requests.get(link)
-
-        if image_response.status_code == 200 and image_response.content != None:
+        try:
+            image_data = _safe_download(link)
             filename = os.path.basename(gpx.link)
-            activity.image = ImageFile(io.BytesIO(image_response.content), name=filename)
+            activity.image = ImageFile(io.BytesIO(image_data), name=filename)
 
             if gpx.link_text:
                 activity.image_alt = gpx.link_text
+        except (ValueError, requests.RequestException) as exc:
+            logger.warning("Skipping image download from %s: %s", link, exc)
 
     # Metadata extensions
     gpxsc_meta = next((e for e in gpx.metadata_extensions if e.tag == (GPXSC_NS_FULL + 'meta')), None)
@@ -343,17 +397,18 @@ def gpx_to_waypoint(gpx_waypoint: gpxpy.gpx.GPXWaypoint, waypoint_group: Waypoin
 
         for gpxsc_link in gpxsc_links:
             href = gpxsc_link.attrib.get('href')
-            if href == None:
+            if href is None:
                 continue
 
             href = urljoin(settings.FILE_UPLOAD_BASE_URL, href)
-            media_response = requests.get(href)
-
-            if media_response.status_code != 200 or media_response.content == None:
+            try:
+                media_data = _safe_download(href)
+            except (ValueError, requests.RequestException) as exc:
+                logger.warning("Skipping media download from %s: %s", href, exc)
                 continue
 
             filename = os.path.basename(href)
-            media = File(io.BytesIO(media_response.content), name=filename)
+            media = File(io.BytesIO(media_data), name=filename)
 
             mime_type_element = next((e for e in gpxsc_link if e.tag == 'type'), None)
             if mime_type_element == None:
