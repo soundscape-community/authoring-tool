@@ -35,8 +35,7 @@ ALLOWED_HOSTS = [
 # allow Github Code Spaces to pass CSRF origin check
 CSRF_TRUSTED_ORIGINS = [
     'https://*.app.github.dev',
-'http://localhost:3000',
-'http://*.localhost:3000',
-'https://authoring.mur.org.uk'
+    'http://localhost:3000',
+    'http://*.localhost:3000',
 ]
 

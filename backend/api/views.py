@@ -2,16 +2,12 @@
 # Licensed under the MIT License.
 # Copyright (c) Soundscape Community Contributors.
 
-import os
-
 from django.http import HttpResponse
-from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import models, transaction
 from django.utils import timezone
 
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.exceptions import APIException
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
@@ -28,7 +24,7 @@ from .models import (
     WaypointGroupType,
     WaypointMedia,
 )
-from .permissions import can_manage_group, can_write_activity, get_accessible_folder_ids, is_group_admin, resolve_folder_access
+from .permissions import can_manage_group, can_write_activity, get_accessible_folder_ids, resolve_folder_access
 from .serializers import (
     ActivityListSerializer,
     ActivityDetailSerializer,
@@ -101,7 +97,7 @@ class ActivityViewSet(ModelViewSet):
     def perform_create(self, serializer):
         # Make sure the user id is valid and append it to the activity
         user_id = self.request.user.id
-        if user_id == None:
+        if user_id is None:
             raise ValidationError('Missing user id')
 
         with transaction.atomic():
@@ -177,11 +173,11 @@ class ActivityViewSet(ModelViewSet):
     @action(detail=False, methods=['POST'], name='Import GPX')
     def import_gpx(self, request):
         gpx = request.FILES.get('gpx')
-        if gpx == None:
+        if gpx is None:
             raise ValidationError('Missing GPX file')
 
         user = self.request.user
-        if user == None:
+        if user is None:
             raise ValidationError('Missing user')
 
         try:
@@ -235,12 +231,15 @@ class WaypointViewSet(ActivityWritePermissionMixin, ModelViewSet):
             else:
                 serializer.save()
 
-            self.saveMedia(serializer=serializer)
+            self.save_media(serializer=serializer)
 
-    def saveMedia(self, serializer):
+    def save_media(self, serializer):
         # Images
         images = self.request.FILES.getlist('images[]')
         image_alts = self.request.data.getlist('image_alts[]')
+
+        if len(image_alts) < len(images):
+            raise ValidationError("image_alts[] length must match the number of uploaded images")
 
         for i, image in enumerate(images):
             image_alt = image_alts[i]
@@ -254,6 +253,9 @@ class WaypointViewSet(ActivityWritePermissionMixin, ModelViewSet):
         # Audio clips
         audio_clips = self.request.FILES.getlist('audio_clips[]')
         audio_clip_texts = self.request.data.getlist('audio_clip_texts[]')
+
+        if len(audio_clip_texts) < len(audio_clips):
+            raise ValidationError("audio_clip_texts[] length must match the number of uploaded audio clips")
 
         for i, audio_clip in enumerate(audio_clips):
             audio_clip_text = audio_clip_texts[i]
@@ -272,7 +274,7 @@ class WaypointViewSet(ActivityWritePermissionMixin, ModelViewSet):
         if group.type == WaypointGroupType.UNORDERED:
             # No need to update index, save.
             serializer.save()
-            self.saveMedia(serializer=serializer)
+            self.save_media(serializer=serializer)
             return
 
         current_index = serializer.instance.index
@@ -281,7 +283,7 @@ class WaypointViewSet(ActivityWritePermissionMixin, ModelViewSet):
         if current_index == updated_index:
             # No need to update index, save.
             serializer.save()
-            self.saveMedia(serializer=serializer)
+            self.save_media(serializer=serializer)
             return
 
         if updated_index < 0:
@@ -290,23 +292,24 @@ class WaypointViewSet(ActivityWritePermissionMixin, ModelViewSet):
         if abs(current_index - updated_index) != 1:
             raise ValidationError("At the moment a waypoint index can only be increased or decreased by 1")
 
-        other_waypoint = Waypoint.objects.get(group=group, index=updated_index)
-
-        if other_waypoint == None:
+        try:
+            other_waypoint = Waypoint.objects.get(group=group, index=updated_index)
+        except Waypoint.DoesNotExist:
             serializer.save()
-            self.saveMedia(serializer=serializer)
-        else:
-            # Swap between waypoint indexes
-            # Temporarily set the other waypoint to -1 to avoid the error:
-            # django.db.utils.IntegrityError: duplicate key value violates unique constraint "unique_group_index"
-            other_waypoint.index = -1
-            other_waypoint.save()
+            self.save_media(serializer=serializer)
+            return
 
-            serializer.save()
-            self.saveMedia(serializer=serializer)
+        # Swap between waypoint indexes
+        # Temporarily set the other waypoint to -1 to avoid the error:
+        # django.db.utils.IntegrityError: duplicate key value violates unique constraint "unique_group_index"
+        other_waypoint.index = -1
+        other_waypoint.save()
 
-            other_waypoint.index = current_index
-            other_waypoint.save()
+        serializer.save()
+        self.save_media(serializer=serializer)
+
+        other_waypoint.index = current_index
+        other_waypoint.save()
 
     def perform_destroy(self, instance):
         group: WaypointGroup = instance.group
@@ -487,6 +490,16 @@ class GroupViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    def perform_update(self, serializer):
+        if not can_manage_group(self.request.user, serializer.instance):
+            raise ValidationError("No permission to manage this group")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if not can_manage_group(self.request.user, instance):
+            raise ValidationError("No permission to manage this group")
+        instance.delete()
 
 
 class GroupMembershipViewSet(ModelViewSet):

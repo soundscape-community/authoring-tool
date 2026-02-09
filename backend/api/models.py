@@ -51,7 +51,7 @@ def file_proxy_url(file: models.FileField):
     Used for serving files from a storage account.
     Not applicable in a local environment.
     """
-    if file == None or len(file.name) == 0:
+    if not file or not file.name:
         return None
 
     return file.url

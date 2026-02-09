@@ -12,6 +12,7 @@ volumes:
 services:
   web:
     build: ./
+    restart: unless-stopped
     ports:
       - 127.0.0.1:${LOCALHOST_PORT}:8000
     env_file:
@@ -24,6 +25,7 @@ services:
 
   postgres:
     image: postgres:16
+    restart: unless-stopped
     volumes:
       - data:/var/lib/postgresql/data
     environment:

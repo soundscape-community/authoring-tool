@@ -31,7 +31,7 @@ const multipartRequestConfig = {
 function objectToFormData(object) {
   const formData = new FormData();
 
-  for (var propertyName in object) {
+  for (const propertyName in object) {
     if (object[propertyName] === undefined || object[propertyName] === null) {
       continue;
     }

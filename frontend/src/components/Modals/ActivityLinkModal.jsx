@@ -6,9 +6,11 @@ import Modal from 'react-bootstrap/Modal';
 import QRCode from 'qrcode.react';
 import { Alert } from 'react-bootstrap';
 
+const SHARE_DOMAIN = import.meta.env.VITE_SHARE_DOMAIN || 'https://share.soundscape.services';
+
 export default class ActivityLinkModal extends React.Component {
   render() {
-    const link = `https://share.soundscape.services/v3/experience?id=${this.props.activity?.id}`;
+    const link = `${SHARE_DOMAIN}/v3/experience?id=${this.props.activity?.id}`;
 
     return (
       <Modal
