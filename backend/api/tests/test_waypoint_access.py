@@ -5,28 +5,16 @@ from io import BytesIO
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
-from rest_framework.test import APITestCase
 
-from api.models import Activity, Folder, FolderPermission, Group, GroupMembership, Waypoint, WaypointGroup, WaypointGroupType
+from api.models import FolderPermission, Waypoint, WaypointGroup, WaypointGroupType
+from api.tests.base import FolderAPITestCase
 
 
-class WaypointAccessTests(APITestCase):
+class WaypointAccessTests(FolderAPITestCase):
     def setUp(self):
-        self.User = get_user_model()
-        self.owner = self.User.objects.create_user(username="owner", password="pass")
-        self.member = self.User.objects.create_user(username="member", password="pass")
-
-        self.group = Group.objects.create(name="Editors", owner=self.owner)
-        GroupMembership.objects.create(user=self.member, group=self.group)
-
-        self.folder = Folder.objects.create(name="Root", owner=self.owner)
-        self.activity = Activity.objects.create(
-            author_id=str(self.owner.id),
-            author_name="Owner",
-            description="Shared activity",
-            name="Shared Activity",
-            folder=self.folder,
-        )
+        super().setUp()
+        self.folder = self.root
+        self.activity = self._create_activity_in_folder(self.folder)
         self.group_ordered = WaypointGroup.objects.create(
             activity=self.activity,
             name="Route",
@@ -34,12 +22,7 @@ class WaypointAccessTests(APITestCase):
         )
 
     def test_read_access_blocks_waypoint_create(self):
-        FolderPermission.objects.create(
-            folder=self.folder,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
-            access=FolderPermission.Access.READ,
-        )
+        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.READ)
 
         self.client.force_authenticate(user=self.member)
         response = self.client.post(
@@ -56,12 +39,7 @@ class WaypointAccessTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_write_access_allows_waypoint_create(self):
-        FolderPermission.objects.create(
-            folder=self.folder,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
-            access=FolderPermission.Access.WRITE,
-        )
+        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.WRITE)
 
         self.client.force_authenticate(user=self.member)
         response = self.client.post(
@@ -89,12 +67,7 @@ class WaypointAccessTests(APITestCase):
         )
 
     def test_read_access_blocks_media_create(self):
-        FolderPermission.objects.create(
-            folder=self.folder,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
-            access=FolderPermission.Access.READ,
-        )
+        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.READ)
         waypoint = self._create_waypoint()
         self.client.force_authenticate(user=self.member)
 
@@ -107,12 +80,7 @@ class WaypointAccessTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_write_access_allows_media_create(self):
-        FolderPermission.objects.create(
-            folder=self.folder,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
-            access=FolderPermission.Access.WRITE,
-        )
+        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.WRITE)
         waypoint = self._create_waypoint()
         self.client.force_authenticate(user=self.member)
 

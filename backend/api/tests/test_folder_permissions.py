@@ -2,21 +2,15 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from api.models import Folder, FolderPermission, Group, GroupMembership
+from api.models import Folder, FolderPermission
 from api.permissions import resolve_folder_access
+from api.tests.base import FolderTestMixin, User
 
 
-class FolderPermissionTests(TestCase):
+class FolderPermissionTests(FolderTestMixin, TestCase):
     def setUp(self):
-        self.User = get_user_model()
-        self.owner = self.User.objects.create_user(username="owner", password="pass")
-        self.member = self.User.objects.create_user(username="member", password="pass")
-        self.other = self.User.objects.create_user(username="other", password="pass")
-
-        self.group = Group.objects.create(name="Editors", owner=self.owner)
-        GroupMembership.objects.create(user=self.member, group=self.group)
-
-        self.root = Folder.objects.create(name="Root", owner=self.owner)
+        super().setUp()
+        self.other = User.objects.create_user(username="other", password="pass")
         self.child = Folder.objects.create(name="Child", owner=self.owner, parent=self.root)
 
     def test_group_permission_inherited(self):
