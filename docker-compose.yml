@@ -1,3 +1,4 @@
+# Copyright (c) Soundscape Community Contributers.
 #
 # To launch Postgres and web containers:
 #   Copy sample.env to .env and edit to set the environment variables

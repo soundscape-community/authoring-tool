@@ -1,3 +1,4 @@
+<!-- Copyright (c) Soundscape Community Contributers. -->
 # Soundscape Authoring Tool - Agent Instructions
 
 ## Architecture Overview
@@ -103,6 +104,14 @@ PSQL_DB_NAME, PSQL_DB_USER, PSQL_DB_PASS, PSQL_DB_HOST, PSQL_DB_PORT
 - Commented Azure Storage integration in `production.py`
 - WhiteNoise serves static files
 - WEBSITE_HOSTNAME auto-added to ALLOWED_HOSTS
+
+## Copyright Notices
+
+- Use the upstream reference at `microsoft/soundscape` under `svcs/soundscape-authoring` when comparing file origins.
+- Files identical to the upstream Microsoft project keep only the Microsoft copyright notice.
+- Files derived from Microsoft code that diverged from upstream must include both the Microsoft notice and the Soundscape Community Contributers notice.
+- Files not present in the upstream project must include only the Soundscape Community Contributers notice (do not add a Microsoft notice).
+- If a file format cannot accept comments (for example JSON, lockfiles, or binaries), add an explicit metadata field or document the exception in the change summary.
 
 When modifying this codebase, pay special attention to the Activity lifecycle (creation → editing → publishing), the GPX import/export functionality, and the React state management patterns that coordinate between the activity list and detail views.
 

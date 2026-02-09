@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
+# Copyright (c) Soundscape Community Contributers.
 
 from django.http import HttpResponse
 from http import HTTPStatus

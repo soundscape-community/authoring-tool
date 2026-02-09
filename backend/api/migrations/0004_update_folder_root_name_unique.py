@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation.
+# Copyright (c) Soundscape Community Contributers.
 # Licensed under the MIT License.
 
 from django.db import migrations, models

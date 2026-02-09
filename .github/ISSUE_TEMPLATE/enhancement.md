@@ -1,3 +1,4 @@
+<!-- Copyright (c) Soundscape Community Contributers. -->
 ---
 name: Enhancement
 about: Something could be better

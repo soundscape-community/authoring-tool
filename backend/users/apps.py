@@ -1,3 +1,4 @@
+# Copyright (c) Soundscape Community Contributers.
 from django.apps import AppConfig
 
 

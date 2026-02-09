@@ -1,3 +1,4 @@
+<!-- Copyright (c) Soundscape Community Contributers. -->
 # Soundscape Authoring Tool User Guide
 Soundscape Authoring Tool is a web app which allows users to create routed activities for use with the Soundscape iOS app.
 

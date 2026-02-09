@@ -1,3 +1,4 @@
+# Copyright (c) Soundscape Community Contributers.
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 

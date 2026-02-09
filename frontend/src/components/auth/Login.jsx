@@ -1,3 +1,4 @@
+// Copyright (c) Soundscape Community Contributers.
 // Copyright    (c) Robbie Murray
 // Licence:     <MIT>
 // Login component for the frontend

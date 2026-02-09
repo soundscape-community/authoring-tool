@@ -1,3 +1,4 @@
+<!-- Copyright (c) Soundscape Community Contributers. -->
 # Starting Out
 1. **Clone** [authoring-tool](https://github.com/soundscape-community/authoring-tool)
    * **go to the folder which you want to save the authoring-tool**

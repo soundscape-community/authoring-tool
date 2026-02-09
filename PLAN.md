@@ -1,3 +1,4 @@
+<!-- Copyright (c) Soundscape Community Contributers. -->
 # Activity Folders Plan
 
 ## Goals

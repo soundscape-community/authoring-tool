@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Copyright (c) Soundscape Community Contributers.
 set -e
 
 #create a user and group in the container to access the bind mount from the host
