@@ -10,6 +10,7 @@ from .views import (
     FolderViewSet,
     GroupMembershipViewSet,
     GroupViewSet,
+    RuntimeConfigView,
     UserViewSet,
     WaypointGroupViewSet,
     WaypointMediaViewSet,
@@ -28,5 +29,6 @@ router.register(r'group_memberships', GroupMembershipViewSet)
 router.register(r'users', UserViewSet)
 
 urlpatterns = [
+    path('v1/runtime-config/', RuntimeConfigView.as_view()),
     path('v1/', include(router.urls)),
 ]

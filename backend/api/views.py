@@ -3,6 +3,7 @@
 # Copyright (c) Soundscape Community Contributors.
 
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.db.models import Q as UserQ
 from django.http import HttpResponse
 from django.core.files.base import ContentFile
@@ -12,8 +13,10 @@ from django.utils import timezone
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.mixins import ListModelMixin
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
+from rest_framework.views import APIView
 
 from .models import (
     Activity,
@@ -67,6 +70,18 @@ def get_accessible_activity_queryset(user):
     return Activity.objects.filter(
         models.Q(author_id=str(user.id)) | models.Q(folder_id__in=accessible_folder_ids)
     ).distinct()
+
+
+class RuntimeConfigView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response(
+            {
+                'show_beta_warning': settings.TESTING_WARNING_ENABLED,
+                'beta_warning_message': settings.TESTING_WARNING_MESSAGE,
+            }
+        )
 
 
 class ActivityViewSet(ModelViewSet):

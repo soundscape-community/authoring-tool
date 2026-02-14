@@ -30,6 +30,7 @@ import FolderDeleteModal from './components/Modals/FolderDeleteModal';
 import FolderRenameModal from './components/Modals/FolderRenameModal';
 import FolderShareModal from './components/Modals/FolderShareModal';
 import InvalidWindowSizeAlert from './components/Main/InvalidWindowSizeAlert';
+import EnvironmentWarningBanner from './components/Main/EnvironmentWarningBanner';
 import PrivacyAlertModal from './components/Modals/PrivacyAlertModal';
 import Login from './components/auth/Login';
 import MainContext from './components/Main/MainContext';
@@ -44,6 +45,8 @@ export default class App extends React.Component {
 
     this.state = {
       isScreenSizeValid: this.isScreenSizeValid,
+      showBetaWarning: false,
+      betaWarningMessage: '',
 
       user: {},
       activities: [], // Holds activities metadata excluding waypoints
@@ -126,6 +129,8 @@ export default class App extends React.Component {
 
   componentDidMount() {
     window.addEventListener('resize', this.handleResize);
+
+    this.loadRuntimeConfig();
 
     this.authenticate()
       .then((user) => {
@@ -222,6 +227,19 @@ export default class App extends React.Component {
 
   async authenticate() {
     return Auth.fetchAuthInfo();
+  }
+
+  loadRuntimeConfig() {
+    API.getRuntimeConfig()
+      .then((config) => {
+        this.setState({
+          showBetaWarning: Boolean(config.show_beta_warning),
+          betaWarningMessage: config.beta_warning_message || 'Testing environment — all changes will be lost.',
+        });
+      })
+      .catch(() => {
+        this.setState({ showBetaWarning: false });
+      });
   }
 
   ///////////////////////////////////////////////////////////
@@ -674,6 +692,10 @@ export default class App extends React.Component {
           {this.state.isScreenSizeValid ? (
             <>
               <ToastContainer />
+
+              {this.state.showBetaWarning && (
+                <EnvironmentWarningBanner message={this.state.betaWarningMessage} />
+              )}
 
               <NavigationBar
                 user={this.state.user}

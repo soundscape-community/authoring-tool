@@ -55,6 +55,10 @@ function objectToFormData(object) {
 
 class API {
 
+  async getRuntimeConfig() {
+    return axios.get('runtime-config/');
+  }
+
   // Activities
 
   async getActivities(folderId = null) {

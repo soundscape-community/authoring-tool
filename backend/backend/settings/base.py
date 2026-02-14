@@ -18,6 +18,13 @@ import os
 import sys
 from pathlib import Path
 
+
+def env_bool(name, default=False):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {'1', 'true', 't', 'yes', 'y', 'on'}
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -191,3 +198,9 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, FRONTEND_DIR_STATIC)]
 
 # Base URL for file uploads.
 FILE_UPLOAD_BASE_URL = os.getenv('FILE_UPLOAD_BASE_URL', 'https://share.soundscape.services')
+
+TESTING_WARNING_ENABLED = env_bool('TESTING_WARNING_ENABLED', False)
+TESTING_WARNING_MESSAGE = os.getenv(
+    'TESTING_WARNING_MESSAGE',
+    'Testing environment — all changes will be lost.',
+)
