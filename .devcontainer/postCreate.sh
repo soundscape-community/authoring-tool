@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Copyright (c) Soundscape Community Contributors.
 set -euo pipefail
 
 # install uv locally for managing backend dependencies

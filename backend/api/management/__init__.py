@@ -1,2 +1,0 @@
-# Copyright (c) Soundscape Community Contributors.
-# Licensed under the MIT License.

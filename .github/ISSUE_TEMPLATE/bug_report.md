@@ -1,4 +1,3 @@
-<!-- Copyright (c) Soundscape Community Contributors. -->
 ---
 name: Bug report
 about: Something isn't working
