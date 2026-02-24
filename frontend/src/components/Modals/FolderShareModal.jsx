@@ -39,7 +39,9 @@ export default function FolderShareModal(props) {
 
   const teamsById = useMemo(() => {
     const map = new Map();
-    teams.forEach((team) => map.set(team.id, team));
+    teams.forEach((team) => {
+      map.set(team.id, team);
+    });
     return map;
   }, [teams]);
 
