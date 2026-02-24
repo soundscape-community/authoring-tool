@@ -38,8 +38,8 @@ except ImportError:
 # URL validation helpers (SSRF protection)
 # ---------------------------------------------------------------------------
 
-_MAX_DOWNLOAD_BYTES = 100 * 1024 * 1024  # 100 MB
-_DOWNLOAD_TIMEOUT = 100  # seconds
+_MAX_DOWNLOAD_BYTES = getattr(settings, 'GPX_MAX_DOWNLOAD_BYTES', 100 * 1024 * 1024)  # 100 MB
+_DOWNLOAD_TIMEOUT = getattr(settings, 'GPX_DOWNLOAD_TIMEOUT', 100)  # seconds
 
 
 def _is_private_ip(hostname: str) -> bool:
