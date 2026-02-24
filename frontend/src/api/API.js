@@ -167,28 +167,28 @@ class API {
     return axios.delete(`folder_permissions/${permissionId}/`);
   }
 
-  // Groups
+  // Teams
 
-  async getGroups() {
-    return axios.get('groups/');
+  async getTeams() {
+    return axios.get('teams/');
   }
 
-  async createGroup(group) {
-    return axios.post('groups/', group);
+  async createTeam(team) {
+    return axios.post('teams/', team);
   }
 
-  // Group memberships
+  // Team memberships
 
-  async getGroupMemberships() {
-    return axios.get('group_memberships/');
+  async getTeamMemberships() {
+    return axios.get('team_memberships/');
   }
 
-  async createGroupMembership(membership) {
-    return axios.post('group_memberships/', membership);
+  async createTeamMembership(membership) {
+    return axios.post('team_memberships/', membership);
   }
 
-  async deleteGroupMembership(membershipId) {
-    return axios.delete(`group_memberships/${membershipId}/`);
+  async deleteTeamMembership(membershipId) {
+    return axios.delete(`team_memberships/${membershipId}/`);
   }
 
   // Users

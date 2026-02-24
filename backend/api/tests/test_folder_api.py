@@ -2,7 +2,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
-from users.models import Group, GroupMembership
+from users.models import Team, TeamMembership
 
 from api.models import Activity, Folder, FolderPermission
 
@@ -21,15 +21,14 @@ class FolderApiTests(APITestCase):
         self.assertEqual(response.data["name"], "Root")
         self.assertEqual(self.owner.id, response.data["owner"])
 
-    def test_group_permission_allows_read(self):
-        group = Group.objects.create(name="Editors", owner=self.owner)
-        GroupMembership.objects.create(user=self.member, group=group)
+    def test_team_permission_allows_read(self):
+        team = Team.objects.create(name="Editors", owner=self.owner)
+        TeamMembership.objects.create(user=self.member, team=team)
 
         root = Folder.objects.create(name="Root", owner=self.owner)
         FolderPermission.objects.create(
             folder=root,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=group,
+            team=team,
             access=FolderPermission.Access.READ,
         )
 
@@ -40,16 +39,16 @@ class FolderApiTests(APITestCase):
         folder_ids = {item["id"] for item in response.data}
         self.assertIn(str(root.id), folder_ids)
 
-    def test_owner_can_manage_group_membership(self):
+    def test_owner_can_manage_team_membership(self):
         self.client.force_authenticate(user=self.owner)
-        group_response = self.client.post("/api/v1/groups/", {"name": "Team"}, format="json")
+        team_response = self.client.post("/api/v1/teams/", {"name": "Team"}, format="json")
 
-        self.assertEqual(group_response.status_code, status.HTTP_201_CREATED)
-        group_id = group_response.data["id"]
+        self.assertEqual(team_response.status_code, status.HTTP_201_CREATED)
+        team_id = team_response.data["id"]
 
         membership_response = self.client.post(
-            "/api/v1/group_memberships/",
-            {"group": group_id, "user": str(self.member.id), "role": "member"},
+            "/api/v1/team_memberships/",
+            {"team": team_id, "user": str(self.member.id), "role": "member"},
             format="json",
         )
 

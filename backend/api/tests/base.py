@@ -4,7 +4,7 @@
 from django.contrib.auth import get_user_model
 
 from rest_framework.test import APITestCase
-from users.models import Group, GroupMembership
+from users.models import Team, TeamMembership
 
 from api.models import (
     Activity,
@@ -18,7 +18,7 @@ User = get_user_model()
 
 
 class FolderTestMixin:
-    """Common setUp for tests that need owner, member, group & root folder.
+    """Common setUp for tests that need owner, member, team & root folder.
 
     Subclasses may call ``super().setUp()`` and then add their own fixtures.
     """
@@ -28,8 +28,8 @@ class FolderTestMixin:
         self.owner = User.objects.create_user(username="owner", password="pass")
         self.member = User.objects.create_user(username="member", password="pass")
 
-        self.group = Group.objects.create(name="Editors", owner=self.owner)
-        GroupMembership.objects.create(user=self.member, group=self.group)
+        self.team = Team.objects.create(name="Editors", owner=self.owner)
+        TeamMembership.objects.create(user=self.member, team=self.team)
 
         self.root = Folder.objects.create(name="Root", owner=self.owner)
 
@@ -37,23 +37,21 @@ class FolderTestMixin:
     # Helpers
     # ------------------------------------------------------------------
 
-    def _grant_access(self, folder, *, group=None, user=None, access=FolderPermission.Access.READ):
+    def _grant_access(self, folder, *, team=None, user=None, access=FolderPermission.Access.READ):
         """Create a FolderPermission and return it."""
-        if group is not None:
+        if team is not None:
             return FolderPermission.objects.create(
                 folder=folder,
-                principal_type=FolderPermission.PrincipalType.GROUP,
-                group=group,
+                team=team,
                 access=access,
             )
         if user is not None:
             return FolderPermission.objects.create(
                 folder=folder,
-                principal_type=FolderPermission.PrincipalType.USER,
                 user=user,
                 access=access,
             )
-        raise ValueError("Provide either group= or user=")
+        raise ValueError("Provide either team= or user=")
 
     def _create_activity_in_folder(self, folder, owner=None):
         """Create a minimal Activity linked to *folder*."""

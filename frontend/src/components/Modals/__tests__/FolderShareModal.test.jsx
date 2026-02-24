@@ -5,14 +5,14 @@ import userEvent from '@testing-library/user-event';
 
 const apiMock = vi.hoisted(() => ({
   getFolderPermissions: vi.fn(() => Promise.resolve([])),
-  getGroups: vi.fn(() => Promise.resolve([])),
-  getGroupMemberships: vi.fn(() => Promise.resolve([])),
+  getTeams: vi.fn(() => Promise.resolve([])),
+  getTeamMemberships: vi.fn(() => Promise.resolve([])),
   createFolderPermission: vi.fn(() => Promise.resolve({})),
   updateFolderPermission: vi.fn(() => Promise.resolve({})),
   deleteFolderPermission: vi.fn(() => Promise.resolve()),
-  createGroup: vi.fn(() => Promise.resolve({})),
-  createGroupMembership: vi.fn(() => Promise.resolve({})),
-  deleteGroupMembership: vi.fn(() => Promise.resolve()),
+  createTeam: vi.fn(() => Promise.resolve({})),
+  createTeamMembership: vi.fn(() => Promise.resolve({})),
+  deleteTeamMembership: vi.fn(() => Promise.resolve()),
   searchUsers: vi.fn(() => Promise.resolve([])),
 }));
 
@@ -57,8 +57,8 @@ describe('FolderShareModal', () => {
 
     await waitFor(() => {
       expect(apiMock.getFolderPermissions).toHaveBeenCalled();
-      expect(apiMock.getGroups).toHaveBeenCalled();
-      expect(apiMock.getGroupMemberships).toHaveBeenCalled();
+      expect(apiMock.getTeams).toHaveBeenCalled();
+      expect(apiMock.getTeamMemberships).toHaveBeenCalled();
     });
 
     expect(screen.getByText('Permissions for Shared Folder')).toBeInTheDocument();

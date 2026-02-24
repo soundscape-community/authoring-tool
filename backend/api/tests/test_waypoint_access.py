@@ -22,7 +22,7 @@ class WaypointAccessTests(FolderAPITestCase):
         )
 
     def test_read_access_blocks_waypoint_create(self):
-        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.READ)
+        self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.READ)
 
         self.client.force_authenticate(user=self.member)
         response = self.client.post(
@@ -39,7 +39,7 @@ class WaypointAccessTests(FolderAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_write_access_allows_waypoint_create(self):
-        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.WRITE)
+        self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.WRITE)
 
         self.client.force_authenticate(user=self.member)
         response = self.client.post(
@@ -67,7 +67,7 @@ class WaypointAccessTests(FolderAPITestCase):
         )
 
     def test_read_access_blocks_media_create(self):
-        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.READ)
+        self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.READ)
         waypoint = self._create_waypoint()
         self.client.force_authenticate(user=self.member)
 
@@ -80,7 +80,7 @@ class WaypointAccessTests(FolderAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_write_access_allows_media_create(self):
-        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.WRITE)
+        self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.WRITE)
         waypoint = self._create_waypoint()
         self.client.force_authenticate(user=self.member)
 
@@ -93,7 +93,7 @@ class WaypointAccessTests(FolderAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_read_access_blocks_waypoint_update(self):
-        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.READ)
+        self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.READ)
         waypoint = self._create_waypoint()
         self.client.force_authenticate(user=self.member)
 
@@ -104,7 +104,7 @@ class WaypointAccessTests(FolderAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_read_access_blocks_waypoint_delete(self):
-        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.READ)
+        self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.READ)
         waypoint = self._create_waypoint()
         self.client.force_authenticate(user=self.member)
 
@@ -112,7 +112,7 @@ class WaypointAccessTests(FolderAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_write_access_allows_waypoint_update(self):
-        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.WRITE)
+        self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.WRITE)
         waypoint = self._create_waypoint()
         self.client.force_authenticate(user=self.member)
 
@@ -123,7 +123,7 @@ class WaypointAccessTests(FolderAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_write_access_allows_waypoint_delete(self):
-        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.WRITE)
+        self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.WRITE)
         waypoint = self._create_waypoint()
         self.client.force_authenticate(user=self.member)
 
@@ -146,8 +146,8 @@ class UnauthenticatedAccessTests(FolderAPITestCase):
         response = self.client.get("/api/v1/waypoints/")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_groups_requires_auth(self):
-        response = self.client.get("/api/v1/groups/")
+    def test_teams_requires_auth(self):
+        response = self.client.get("/api/v1/teams/")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_folder_permissions_requires_auth(self):

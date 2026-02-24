@@ -2,10 +2,10 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
-from users.models import Group, GroupMembership
+from users.models import Team, TeamMembership
 
 from api.models import Activity, Folder, FolderPermission
-from api.permissions import can_manage_group
+from api.permissions import can_manage_team
 
 
 class FolderApiAdditionalTests(APITestCase):
@@ -16,8 +16,8 @@ class FolderApiAdditionalTests(APITestCase):
         self.other = self.User.objects.create_user(username="other", password="pass")
         self.staff = self.User.objects.create_user(username="staff", password="pass", is_staff=True)
 
-        self.group = Group.objects.create(name="Editors", owner=self.owner)
-        GroupMembership.objects.create(user=self.member, group=self.group)
+        self.team = Team.objects.create(name="Editors", owner=self.owner)
+        TeamMembership.objects.create(user=self.member, team=self.team)
 
         self.root = Folder.objects.create(name="Root", owner=self.owner)
         self.child = Folder.objects.create(name="Child", owner=self.owner, parent=self.root)
@@ -32,8 +32,7 @@ class FolderApiAdditionalTests(APITestCase):
     def test_folder_list_inherits_access(self):
         FolderPermission.objects.create(
             folder=self.root,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.READ,
         )
 
@@ -48,8 +47,7 @@ class FolderApiAdditionalTests(APITestCase):
     def test_folder_list_child_permission_only(self):
         FolderPermission.objects.create(
             folder=self.child,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.READ,
         )
 
@@ -64,8 +62,7 @@ class FolderApiAdditionalTests(APITestCase):
     def test_create_folder_requires_write_on_parent(self):
         FolderPermission.objects.create(
             folder=self.root,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.READ,
         )
 
@@ -82,8 +79,7 @@ class FolderApiAdditionalTests(APITestCase):
     def test_update_folder_requires_write(self):
         FolderPermission.objects.create(
             folder=self.root,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.READ,
         )
 
@@ -101,8 +97,7 @@ class FolderApiAdditionalTests(APITestCase):
         other_root = Folder.objects.create(name="Other", owner=self.owner)
         FolderPermission.objects.create(
             folder=self.root,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.WRITE,
         )
 
@@ -116,8 +111,7 @@ class FolderApiAdditionalTests(APITestCase):
 
         FolderPermission.objects.create(
             folder=other_root,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.WRITE,
         )
         response = self.client.patch(
@@ -130,8 +124,7 @@ class FolderApiAdditionalTests(APITestCase):
     def test_delete_folder_requires_write(self):
         FolderPermission.objects.create(
             folder=self.root,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.READ,
         )
 
@@ -201,15 +194,14 @@ class FolderPermissionApiTests(APITestCase):
         self.member = self.User.objects.create_user(username="member", password="pass")
         self.other = self.User.objects.create_user(username="other", password="pass")
 
-        self.group = Group.objects.create(name="Editors", owner=self.owner)
-        GroupMembership.objects.create(user=self.member, group=self.group)
+        self.team = Team.objects.create(name="Editors", owner=self.owner)
+        TeamMembership.objects.create(user=self.member, team=self.team)
 
         self.root = Folder.objects.create(name="Root", owner=self.owner)
 
     def test_permissions_list_only_writable(self):
         FolderPermission.objects.create(
             folder=self.root,
-            principal_type=FolderPermission.PrincipalType.USER,
             user=self.member,
             access=FolderPermission.Access.READ,
         )
@@ -223,7 +215,6 @@ class FolderPermissionApiTests(APITestCase):
     def test_permissions_create_requires_write_or_owner(self):
         FolderPermission.objects.create(
             folder=self.root,
-            principal_type=FolderPermission.PrincipalType.USER,
             user=self.member,
             access=FolderPermission.Access.READ,
         )
@@ -233,7 +224,6 @@ class FolderPermissionApiTests(APITestCase):
             "/api/v1/folder_permissions/",
             {
                 "folder": str(self.root.id),
-                "principal_type": FolderPermission.PrincipalType.USER,
                 "user": str(self.other.id),
                 "access": FolderPermission.Access.READ,
             },
@@ -248,7 +238,6 @@ class FolderPermissionApiTests(APITestCase):
             "/api/v1/folder_permissions/",
             {
                 "folder": str(self.root.id),
-                "principal_type": FolderPermission.PrincipalType.USER,
                 "user": str(self.other.id),
                 "access": FolderPermission.Access.READ,
             },
@@ -262,8 +251,7 @@ class FolderPermissionApiTests(APITestCase):
             "/api/v1/folder_permissions/",
             {
                 "folder": str(self.root.id),
-                "principal_type": FolderPermission.PrincipalType.GROUP,
-                "group": str(self.group.id),
+                "team": str(self.team.id),
                 "access": FolderPermission.Access.WRITE,
             },
         )
@@ -275,8 +263,7 @@ class FolderPermissionApiTests(APITestCase):
             f"/api/v1/folder_permissions/{permission_id}/",
             {
                 "access": FolderPermission.Access.READ,
-                "principal_type": FolderPermission.PrincipalType.GROUP,
-                "group": str(self.group.id),
+                "team": str(self.team.id),
             },
         )
 
@@ -287,43 +274,43 @@ class FolderPermissionApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
-class GroupMembershipApiTests(APITestCase):
+class TeamMembershipApiTests(APITestCase):
     def setUp(self):
         self.User = get_user_model()
         self.owner = self.User.objects.create_user(username="owner", password="pass")
         self.member = self.User.objects.create_user(username="member", password="pass")
         self.admin = self.User.objects.create_user(username="admin", password="pass")
 
-        self.group = Group.objects.create(name="Team", owner=self.owner)
-        GroupMembership.objects.create(user=self.admin, group=self.group, role=GroupMembership.Role.ADMIN)
+        self.team = Team.objects.create(name="Team", owner=self.owner)
+        TeamMembership.objects.create(user=self.admin, team=self.team, role=TeamMembership.Role.ADMIN)
 
-    def test_group_list_visible_to_admins(self):
+    def test_team_list_visible_to_admins(self):
         self.client.force_authenticate(user=self.member)
-        response = self.client.get("/api/v1/groups/")
+        response = self.client.get("/api/v1/teams/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
 
         self.client.force_authenticate(user=self.admin)
-        response = self.client.get("/api/v1/groups/")
+        response = self.client.get("/api/v1/teams/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
 
     def test_membership_requires_owner(self):
-        self.assertTrue(can_manage_group(self.admin, self.group))
+        self.assertTrue(can_manage_team(self.admin, self.team))
         self.client.force_authenticate(user=self.member)
         response = self.client.post(
-            "/api/v1/group_memberships/",
-            {"group": str(self.group.id), "user": str(self.member.id), "role": "member"},
+            "/api/v1/team_memberships/",
+            {"team": str(self.team.id), "user": str(self.member.id), "role": "member"},
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         self.client.force_authenticate(user=self.admin)
         response = self.client.post(
-            "/api/v1/group_memberships/",
-            {"group": str(self.group.id), "user": str(self.member.id), "role": "member"},
+            "/api/v1/team_memberships/",
+            {"team": str(self.team.id), "user": str(self.member.id), "role": "member"},
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -332,8 +319,8 @@ class GroupMembershipApiTests(APITestCase):
         other_user = self.User.objects.create_user(username="other", password="pass")
         self.client.force_authenticate(user=self.member)
         response = self.client.post(
-            "/api/v1/group_memberships/",
-            {"group": str(self.group.id), "user": str(other_user.id), "role": "member"},
+            "/api/v1/team_memberships/",
+            {"team": str(self.team.id), "user": str(other_user.id), "role": "member"},
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -371,8 +358,8 @@ class ActivityFolderAccessTests(APITestCase):
         self.owner = self.User.objects.create_user(username="owner", password="pass")
         self.member = self.User.objects.create_user(username="member", password="pass")
 
-        self.group = Group.objects.create(name="Editors", owner=self.owner)
-        GroupMembership.objects.create(user=self.member, group=self.group)
+        self.team = Team.objects.create(name="Editors", owner=self.owner)
+        TeamMembership.objects.create(user=self.member, team=self.team)
 
         self.root = Folder.objects.create(name="Root", owner=self.owner)
         self.other = Folder.objects.create(name="Other", owner=self.owner)
@@ -392,8 +379,7 @@ class ActivityFolderAccessTests(APITestCase):
     def test_create_activity_requires_folder_write(self):
         FolderPermission.objects.create(
             folder=self.root,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.READ,
         )
 
@@ -418,14 +404,12 @@ class ActivityFolderAccessTests(APITestCase):
         )
         FolderPermission.objects.create(
             folder=self.root,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.READ,
         )
         FolderPermission.objects.create(
             folder=self.other,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.WRITE,
         )
 

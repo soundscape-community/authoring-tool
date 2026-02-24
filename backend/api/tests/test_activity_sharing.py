@@ -15,7 +15,7 @@ class ActivitySharingTests(FolderAPITestCase):
         self.activity = self._create_activity_in_folder(self.folder)
 
     def test_read_access_allows_list_and_detail(self):
-        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.READ)
+        self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.READ)
 
         self.client.force_authenticate(user=self.member)
 
@@ -29,7 +29,7 @@ class ActivitySharingTests(FolderAPITestCase):
         self.assertEqual(detail_response.data["name"], "Test Activity")
 
     def test_read_access_denies_update_and_delete(self):
-        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.READ)
+        self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.READ)
 
         self.client.force_authenticate(user=self.member)
 
@@ -43,7 +43,7 @@ class ActivitySharingTests(FolderAPITestCase):
         self.assertEqual(delete_response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_write_access_allows_update_and_delete(self):
-        self._grant_access(self.folder, group=self.group, access=FolderPermission.Access.WRITE)
+        self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.WRITE)
 
         self.client.force_authenticate(user=self.member)
 

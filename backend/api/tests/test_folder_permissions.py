@@ -13,11 +13,10 @@ class FolderPermissionTests(FolderTestMixin, TestCase):
         self.other = User.objects.create_user(username="other", password="pass")
         self.child = Folder.objects.create(name="Child", owner=self.owner, parent=self.root)
 
-    def test_group_permission_inherited(self):
+    def test_team_permission_inherited(self):
         FolderPermission.objects.create(
             folder=self.root,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.READ,
         )
 
@@ -29,13 +28,11 @@ class FolderPermissionTests(FolderTestMixin, TestCase):
     def test_user_permission_overrides(self):
         FolderPermission.objects.create(
             folder=self.root,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.READ,
         )
         FolderPermission.objects.create(
             folder=self.child,
-            principal_type=FolderPermission.PrincipalType.USER,
             user=self.member,
             access=FolderPermission.Access.WRITE,
         )
@@ -75,8 +72,7 @@ class FolderPermissionTests(FolderTestMixin, TestCase):
         )
         FolderPermission.objects.create(
             folder=self.root,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.READ,
         )
 
@@ -89,14 +85,12 @@ class FolderPermissionTests(FolderTestMixin, TestCase):
         """A WRITE perm on child overrides READ on parent."""
         FolderPermission.objects.create(
             folder=self.root,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.READ,
         )
         FolderPermission.objects.create(
             folder=self.child,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.WRITE,
         )
 
@@ -108,8 +102,7 @@ class FolderPermissionTests(FolderTestMixin, TestCase):
         """Deleting a parent folder also deletes children and their permissions."""
         FolderPermission.objects.create(
             folder=self.child,
-            principal_type=FolderPermission.PrincipalType.GROUP,
-            group=self.group,
+            team=self.team,
             access=FolderPermission.Access.READ,
         )
         child_id = self.child.id

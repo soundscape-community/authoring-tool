@@ -8,8 +8,8 @@ from .views import (
     ActivityViewSet,
     FolderPermissionViewSet,
     FolderViewSet,
-    GroupMembershipViewSet,
-    GroupViewSet,
+    TeamMembershipViewSet,
+    TeamViewSet,
     RuntimeConfigView,
     UserViewSet,
     WaypointGroupViewSet,
@@ -23,9 +23,9 @@ router.register(r'waypoint_groups', WaypointGroupViewSet)
 router.register(r'waypoints', WaypointViewSet)
 router.register(r'waypoints_media', WaypointMediaViewSet)
 router.register(r'folders', FolderViewSet)
-router.register(r'folder_permissions', FolderPermissionViewSet)
-router.register(r'groups', GroupViewSet)
-router.register(r'group_memberships', GroupMembershipViewSet)
+router.register(r'folder_permissions', FolderPermissionViewSet, basename='folder_permission')
+router.register(r'teams', TeamViewSet)
+router.register(r'team_memberships', TeamMembershipViewSet)
 router.register(r'users', UserViewSet)
 
 urlpatterns = [

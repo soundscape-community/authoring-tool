@@ -10,7 +10,6 @@ from django.db import models
 from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 
 # Constants
@@ -321,57 +320,107 @@ class Folder(CommonModel):
         return self.name
 
 
-class FolderPermission(CommonModel):
-    class PrincipalType(models.TextChoices):
-        USER = "user", _("User")
-        GROUP = "group", _("Group")
+class FolderPermissionAccess(models.TextChoices):
+    READ = "read", _("Read")
+    WRITE = "write", _("Write")
 
-    class Access(models.TextChoices):
-        READ = "read", _("Read")
-        WRITE = "write", _("Write")
 
-    folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name="permissions")
-    principal_type = models.CharField(max_length=10, choices=PrincipalType.choices)
+class FolderUserPermission(CommonModel):
+    folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name="user_permissions")
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.CASCADE, related_name="folder_permissions"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="folder_user_permissions"
     )
-    group = models.ForeignKey("users.Group", blank=True, null=True, on_delete=models.CASCADE, related_name="folder_permissions")
-    access = models.CharField(max_length=10, choices=Access.choices)
+    access = models.CharField(max_length=10, choices=FolderPermissionAccess.choices)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=["folder", "user"],
-                condition=models.Q(principal_type="user"),
-                name="unique_folder_user_permission",
-            ),
-            models.UniqueConstraint(
-                fields=["folder", "group"],
-                condition=models.Q(principal_type="group"),
-                name="unique_folder_group_permission",
-            ),
-            models.CheckConstraint(
-                condition=(
-                    (models.Q(user__isnull=False) & models.Q(group__isnull=True))
-                    | (models.Q(user__isnull=True) & models.Q(group__isnull=False))
-                ),
-                name="folder_permission_single_principal",
-            ),
+            models.UniqueConstraint(fields=["folder", "user"], name="unique_folder_user_permission"),
         ]
 
     def __str__(self):
-        return f"{self.folder} -> {self.principal_type}:{self.user or self.group} ({self.access})"
+        return f"{self.folder} -> user:{self.user} ({self.access})"
 
-    def clean(self):
-        if self.principal_type == self.PrincipalType.USER:
-            if self.user is None or self.group is not None:
-                raise ValidationError("User principal requires user set and group unset.")
-        elif self.principal_type == self.PrincipalType.GROUP:
-            if self.group is None or self.user is not None:
-                raise ValidationError("Group principal requires group set and user unset.")
-        elif self.user is not None or self.group is not None:
-            raise ValidationError("Folder permission must specify a user or group principal.")
 
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        return super().save(*args, **kwargs)
+class FolderTeamPermission(CommonModel):
+    folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name="team_permissions")
+    team = models.ForeignKey("users.Team", on_delete=models.CASCADE, related_name="folder_team_permissions")
+    access = models.CharField(max_length=10, choices=FolderPermissionAccess.choices)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["folder", "team"], name="unique_folder_team_permission"),
+        ]
+
+    def __str__(self):
+        return f"{self.folder} -> team:{self.team} ({self.access})"
+
+
+class _FolderPermissionCompatQuerySet:
+    def __init__(self, user_qs, team_qs):
+        self.user_qs = user_qs
+        self.team_qs = team_qs
+
+    def filter(self, **kwargs):
+        user_value = kwargs.pop("user", None)
+        team_value = kwargs.pop("team", None)
+
+        user_qs = self.user_qs
+        team_qs = self.team_qs
+
+        if user_value is not None:
+            user_qs = user_qs.filter(user=user_value)
+            team_qs = FolderTeamPermission.objects.none()
+        if team_value is not None:
+            team_qs = team_qs.filter(team=team_value)
+            user_qs = FolderUserPermission.objects.none()
+
+        if kwargs:
+            user_qs = user_qs.filter(**kwargs)
+            team_qs = team_qs.filter(**kwargs)
+
+        return _FolderPermissionCompatQuerySet(user_qs, team_qs)
+
+    def update(self, **kwargs):
+        return self.user_qs.update(**kwargs) + self.team_qs.update(**kwargs)
+
+    def count(self):
+        return self.user_qs.count() + self.team_qs.count()
+
+    def __iter__(self):
+        for item in self.user_qs:
+            yield item
+        for item in self.team_qs:
+            yield item
+
+
+class _FolderPermissionCompatManager:
+    def all(self):
+        return _FolderPermissionCompatQuerySet(FolderUserPermission.objects.all(), FolderTeamPermission.objects.all())
+
+    def none(self):
+        return _FolderPermissionCompatQuerySet(FolderUserPermission.objects.none(), FolderTeamPermission.objects.none())
+
+    def filter(self, **kwargs):
+        return self.all().filter(**kwargs)
+
+    def create(self, **kwargs):
+        folder = kwargs.get("folder")
+        access = kwargs.get("access")
+        user = kwargs.get("user")
+        team = kwargs.get("team")
+
+        if user is not None and team is not None:
+            raise ValueError("Folder permission must specify only one principal: user or team.")
+        if user is not None:
+            return FolderUserPermission.objects.create(folder=folder, user=user, access=access)
+        if team is not None:
+            return FolderTeamPermission.objects.create(folder=folder, team=team, access=access)
+        raise ValueError("Folder permission must specify a user or team principal.")
+
+    def count(self):
+        return self.all().count()
+
+
+class FolderPermission:
+    Access = FolderPermissionAccess
+    objects = _FolderPermissionCompatManager()

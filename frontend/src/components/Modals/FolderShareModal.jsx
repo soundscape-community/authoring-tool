@@ -19,7 +19,7 @@ const ACCESS_OPTIONS = [
 
 export default function FolderShareModal(props) {
   const [permissions, setPermissions] = useState([]);
-  const [groups, setGroups] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [memberships, setMemberships] = useState([]);
   const [error, setError] = useState(null);
 
@@ -27,21 +27,21 @@ export default function FolderShareModal(props) {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userAccess, setUserAccess] = useState('read');
 
-  // Add group permission state
-  const [groupIdInput, setGroupIdInput] = useState('');
-  const [groupAccess, setGroupAccess] = useState('read');
+  // Add team permission state
+  const [teamIdInput, setTeamIdInput] = useState('');
+  const [teamAccess, setTeamAccess] = useState('read');
 
-  // Manage groups state
-  const [newGroupName, setNewGroupName] = useState('');
-  const [membershipGroupId, setMembershipGroupId] = useState('');
+  // Manage teams state
+  const [newTeamName, setNewTeamName] = useState('');
+  const [membershipTeamId, setMembershipTeamId] = useState('');
   const [membershipUser, setMembershipUser] = useState(null);
   const [membershipRole, setMembershipRole] = useState('member');
 
-  const groupsById = useMemo(() => {
+  const teamsById = useMemo(() => {
     const map = new Map();
-    groups.forEach((group) => map.set(group.id, group));
+    teams.forEach((team) => map.set(team.id, team));
     return map;
-  }, [groups]);
+  }, [teams]);
 
   const folderPermissions = useMemo(() => {
     if (!props.folder) {
@@ -53,10 +53,10 @@ export default function FolderShareModal(props) {
   const resetFormState = useCallback(() => {
     setSelectedUser(null);
     setUserAccess('read');
-    setGroupIdInput('');
-    setGroupAccess('read');
-    setNewGroupName('');
-    setMembershipGroupId('');
+    setTeamIdInput('');
+    setTeamAccess('read');
+    setNewTeamName('');
+    setMembershipTeamId('');
     setMembershipUser(null);
     setMembershipRole('member');
     setError(null);
@@ -69,10 +69,10 @@ export default function FolderShareModal(props) {
 
     const toastId = showLoading('Loading sharing settings...');
 
-    Promise.all([API.getFolderPermissions(), API.getGroups(), API.getGroupMemberships()])
-      .then(([permissionList, groupList, membershipList]) => {
+    Promise.all([API.getFolderPermissions(), API.getTeams(), API.getTeamMemberships()])
+      .then(([permissionList, teamList, membershipList]) => {
         setPermissions(permissionList || []);
-        setGroups(groupList || []);
+        setTeams(teamList || []);
         setMemberships(membershipList || []);
       })
       .catch((err) => {
@@ -87,7 +87,7 @@ export default function FolderShareModal(props) {
     if (props.show) {
       resetFormState();
       setPermissions([]);
-      setGroups([]);
+      setTeams([]);
       setMemberships([]);
       loadSharingData();
     }
@@ -97,9 +97,8 @@ export default function FolderShareModal(props) {
     const payload = {
       id: permission.id,
       folder: permission.folder,
-      principal_type: permission.principal_type,
       user: permission.user || null,
-      group: permission.group || null,
+      team: permission.team || null,
       access,
     };
 
@@ -133,7 +132,6 @@ export default function FolderShareModal(props) {
 
     const payload = {
       folder: props.folder.id,
-      principal_type: 'user',
       user: selectedUser.id,
       access: userAccess,
     };
@@ -146,21 +144,20 @@ export default function FolderShareModal(props) {
       .catch((err) => setError(err));
   };
 
-  const addGroupPermission = () => {
+  const addTeamPermission = () => {
     if (!props.folder) {
       return;
     }
 
-    if (!groupIdInput) {
-      setError({ message: 'Select a group.' });
+    if (!teamIdInput) {
+      setError({ message: 'Select a team.' });
       return;
     }
 
     const payload = {
       folder: props.folder.id,
-      principal_type: 'group',
-      group: groupIdInput,
-      access: groupAccess,
+      team: teamIdInput,
+      access: teamAccess,
     };
 
     API.createFolderPermission(payload)
@@ -170,29 +167,29 @@ export default function FolderShareModal(props) {
       .catch((err) => setError(err));
   };
 
-  const createGroup = () => {
-    const name = newGroupName.trim();
+  const createTeam = () => {
+    const name = newTeamName.trim();
     if (!name) {
-      setError({ message: 'Group name is required.' });
+      setError({ message: 'Team name is required.' });
       return;
     }
 
-    API.createGroup({ name })
-      .then((group) => {
-        setGroups((prev) => prev.concat(group));
-        setNewGroupName('');
+    API.createTeam({ name })
+      .then((team) => {
+        setTeams((prev) => prev.concat(team));
+        setNewTeamName('');
       })
       .catch((err) => setError(err));
   };
 
   const addMembership = () => {
-    if (!membershipGroupId || !membershipUser) {
-      setError({ message: 'Group and user are required.' });
+    if (!membershipTeamId || !membershipUser) {
+      setError({ message: 'Team and user are required.' });
       return;
     }
 
-    API.createGroupMembership({
-      group: membershipGroupId,
+    API.createTeamMembership({
+      team: membershipTeamId,
       user: membershipUser.id,
       role: membershipRole,
     })
@@ -207,30 +204,40 @@ export default function FolderShareModal(props) {
     if (!window.confirm('Remove this member?')) {
       return;
     }
-    API.deleteGroupMembership(membership.id)
+    API.deleteTeamMembership(membership.id)
       .then(() => {
         setMemberships((prev) => prev.filter((item) => item.id !== membership.id));
       })
       .catch((err) => setError(err));
   };
 
-  const membershipGroups = useMemo(() => {
+  const membershipTeams = useMemo(() => {
     const grouped = new Map();
     memberships.forEach((membership) => {
-      if (!grouped.has(membership.group)) {
-        grouped.set(membership.group, []);
+      if (!grouped.has(membership.team)) {
+        grouped.set(membership.team, []);
       }
-      grouped.get(membership.group).push(membership);
+      grouped.get(membership.team).push(membership);
     });
     return grouped;
   }, [memberships]);
 
   /** Display name for a permission row's principal. */
   const principalLabel = (permission) => {
-    if (permission.principal_type === 'user') {
+    if (permission.user) {
       return permission.user_detail?.username || permission.user;
     }
-    return permission.group_detail?.name || groupsById.get(permission.group)?.name || permission.group;
+    return permission.team_detail?.name || teamsById.get(permission.team)?.name || permission.team;
+  };
+
+  const principalType = (permission) => {
+    if (permission.user) {
+      return 'user';
+    }
+    if (permission.team) {
+      return 'team';
+    }
+    return 'unknown';
   };
 
   /** Display name for a membership's user. */
@@ -275,8 +282,10 @@ export default function FolderShareModal(props) {
                     <tr key={permission.id}>
                       <td>{principalLabel(permission)}</td>
                       <td>
-                        <span className={`badge ${permission.principal_type === 'user' ? 'bg-info' : 'bg-secondary'}`}>
-                          {permission.principal_type}
+                        <span
+                          className={`badge ${principalType(permission) === 'user' ? 'bg-info' : 'bg-secondary'}`}
+                        >
+                          {principalType(permission)}
                         </span>
                       </td>
                       <td>
@@ -336,22 +345,22 @@ export default function FolderShareModal(props) {
             </div>
 
             <div className="border-top pt-3">
-              <h6>Add group access</h6>
+              <h6>Add team access</h6>
               <div className="d-flex align-items-end gap-2">
-                <Form.Group className="flex-grow-1" controlId="folder-permission-group">
-                  <Form.Label>Group</Form.Label>
-                  <Form.Select value={groupIdInput} onChange={(event) => setGroupIdInput(event.target.value)}>
-                    <option value="">Select a group</option>
-                    {groups.map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name}
+                <Form.Group className="flex-grow-1" controlId="folder-permission-team">
+                  <Form.Label>Team</Form.Label>
+                  <Form.Select value={teamIdInput} onChange={(event) => setTeamIdInput(event.target.value)}>
+                    <option value="">Select a team</option>
+                    {teams.map((team) => (
+                      <option key={team.id} value={team.id}>
+                        {team.name}
                       </option>
                     ))}
                   </Form.Select>
                 </Form.Group>
-                <Form.Group controlId="folder-permission-group-access">
+                <Form.Group controlId="folder-permission-team-access">
                   <Form.Label>Access</Form.Label>
-                  <Form.Select value={groupAccess} onChange={(event) => setGroupAccess(event.target.value)}>
+                  <Form.Select value={teamAccess} onChange={(event) => setTeamAccess(event.target.value)}>
                     {ACCESS_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
@@ -359,39 +368,39 @@ export default function FolderShareModal(props) {
                     ))}
                   </Form.Select>
                 </Form.Group>
-                <Button variant="primary" onClick={addGroupPermission} disabled={!groupIdInput}>
+                <Button variant="primary" onClick={addTeamPermission} disabled={!teamIdInput}>
                   Add
                 </Button>
               </div>
             </div>
 
             <div className="border-top pt-3">
-              <h6>Manage groups</h6>
+              <h6>Manage teams</h6>
               <div className="d-flex align-items-end gap-2 mb-3">
-                <Form.Group className="flex-grow-1" controlId="folder-group-create">
-                  <Form.Label>New group name</Form.Label>
+                <Form.Group className="flex-grow-1" controlId="folder-team-create">
+                  <Form.Label>New team name</Form.Label>
                   <Form.Control
                     type="text"
-                    value={newGroupName}
-                    onChange={(event) => setNewGroupName(event.target.value)}
+                    value={newTeamName}
+                    onChange={(event) => setNewTeamName(event.target.value)}
                   />
                 </Form.Group>
-                <Button variant="outline-primary" onClick={createGroup}>
-                  Create group
+                <Button variant="outline-primary" onClick={createTeam}>
+                  Create team
                 </Button>
               </div>
 
               <div className="d-flex align-items-end gap-2 mb-3">
-                <Form.Group className="flex-grow-1" controlId="folder-group-membership-group">
-                  <Form.Label>Group</Form.Label>
+                <Form.Group className="flex-grow-1" controlId="folder-team-membership-team">
+                  <Form.Label>Team</Form.Label>
                   <Form.Select
-                    value={membershipGroupId}
-                    onChange={(event) => setMembershipGroupId(event.target.value)}
+                    value={membershipTeamId}
+                    onChange={(event) => setMembershipTeamId(event.target.value)}
                   >
-                    <option value="">Select a group</option>
-                    {groups.map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name}
+                    <option value="">Select a team</option>
+                    {teams.map((team) => (
+                      <option key={team.id} value={team.id}>
+                        {team.name}
                       </option>
                     ))}
                   </Form.Select>
@@ -405,35 +414,35 @@ export default function FolderShareModal(props) {
                     placeholder="Search by username..."
                   />
                 </Form.Group>
-                <Form.Group controlId="folder-group-membership-role">
+                <Form.Group controlId="folder-team-membership-role">
                   <Form.Label>Role</Form.Label>
                   <Form.Select value={membershipRole} onChange={(event) => setMembershipRole(event.target.value)}>
                     <option value="member">Member</option>
                     <option value="admin">Admin</option>
                   </Form.Select>
                 </Form.Group>
-                <Button variant="outline-primary" onClick={addMembership} disabled={!membershipGroupId || !membershipUser}>
+                <Button variant="outline-primary" onClick={addMembership} disabled={!membershipTeamId || !membershipUser}>
                   Add member
                 </Button>
               </div>
 
-              {groups.length > 0 && (
+              {teams.length > 0 && (
                 <Table responsive size="sm">
                   <thead>
                     <tr>
-                      <th>Group</th>
+                      <th>Team</th>
                       <th>Members</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {groups.map((group) => (
-                      <tr key={`group-${group.id}`}>
-                        <td>{group.name}</td>
+                    {teams.map((team) => (
+                      <tr key={`team-${team.id}`}>
+                        <td>{team.name}</td>
                         <td>
-                          {(membershipGroups.get(group.id) || []).length === 0 ? (
+                          {(membershipTeams.get(team.id) || []).length === 0 ? (
                             <span className="text-muted">No members yet.</span>
                           ) : (
-                            (membershipGroups.get(group.id) || []).map((membership) => (
+                            (membershipTeams.get(team.id) || []).map((membership) => (
                               <div key={membership.id} className="d-flex align-items-center gap-2 mb-1">
                                 <span>{memberLabel(membership)}</span>
                                 <span className="text-muted">({membership.role})</span>

@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from django.core.files.base import ContentFile
 from django.db import models, transaction
 from django.utils import timezone
-from users.models import Group, GroupMembership
+from users.models import Team, TeamMembership
 
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.mixins import ListModelMixin
@@ -22,21 +22,23 @@ from rest_framework.views import APIView
 from .models import (
     Activity,
     Folder,
-    FolderPermission,
+    FolderTeamPermission,
+    FolderPermissionAccess,
+    FolderUserPermission,
     MediaType,
     Waypoint,
     WaypointGroup,
     WaypointGroupType,
     WaypointMedia,
 )
-from .permissions import can_manage_group, can_write_activity, get_accessible_folder_ids, resolve_folder_access
+from .permissions import can_manage_team, can_write_activity, get_accessible_folder_ids, resolve_folder_access
 from .serializers import (
     ActivityListSerializer,
     ActivityDetailSerializer,
     FolderPermissionSerializer,
     FolderSerializer,
-    GroupMembershipSerializer,
-    GroupSerializer,
+    TeamMembershipSerializer,
+    TeamSerializer,
     UserSerializer,
     WaypointGroupSerializer,
     WaypointSerializer,
@@ -428,29 +430,30 @@ class FolderViewSet(ModelViewSet):
         instance.delete()
 
 
-class FolderPermissionViewSet(ModelViewSet):
-    queryset = FolderPermission.objects.all()
+class FolderPermissionViewSet(GenericViewSet):
     serializer_class = FolderPermissionSerializer
 
-    def get_queryset(self):
+    def _get_writable_folder_ids(self):
         user = self.request.user
         if not user or not user.is_authenticated:
-            return FolderPermission.objects.none()
+            return set()
         if user.is_staff:
-            return FolderPermission.objects.all()
+            return set(Folder.objects.values_list("id", flat=True))
 
         # Owned folders are always writable.
         owned_ids = set(Folder.objects.filter(owner=user).values_list("id", flat=True))
 
-        # Folders with explicit WRITE permission for this user or their groups.
-        group_ids = list(GroupMembership.objects.filter(user_id=user.id).values_list("group_id", flat=True))
-        write_perm_folder_ids = set(
-            FolderPermission.objects.filter(
-                models.Q(principal_type=FolderPermission.PrincipalType.USER, user_id=user.id)
-                | models.Q(principal_type=FolderPermission.PrincipalType.GROUP, group_id__in=group_ids),
-                access=FolderPermission.Access.WRITE,
-            ).values_list("folder_id", flat=True)
+        # Folders with explicit WRITE permission for this user or their teams.
+        team_ids = list(TeamMembership.objects.filter(user_id=user.id).values_list("team_id", flat=True))
+        user_write_ids = set(
+            FolderUserPermission.objects.filter(user_id=user.id, access=FolderPermissionAccess.WRITE)
+            .values_list("folder_id", flat=True)
         )
+        team_write_ids = set(
+            FolderTeamPermission.objects.filter(team_id__in=team_ids, access=FolderPermissionAccess.WRITE)
+            .values_list("folder_id", flat=True)
+        )
+        write_perm_folder_ids = user_write_ids | team_write_ids
 
         writable_ids = owned_ids | write_perm_folder_ids
 
@@ -467,21 +470,82 @@ class FolderPermissionViewSet(ModelViewSet):
             writable_ids |= child_ids
             frontier = child_ids
 
-        return FolderPermission.objects.filter(folder_id__in=writable_ids)
+        return writable_ids
+
+    def get_queryset(self):
+        writable_ids = self._get_writable_folder_ids()
+        user_qs = FolderUserPermission.objects.filter(folder_id__in=writable_ids).select_related("folder", "user")
+        team_qs = FolderTeamPermission.objects.filter(folder_id__in=writable_ids).select_related("folder", "team")
+        return list(user_qs) + list(team_qs)
+
+    def _get_permission_object(self, permission_id):
+        try:
+            return FolderUserPermission.objects.select_related("folder", "user").get(pk=permission_id)
+        except FolderUserPermission.DoesNotExist:
+            try:
+                return FolderTeamPermission.objects.select_related("folder", "team").get(pk=permission_id)
+            except FolderTeamPermission.DoesNotExist as exc:
+                raise ValidationError("Folder permission not found") from exc
+
+    def list(self, request):
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        instance = self._get_permission_object(pk)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         folder = serializer.validated_data["folder"]
         access = resolve_folder_access(self.request.user, folder)
         if not access.can_write:
             raise ValidationError("No permission to modify folder sharing")
-        serializer.save()
+        access_value = serializer.validated_data["access"]
+        user = serializer.validated_data.get("user")
+        team = serializer.validated_data.get("team")
+        if user is not None:
+            return FolderUserPermission.objects.create(
+                folder=folder,
+                user=user,
+                access=access_value,
+            )
+        if team is None:
+            raise ValidationError("Folder permission must specify a user or team principal")
+        return FolderTeamPermission.objects.create(
+            folder=folder,
+            team=team,
+            access=access_value,
+        )
+
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = self.perform_create(serializer)
+        response_serializer = self.get_serializer(instance)
+        return Response(response_serializer.data, status=201)
 
     def perform_update(self, serializer):
         folder = serializer.instance.folder
         access = resolve_folder_access(self.request.user, folder)
         if not access.can_write:
             raise ValidationError("No permission to modify folder sharing")
-        serializer.save()
+        serializer.instance.access = serializer.validated_data.get("access", serializer.instance.access)
+        serializer.instance.save(update_fields=["access", "updated"])
+
+    def update(self, request, pk=None):
+        instance = self._get_permission_object(pk)
+        serializer = self.get_serializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(self.get_serializer(instance).data)
+
+    def partial_update(self, request, pk=None):
+        instance = self._get_permission_object(pk)
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(self.get_serializer(instance).data)
 
     def perform_destroy(self, instance):
         folder = instance.folder
@@ -490,66 +554,71 @@ class FolderPermissionViewSet(ModelViewSet):
             raise ValidationError("No permission to modify folder sharing")
         instance.delete()
 
+    def destroy(self, request, pk=None):
+        instance = self._get_permission_object(pk)
+        self.perform_destroy(instance)
+        return Response(status=204)
 
-class GroupViewSet(ModelViewSet):
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
+
+class TeamViewSet(ModelViewSet):
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
 
     def get_queryset(self):
         user = self.request.user
         if not user or not user.is_authenticated:
-            return Group.objects.none()
+            return Team.objects.none()
         if user.is_staff:
-            return Group.objects.all()
-        return Group.objects.filter(
+            return Team.objects.all()
+        return Team.objects.filter(
             models.Q(owner=user)
-            | models.Q(memberships__user=user, memberships__role=GroupMembership.Role.ADMIN)
+            | models.Q(memberships__user=user, memberships__role=TeamMembership.Role.ADMIN)
         ).distinct()
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
     def perform_update(self, serializer):
-        if not can_manage_group(self.request.user, serializer.instance):
-            raise ValidationError("No permission to manage this group")
+        if not can_manage_team(self.request.user, serializer.instance):
+            raise ValidationError("No permission to manage this team")
         serializer.save()
 
     def perform_destroy(self, instance):
-        if not can_manage_group(self.request.user, instance):
-            raise ValidationError("No permission to manage this group")
+        if not can_manage_team(self.request.user, instance):
+            raise ValidationError("No permission to manage this team")
         instance.delete()
 
 
-class GroupMembershipViewSet(ModelViewSet):
-    queryset = GroupMembership.objects.all()
-    serializer_class = GroupMembershipSerializer
+class TeamMembershipViewSet(ModelViewSet):
+    queryset = TeamMembership.objects.all()
+    serializer_class = TeamMembershipSerializer
 
     def get_queryset(self):
         user = self.request.user
         if not user or not user.is_authenticated:
-            return GroupMembership.objects.none()
+            return TeamMembership.objects.none()
         if user.is_staff:
-            return GroupMembership.objects.all()
-        return GroupMembership.objects.filter(
-            models.Q(group__owner=user)
-            | models.Q(group__memberships__user=user, group__memberships__role=GroupMembership.Role.ADMIN)
+            return TeamMembership.objects.all()
+        return TeamMembership.objects.filter(
+            models.Q(team__owner=user)
+            | models.Q(team__memberships__user=user, team__memberships__role=TeamMembership.Role.ADMIN)
         ).distinct()
 
     def perform_create(self, serializer):
-        group = serializer.validated_data["group"]
-        if not can_manage_group(self.request.user, group):
-            raise ValidationError("No permission to manage group memberships")
+        team = serializer.validated_data["team"]
+        if not can_manage_team(self.request.user, team):
+            raise ValidationError("No permission to manage team memberships")
         serializer.save()
 
     def perform_update(self, serializer):
-        group = serializer.instance.group
-        if not can_manage_group(self.request.user, group):
-            raise ValidationError("No permission to manage group memberships")
+        team = serializer.instance.team
+        if not can_manage_team(self.request.user, team):
+            raise ValidationError("No permission to manage team memberships")
         serializer.save()
 
     def perform_destroy(self, instance):
-        if not can_manage_group(self.request.user, instance.group):
-            raise ValidationError("No permission to manage group memberships")
+        if not can_manage_team(self.request.user, instance.team):
+            raise ValidationError("No permission to manage team memberships")
         instance.delete()
 
 
