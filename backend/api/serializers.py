@@ -139,8 +139,6 @@ class FolderPermissionSerializer(serializers.Serializer):
                 if team is None and "team" not in attrs:
                     team = self.instance.team
                 user = None
-
-        if self.instance:
             if isinstance(self.instance, FolderUserPermission) and user is None:
                 raise serializers.ValidationError("User permission requires user.")
             if isinstance(self.instance, FolderTeamPermission) and team is None:

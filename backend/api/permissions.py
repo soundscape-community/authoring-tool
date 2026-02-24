@@ -54,9 +54,9 @@ def resolve_folder_access(user, folder: Folder) -> FolderAccess:
 
     team_ids = TeamMembership.objects.filter(user_id=user.id).values_list("team_id", flat=True)
 
-    folder_ids = list(_iter_folder_ancestors(folder))
-    user_permissions = FolderUserPermission.objects.filter(folder__in=folder_ids, user_id=user.id)
-    team_permissions = FolderTeamPermission.objects.filter(folder__in=folder_ids, team_id__in=team_ids)
+    ancestor_folders = list(_iter_folder_ancestors(folder))
+    user_permissions = FolderUserPermission.objects.filter(folder__in=ancestor_folders, user_id=user.id)
+    team_permissions = FolderTeamPermission.objects.filter(folder__in=ancestor_folders, team_id__in=team_ids)
 
     user_access = _access_from_permissions(user_permissions)
     team_access = _access_from_permissions(team_permissions)

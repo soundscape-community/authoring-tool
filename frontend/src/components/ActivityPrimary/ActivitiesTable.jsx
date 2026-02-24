@@ -115,13 +115,9 @@ function getFolderPath(foldersById, folderId) {
   return path;
 }
 
-function getChildFolders(folders, parentId) {
-  const normalizedParentId = parentId || null;
-  return (folders || []).filter((folder) => (folder.parent || null) === normalizedParentId);
-}
-
 export default function ActivitiesTable(props) {
-  const foldersById = React.useMemo(() => buildFolderIndex(props.folders).byId, [props.folders]);
+  const foldersIndex = React.useMemo(() => buildFolderIndex(props.folders), [props.folders]);
+  const foldersById = foldersIndex.byId;
   const selectedFolderId = props.selectedFolderId;
 
   const folderPath = React.useMemo(() => {
@@ -151,10 +147,7 @@ export default function ActivitiesTable(props) {
     return items;
   }, [folderPath, selectedFolderId]);
 
-  const childFolders = React.useMemo(
-    () => getChildFolders(props.folders, selectedFolderId),
-    [props.folders, selectedFolderId],
-  );
+  const childFolders = foldersIndex.byParent[selectedFolderId || null] || [];
 
   const selectedActivityIds = props.selectedActivityIds || [];
   const selectionCount = selectedActivityIds.length;
