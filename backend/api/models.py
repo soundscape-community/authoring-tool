@@ -297,35 +297,6 @@ class UserPermissions(models.Model):
         return '{0} allow app: {1}, allow api {2}'.format(self.user_email, self.allow_app, self.allow_api)
 
 
-class Group(CommonModel):
-    name = models.TextField()
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="owned_groups")
-
-    class Meta:
-        ordering = ["name"]
-
-    def __str__(self):
-        return self.name
-
-
-class GroupMembership(CommonModel):
-    class Role(models.TextChoices):
-        MEMBER = "member", _("Member")
-        ADMIN = "admin", _("Admin")
-
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="group_memberships")
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="memberships")
-    role = models.CharField(max_length=20, choices=Role.choices, default=Role.MEMBER)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["user", "group"], name="unique_group_membership"),
-        ]
-
-    def __str__(self):
-        return f"{self.user} -> {self.group}"
-
-
 class Folder(CommonModel):
     name = models.TextField()
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="folders")
@@ -364,7 +335,7 @@ class FolderPermission(CommonModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.CASCADE, related_name="folder_permissions"
     )
-    group = models.ForeignKey(Group, blank=True, null=True, on_delete=models.CASCADE, related_name="folder_permissions")
+    group = models.ForeignKey("users.Group", blank=True, null=True, on_delete=models.CASCADE, related_name="folder_permissions")
     access = models.CharField(max_length=10, choices=Access.choices)
 
     class Meta:

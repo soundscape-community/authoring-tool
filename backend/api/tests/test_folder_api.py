@@ -2,8 +2,9 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
+from users.models import Group, GroupMembership
 
-from api.models import Activity, Folder, FolderPermission, Group, GroupMembership
+from api.models import Activity, Folder, FolderPermission
 
 
 class FolderApiTests(APITestCase):

@@ -5,13 +5,12 @@
 from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
+from users.models import Group, GroupMembership
 
 from .models import (
     Activity,
     Folder,
     FolderPermission,
-    Group,
-    GroupMembership,
     WaypointGroup,
     Waypoint,
     WaypointMedia,

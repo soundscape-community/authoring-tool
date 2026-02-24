@@ -7,8 +7,9 @@ from dataclasses import dataclass
 from typing import Iterable, Optional
 
 from django.db import models
+from users.models import GroupMembership
 
-from .models import Folder, FolderPermission, GroupMembership
+from .models import Folder, FolderPermission
 
 
 @dataclass(frozen=True)

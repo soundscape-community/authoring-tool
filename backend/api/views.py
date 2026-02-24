@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.core.files.base import ContentFile
 from django.db import models, transaction
 from django.utils import timezone
+from users.models import Group, GroupMembership
 
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.mixins import ListModelMixin
@@ -22,8 +23,6 @@ from .models import (
     Activity,
     Folder,
     FolderPermission,
-    Group,
-    GroupMembership,
     MediaType,
     Waypoint,
     WaypointGroup,
