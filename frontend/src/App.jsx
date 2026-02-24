@@ -424,7 +424,6 @@ export default class App extends React.Component {
     } catch (error) {
       error.title = 'Error deleting folder';
       showError(error);
-      throw error;
     } finally {
       dismissLoading(toastId);
     }
