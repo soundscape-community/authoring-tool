@@ -43,20 +43,31 @@ _DOWNLOAD_TIMEOUT = getattr(settings, 'GPX_DOWNLOAD_TIMEOUT', 100)  # seconds
 
 
 def _is_private_ip(hostname: str) -> bool:
-    """Return True if *hostname* resolves to a private/reserved IP address."""
+    """Return True if *hostname* resolves to a non-public/rejectable IP address."""
     try:
         infos = socket.getaddrinfo(hostname, None)
     except socket.gaierror:
         return True  # unresolvable → reject
-    for family, _type, _proto, _canonname, sockaddr in infos:
+    for _family, _type, _proto, _canonname, sockaddr in infos:
         ip = ipaddress.ip_address(sockaddr[0])
-        if ip.is_private or ip.is_reserved or ip.is_loopback or ip.is_link_local:
+        if (
+            ip.is_private
+            or ip.is_reserved
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_unspecified
+            or ip.is_multicast
+        ):
             return True
     return False
 
 
 def _validate_url(url: str) -> None:
-    """Raise ``ValueError`` if *url* is not a safe HTTP(S) URL."""
+    """Raise ``ValueError`` if *url* is not a safe HTTP(S) URL.
+
+    Note: DNS resolution here is a best-effort SSRF mitigation and cannot fully
+    prevent DNS rebinding TOCTOU attacks between validation and request.
+    """
     parsed = urlparse(url)
     if parsed.scheme not in ("http", "https"):
         raise ValueError(f"URL scheme '{parsed.scheme}' is not allowed (only http/https)")
