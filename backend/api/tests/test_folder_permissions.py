@@ -1,4 +1,5 @@
 # Copyright (c) Soundscape Community Contributors.
+from django.contrib.auth.models import AnonymousUser
 from django.test import TestCase
 
 from api.models import Folder, FolderPermission
@@ -43,6 +44,12 @@ class FolderPermissionTests(FolderTestMixin, TestCase):
 
     def test_no_permission(self):
         access = resolve_folder_access(self.other, self.child)
+
+        self.assertFalse(access.can_read)
+        self.assertFalse(access.can_write)
+
+    def test_unauthenticated_user_has_no_access(self):
+        access = resolve_folder_access(AnonymousUser(), self.child)
 
         self.assertFalse(access.can_read)
         self.assertFalse(access.can_write)
