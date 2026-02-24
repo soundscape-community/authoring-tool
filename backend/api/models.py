@@ -6,6 +6,7 @@ import os
 import uuid
 
 from django.conf import settings
+from django.core.exceptions import MultipleObjectsReturned
 from django.db import models
 from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
@@ -385,6 +386,44 @@ class _FolderPermissionCompatQuerySet:
 
     def count(self):
         return self.user_qs.count() + self.team_qs.count()
+
+    def exists(self):
+        return self.user_qs.exists() or self.team_qs.exists()
+
+    def delete(self):
+        user_count, user_details = self.user_qs.delete()
+        team_count, team_details = self.team_qs.delete()
+
+        merged_details = dict(user_details)
+        for key, value in team_details.items():
+            merged_details[key] = merged_details.get(key, 0) + value
+
+        return user_count + team_count, merged_details
+
+    def get(self, **kwargs):
+        user_obj = None
+        team_obj = None
+
+        try:
+            user_obj = self.user_qs.get(**kwargs)
+        except FolderUserPermission.DoesNotExist:
+            pass
+
+        try:
+            team_obj = self.team_qs.get(**kwargs)
+        except FolderTeamPermission.DoesNotExist:
+            pass
+
+        if user_obj is not None and team_obj is not None:
+            raise MultipleObjectsReturned("get() returned more than one object.")
+        if user_obj is not None:
+            return user_obj
+        if team_obj is not None:
+            return team_obj
+
+        raise FolderUserPermission.DoesNotExist(
+            "Folder permission matching query does not exist."
+        )
 
     def __iter__(self):
         for item in self.user_qs:

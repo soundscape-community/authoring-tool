@@ -91,16 +91,6 @@ def can_manage_team(user, team) -> bool:
     ).exists()
 
 
-def is_team_admin(user, team_id) -> bool:
-    if not user or not user.is_authenticated:
-        return False
-    return TeamMembership.objects.filter(
-        team_id=team_id,
-        user_id=user.id,
-        role=TeamMembership.Role.ADMIN,
-    ).exists()
-
-
 def get_accessible_folder_ids(user, max_depth: int = 100) -> set:
     """Return IDs of all folders the user may access (read or write).
 

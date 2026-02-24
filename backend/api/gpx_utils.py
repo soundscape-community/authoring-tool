@@ -81,17 +81,21 @@ def _validate_url(url: str) -> None:
 def _safe_download(url: str) -> bytes:
     """Download *url* safely with timeout, size limit, and SSRF protection."""
     _validate_url(url)
-    response = requests.get(url, timeout=_DOWNLOAD_TIMEOUT, stream=True)
-    response.raise_for_status()
-    chunks = []
-    downloaded = 0
-    for chunk in response.iter_content(chunk_size=65536):
-        downloaded += len(chunk)
-        if downloaded > _MAX_DOWNLOAD_BYTES:
-            response.close()
-            raise ValueError(f"Download exceeds maximum allowed size of {_MAX_DOWNLOAD_BYTES} bytes")
-        chunks.append(chunk)
-    return b"".join(chunks)
+    response = requests.get(url, timeout=_DOWNLOAD_TIMEOUT, stream=True, allow_redirects=False)
+    try:
+        if response.is_redirect or response.is_permanent_redirect:
+            raise ValueError("Redirects are not allowed")
+        response.raise_for_status()
+        chunks = []
+        downloaded = 0
+        for chunk in response.iter_content(chunk_size=65536):
+            downloaded += len(chunk)
+            if downloaded > _MAX_DOWNLOAD_BYTES:
+                raise ValueError(f"Download exceeds maximum allowed size of {_MAX_DOWNLOAD_BYTES} bytes")
+            chunks.append(chunk)
+        return b"".join(chunks)
+    finally:
+        response.close()
 
 GPXSC = 'https://microsoft.com/Soundscape'
 GPXSC_NS = '{gpxsc}'

@@ -1,5 +1,4 @@
 # Copyright (c) Soundscape Community Contributors.
-# Copyright (c) Soundscape Community Contributors.
 # Licensed under the MIT License.
 # This is AI generated.
 
