@@ -5,7 +5,6 @@
 import json
 import os
 import base64
-import json
 from http import HTTPStatus
 
 from django.http import HttpResponse
@@ -23,10 +22,10 @@ class UserParseMiddleware:
 
     def __call__(self, request):
         id_token = request.headers.get('X-Ms-Token-Aad-Id-Token')
-        if id_token == None and settings.DEBUG:
+        if id_token is None and settings.DEBUG:
             id_token = os.environ.get('X_MS_TOKEN_AAD_ID_TOKEN')
 
-        if id_token == None:
+        if id_token is None:
             return HttpResponse('Unauthorized (missing user identification token)', status=HTTPStatus.UNAUTHORIZED)
 
         aad_user = aad_user_from_id_token(id_token)

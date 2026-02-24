@@ -137,7 +137,7 @@ class Activity(CommonModel):
 
     @property
     def can_link(self):
-        return self.last_published != None
+        return self.last_published is not None
 
     @property
     def waypoint_groups_all(self):

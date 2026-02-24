@@ -288,7 +288,7 @@ def gpx_to_activity(gpx_file: str, user) -> Activity:
         raise Exception("GPX import error: missing required user ID")
 
     gpx = gpxpy.parse(gpx_file)
-    if gpx == None:
+    if gpx is None:
         raise Exception("GPX import error: invalid GPX file")
 
     activity = Activity()
@@ -334,7 +334,7 @@ def gpx_to_activity(gpx_file: str, user) -> Activity:
 
     version = GPXVersion.v1
 
-    if gpxsc_meta != None:
+    if gpxsc_meta is not None:
         if gpxsc_meta.get('expires'):
             activity.expires = gpxsc_meta.get('expires').lower() == 'true'
 
@@ -393,7 +393,7 @@ def gpx_to_waypoint(gpx_waypoint: gpxpy.gpx.GPXWaypoint, waypoint_group: Waypoin
 
     gpxsc_annotations = next((e for e in gpx_waypoint.extensions if e.tag == (GPXSC_NS_FULL + 'annotations')), None)
 
-    if gpxsc_annotations != None:
+    if gpxsc_annotations is not None:
         for sub_element in gpxsc_annotations:
             if sub_element.attrib.get('type') == 'arrival':
                 activity_waypoint.arrival_callout = sub_element.text
@@ -403,7 +403,7 @@ def gpx_to_waypoint(gpx_waypoint: gpxpy.gpx.GPXWaypoint, waypoint_group: Waypoin
     gpxsc_links = next((e for e in gpx_waypoint.extensions if e.tag == (GPXSC_NS_FULL + 'links')), None)
 
     # Waypoint Media
-    if gpxsc_links != None:
+    if gpxsc_links is not None:
         activity_waypoint.save()
 
         for gpxsc_link in gpxsc_links:
@@ -422,7 +422,7 @@ def gpx_to_waypoint(gpx_waypoint: gpxpy.gpx.GPXWaypoint, waypoint_group: Waypoin
             media = File(io.BytesIO(media_data), name=filename)
 
             mime_type_element = next((e for e in gpxsc_link if e.tag == 'type'), None)
-            if mime_type_element == None:
+            if mime_type_element is None:
                 continue
 
             if mime_type_element.text.startswith('image'):

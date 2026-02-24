@@ -1,5 +1,4 @@
 # Copyright (c) Soundscape Community Contributors.
-from django.contrib.auth import get_user_model
 from rest_framework import status
 
 from api.models import Activity, FolderPermission

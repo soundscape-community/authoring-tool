@@ -1,13 +1,11 @@
 # Copyright (c) Soundscape Community Contributors.
 from decimal import Decimal
-from io import BytesIO
 
-from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 
-from api.models import Folder, FolderPermission, Waypoint, WaypointGroup, WaypointGroupType
-from api.tests.base import FolderAPITestCase, User
+from api.models import FolderPermission, Waypoint, WaypointGroup, WaypointGroupType
+from api.tests.base import FolderAPITestCase
 
 
 class WaypointAccessTests(FolderAPITestCase):

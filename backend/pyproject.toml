@@ -27,6 +27,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "autopep8>=2.3.2",
+    "ruff>=0.15.2",
 ]
 
 [tool.uv.sources]
@@ -34,3 +35,7 @@ dev = [
 # see https://github.com/tkrajina/gpxpy/pull/282
 # The PR has been merged but not released yet.
 gpxpy = { git = "https://github.com/RDMurray/gpxpy", rev = "escape" }
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**/*.py" = ["S106"]
+"backend/settings/*.py" = ["F403", "F405"]

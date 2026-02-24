@@ -203,7 +203,7 @@ class ActivityViewSet(ModelViewSet):
 
         try:
             activity: Activity = gpx_to_activity(gpx, user)
-        except Exception as e:
+        except Exception:
             raise ValidationError(
                 'Invalid activity. Please use a previously exported GPX file containing the activity.')
 

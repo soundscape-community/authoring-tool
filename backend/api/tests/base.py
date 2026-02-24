@@ -10,8 +10,6 @@ from api.models import (
     Activity,
     Folder,
     FolderPermission,
-    WaypointGroup,
-    WaypointGroupType,
 )
 
 User = get_user_model()

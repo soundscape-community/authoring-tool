@@ -1,5 +1,4 @@
 # Copyright (c) Soundscape Community Contributors.
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from api.models import Folder, FolderPermission
