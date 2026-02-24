@@ -268,7 +268,7 @@ export default function FolderTree({
     if (selectedFolderId && !rootExpanded) {
       setRootExpanded(true);
     }
-  }, [rootExpanded, selectedFolderId]);
+  }, [selectedFolderId]);
 
   return (
     <ListGroup variant={variant} role="tree" aria-label={ariaLabel} className={className}>
