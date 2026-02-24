@@ -333,7 +333,7 @@ export default function MapView(props) {
       return;
     }
 
-    const container = mapRef.current.getContainer?.() ?? mapRef.current;
+    const container = mapRef.current.getContainer();
     if (props.editing) {
       container.style.cursor = 'crosshair';
     } else {
