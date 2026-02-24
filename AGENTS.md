@@ -28,6 +28,9 @@ This is a Django + React web application for creating routed activities (GPS-bas
 - **Ignore `requirements.txt`** - project uses `pyproject.toml` and `uv.lock` for dependency management
 - Frontend dependencies managed with `npm` in `frontend/` directory
 
+### Agent Clarifications
+- When clarification is needed and the tool is available, use `ask_questions` instead of ad-hoc free-text questions so prompts are explicit and choices are structured.
+
 ### Frontend Build Process
 - Frontend builds to `backend/frontend/serve/` via Vite config
 - Development: `npm run start` (port 3000) proxies API calls to Django (port 8000) - no build needed

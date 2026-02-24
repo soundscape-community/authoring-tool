@@ -23,7 +23,9 @@ export default function FolderRenameModal(props) {
     setError(null);
   }, [props.folder, props.show]);
 
-  const renameFolder = () => {
+  const renameFolder = (event) => {
+    event?.preventDefault();
+
     if (!props.folder) {
       return;
     }
@@ -62,26 +64,28 @@ export default function FolderRenameModal(props) {
       <Modal.Header closeButton>
         <Modal.Title>Rename Folder</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        <Form.Group className="mb-3" controlId="folder-rename-name">
-          <Form.Label>Folder name</Form.Label>
-          <Form.Control
-            type="text"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            autoFocus
-          />
-        </Form.Group>
-        {error && <ErrorAlert error={error} />}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={props.onCancel}>
-          Cancel
-        </Button>
-        <Button variant="primary" onClick={renameFolder}>
-          Rename
-        </Button>
-      </Modal.Footer>
+      <Form onSubmit={renameFolder}>
+        <Modal.Body>
+          <Form.Group className="mb-3" controlId="folder-rename-name">
+            <Form.Label>Folder name</Form.Label>
+            <Form.Control
+              type="text"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              autoFocus
+            />
+          </Form.Group>
+          {error && <ErrorAlert error={error} />}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={props.onCancel}>
+            Cancel
+          </Button>
+          <Button variant="primary" type="submit">
+            Rename
+          </Button>
+        </Modal.Footer>
+      </Form>
     </Modal>
   );
 }
