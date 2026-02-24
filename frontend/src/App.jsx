@@ -26,6 +26,7 @@ import MapOverlayModal from './components/Modals/MapOverlayModal';
 import ActivityImportModal from './components/Modals/ActivityImportModal';
 import ActivityBulkDeleteModal from './components/Modals/ActivityBulkDeleteModal';
 import ActivityBulkMoveModal from './components/Modals/ActivityBulkMoveModal';
+import FolderCreateModal from './components/Modals/FolderCreateModal';
 import FolderDeleteModal from './components/Modals/FolderDeleteModal';
 import FolderRenameModal from './components/Modals/FolderRenameModal';
 import FolderShareModal from './components/Modals/FolderShareModal';
@@ -58,10 +59,12 @@ export default class App extends React.Component {
       mapOverlay: null,
       waypointCreateType: null,
       selectedActivityIds: [],
+      newFolderParent: null,
 
       // Activity modals
       showModalPrivacyAlert: this.shouldShowPrivacyAlert,
       showModalMapOverlay: false,
+      showModalFolderCreate: false,
       showModalFolderRename: false,
       showModalFolderDelete: false,
       showModalFolderShare: false,
@@ -108,6 +111,8 @@ export default class App extends React.Component {
     this.activityBulkDelete = this.activityBulkDelete.bind(this);
     this.folderSelected = this.folderSelected.bind(this);
     this.folderCreated = this.folderCreated.bind(this);
+    this.openFolderCreateModal = this.openFolderCreateModal.bind(this);
+    this.folderCreateSubmitted = this.folderCreateSubmitted.bind(this);
     this.folderRenameModal = this.folderRenameModal.bind(this);
     this.folderDeleteModal = this.folderDeleteModal.bind(this);
     this.folderShareModal = this.folderShareModal.bind(this);
@@ -306,20 +311,30 @@ export default class App extends React.Component {
   }
 
   folderCreated() {
-    const folderName = window.prompt('Folder name');
-    if (!folderName) {
-      return;
-    }
+    this.openFolderCreateModal(this.state.selectedFolderId);
+  }
 
-    const parent = this.state.selectedFolderId ? this.state.selectedFolderId : null;
+  openFolderCreateModal(selectedFolderId) {
+    this.setState({
+      newFolderParent: selectedFolderId || null,
+      showModalFolderCreate: true,
+    });
+  }
 
-    API.createFolder({ name: folderName, parent })
+  folderCreateSubmitted({ name, parent }) {
+    return API.createFolder({ name, parent })
       .then(() => {
         this.loadFolders();
       })
       .catch((error) => {
         error.title = 'Error creating folder';
         showError(error);
+      })
+      .finally(() => {
+        this.setState({
+          showModalFolderCreate: false,
+          newFolderParent: null,
+        });
       });
   }
 
@@ -832,6 +847,14 @@ export default class App extends React.Component {
               />
 
               {/* Activities */}
+
+              <FolderCreateModal
+                show={this.state.showModalFolderCreate}
+                folders={this.state.folders}
+                parent={this.state.newFolderParent}
+                onCancel={this.dismissModal.bind(this, 'showModalFolderCreate')}
+                onSubmit={this.folderCreateSubmitted}
+              />
 
               <FolderRenameModal
                 show={this.state.showModalFolderRename}
