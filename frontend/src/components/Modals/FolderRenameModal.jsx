@@ -17,8 +17,11 @@ export default function FolderRenameModal(props) {
   useEffect(() => {
     if (props.folder) {
       setName(props.folder.name || '');
+    } else {
+      setName('');
     }
-  }, [props.folder]);
+    setError(null);
+  }, [props.folder, props.show]);
 
   const renameFolder = () => {
     if (!props.folder) {
