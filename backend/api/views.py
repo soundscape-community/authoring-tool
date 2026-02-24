@@ -358,8 +358,8 @@ class WaypointMediaViewSet(ActivityWritePermissionMixin, ModelViewSet):
             raise ValidationError("Missing waypoint")
         try:
             waypoint = Waypoint.objects.get(pk=waypoint_id)
-        except Waypoint.DoesNotExist:
-            raise ValidationError("Waypoint not found")
+        except Waypoint.DoesNotExist as exc:
+            raise ValidationError("Waypoint not found") from exc
         self._check_activity_write_permission(waypoint.group.activity)
         serializer.save(waypoint=waypoint)
 
