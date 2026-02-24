@@ -17,6 +17,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
 
 from .models import (
@@ -136,13 +137,13 @@ class ActivityViewSet(ModelViewSet):
         if current_folder:
             current_access = resolve_folder_access(self.request.user, current_folder)
             if not current_access.can_write:
-                raise ValidationError("No write access to folder")
+                raise PermissionDenied("No write access to folder")
 
         folder = serializer.validated_data.get("folder")
         if folder and folder != current_folder:
             access = resolve_folder_access(self.request.user, folder)
             if not access.can_write:
-                raise ValidationError("No write access to folder")
+                raise PermissionDenied("No write access to folder")
         serializer.save()
 
     def perform_destroy(self, instance):
@@ -150,9 +151,9 @@ class ActivityViewSet(ModelViewSet):
         if instance.folder:
             access = resolve_folder_access(user, instance.folder)
             if not access.can_write:
-                raise ValidationError("No write access to folder")
+                raise PermissionDenied("No write access to folder")
         elif not user or not user.is_authenticated or str(instance.author_id) != str(user.id):
-            raise ValidationError("No permission to delete activity")
+            raise PermissionDenied("No permission to delete activity")
         instance.delete()
 
     @action(detail=True, methods=['POST'], name='Duplicate')

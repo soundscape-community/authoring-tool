@@ -37,10 +37,10 @@ class ActivitySharingTests(FolderAPITestCase):
             f"/api/v1/activities/{self.activity.id}/",
             {"name": "Not Allowed"},
         )
-        self.assertEqual(update_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(update_response.status_code, status.HTTP_403_FORBIDDEN)
 
         delete_response = self.client.delete(f"/api/v1/activities/{self.activity.id}/")
-        self.assertEqual(delete_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(delete_response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_write_access_allows_update_and_delete(self):
         self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.WRITE)
