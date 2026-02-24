@@ -1,25 +1,18 @@
 # Copyright (c) Soundscape Community Contributors.
-from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
-from users.models import Team, TeamMembership
+from users.models import TeamMembership
 
 from api.models import Activity, Folder, FolderPermission
 from api.permissions import can_manage_team
+from api.tests.base import FolderTestMixin, User
 
 
-class FolderApiAdditionalTests(APITestCase):
+class FolderApiAdditionalTests(FolderTestMixin, APITestCase):
     def setUp(self):
-        self.User = get_user_model()
-        self.owner = self.User.objects.create_user(username="owner", password="pass")
-        self.member = self.User.objects.create_user(username="member", password="pass")
-        self.other = self.User.objects.create_user(username="other", password="pass")
-        self.staff = self.User.objects.create_user(username="staff", password="pass", is_staff=True)
-
-        self.team = Team.objects.create(name="Editors", owner=self.owner)
-        TeamMembership.objects.create(user=self.member, team=self.team)
-
-        self.root = Folder.objects.create(name="Root", owner=self.owner)
+        super().setUp()
+        self.other = User.objects.create_user(username="other", password="pass")
+        self.staff = User.objects.create_user(username="staff", password="pass", is_staff=True)
         self.child = Folder.objects.create(name="Child", owner=self.owner, parent=self.root)
 
     def test_folder_list_requires_access(self):
@@ -180,24 +173,17 @@ class FolderApiAdditionalTests(APITestCase):
         self.assertNotIn("Child Activity", activity_names)
 
     def test_root_folder_name_unique_globally(self):
-        other_owner = self.User.objects.create_user(username="other-owner", password="pass")
+        other_owner = User.objects.create_user(username="other-owner", password="pass")
         self.client.force_authenticate(user=other_owner)
         response = self.client.post("/api/v1/folders/", {"name": "Root"}, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-class FolderPermissionApiTests(APITestCase):
+class FolderPermissionApiTests(FolderTestMixin, APITestCase):
     def setUp(self):
-        self.User = get_user_model()
-        self.owner = self.User.objects.create_user(username="owner", password="pass")
-        self.member = self.User.objects.create_user(username="member", password="pass")
-        self.other = self.User.objects.create_user(username="other", password="pass")
-
-        self.team = Team.objects.create(name="Editors", owner=self.owner)
-        TeamMembership.objects.create(user=self.member, team=self.team)
-
-        self.root = Folder.objects.create(name="Root", owner=self.owner)
+        super().setUp()
+        self.other = User.objects.create_user(username="other", password="pass")
 
     def test_permissions_list_only_writable(self):
         FolderPermission.objects.create(
@@ -274,14 +260,11 @@ class FolderPermissionApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
-class TeamMembershipApiTests(APITestCase):
+class TeamMembershipApiTests(FolderTestMixin, APITestCase):
     def setUp(self):
-        self.User = get_user_model()
-        self.owner = self.User.objects.create_user(username="owner", password="pass")
-        self.member = self.User.objects.create_user(username="member", password="pass")
-        self.admin = self.User.objects.create_user(username="admin", password="pass")
-
-        self.team = Team.objects.create(name="Team", owner=self.owner)
+        super().setUp()
+        TeamMembership.objects.filter(user=self.member, team=self.team).delete()
+        self.admin = User.objects.create_user(username="admin", password="pass")
         TeamMembership.objects.create(user=self.admin, team=self.team, role=TeamMembership.Role.ADMIN)
 
     def test_team_list_visible_to_admins(self):
@@ -316,7 +299,7 @@ class TeamMembershipApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Verify a non-manager cannot add a *different* user (tests authorization, not uniqueness).
-        other_user = self.User.objects.create_user(username="other", password="pass")
+        other_user = User.objects.create_user(username="other", password="pass")
         self.client.force_authenticate(user=self.member)
         response = self.client.post(
             "/api/v1/team_memberships/",
@@ -326,13 +309,11 @@ class TeamMembershipApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-class StaffVisibilityTests(APITestCase):
+class StaffVisibilityTests(FolderTestMixin, APITestCase):
     def setUp(self):
-        self.User = get_user_model()
-        self.owner = self.User.objects.create_user(username="owner", password="pass")
-        self.staff = self.User.objects.create_user(username="staff", password="pass", is_staff=True)
-
-        self.folder = Folder.objects.create(name="Root", owner=self.owner)
+        super().setUp()
+        self.staff = User.objects.create_user(username="staff", password="pass", is_staff=True)
+        self.folder = self.root
 
     def test_staff_can_see_all_folders(self):
         self.client.force_authenticate(user=self.staff)
@@ -352,16 +333,9 @@ class StaffVisibilityTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class ActivityFolderAccessTests(APITestCase):
+class ActivityFolderAccessTests(FolderTestMixin, APITestCase):
     def setUp(self):
-        self.User = get_user_model()
-        self.owner = self.User.objects.create_user(username="owner", password="pass")
-        self.member = self.User.objects.create_user(username="member", password="pass")
-
-        self.team = Team.objects.create(name="Editors", owner=self.owner)
-        TeamMembership.objects.create(user=self.member, team=self.team)
-
-        self.root = Folder.objects.create(name="Root", owner=self.owner)
+        super().setUp()
         self.other = Folder.objects.create(name="Other", owner=self.owner)
 
     def _create_activity_payload(self, folder_id=None):
