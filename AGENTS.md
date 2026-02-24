@@ -14,6 +14,7 @@ This is a Django + React web application for creating routed activities (GPS-bas
 
 ### Environment Setup
 - Backend uses `uv` for Python project management in `backend/` directory
+- Do not create or manage a separate Python virtual environment manually; `uv` handles environment creation and usage.
 - **Important**: ALL backend commands (uv AND Django) run from `backend/` directory only
 - **Required**: Run backend Python/Django commands via `uv run ...` (do not call `.venv/bin/python` directly)
 - **Critical**: Each terminal command starts fresh - always set working directory AND environment variables inline

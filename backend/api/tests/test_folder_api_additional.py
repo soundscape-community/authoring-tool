@@ -419,7 +419,7 @@ class ActivityFolderAccessTests(APITestCase):
             {"folder": str(self.other.id)},
         )
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         FolderPermission.objects.filter(folder=self.root).update(access=FolderPermission.Access.WRITE)
         response = self.client.patch(
