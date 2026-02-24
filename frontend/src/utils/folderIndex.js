@@ -40,7 +40,9 @@ export function getDescendantIds(byParent, rootId) {
     if (!currentId || ids.has(currentId)) continue;
     ids.add(currentId);
     const children = byParent.get(currentId) || [];
-    children.forEach((folder) => queue.push(folder.id));
+    children.forEach((folder) => {
+      queue.push(folder.id);
+    });
   }
 
   return ids;

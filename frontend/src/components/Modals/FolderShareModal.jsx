@@ -257,7 +257,7 @@ export default function FolderShareModal(props) {
       aria-labelledby="contained-modal-title-vcenter"
     >
       <Modal.Header closeButton>
-        <Modal.Title>Sharing Settings</Modal.Title>
+        <Modal.Title id="contained-modal-title-vcenter">Sharing Settings</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {props.folder ? (
