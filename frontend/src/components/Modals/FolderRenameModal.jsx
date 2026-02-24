@@ -13,6 +13,7 @@ import ErrorAlert from '../Main/ErrorAlert';
 export default function FolderRenameModal(props) {
   const [name, setName] = useState('');
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (props.folder) {
@@ -21,10 +22,17 @@ export default function FolderRenameModal(props) {
       setName('');
     }
     setError(null);
+    if (!props.show) {
+      setLoading(false);
+    }
   }, [props.folder, props.show]);
 
   const renameFolder = (event) => {
     event?.preventDefault();
+
+    if (loading) {
+      return;
+    }
 
     if (!props.folder) {
       return;
@@ -37,6 +45,7 @@ export default function FolderRenameModal(props) {
     }
 
     const toastId = showLoading('Renaming folder...');
+    setLoading(true);
 
     API.updateFolder({
       id: props.folder.id,
@@ -44,24 +53,26 @@ export default function FolderRenameModal(props) {
       parent: props.folder.parent || null,
     })
       .then((folder) => {
-        dismissLoading(toastId);
         props.onRename(folder);
       })
       .catch((error) => {
-        dismissLoading(toastId);
         setError(error);
+      })
+      .finally(() => {
+        dismissLoading(toastId);
+        setLoading(false);
       });
   };
 
   return (
     <Modal
       show={props.show}
-      onHide={props.onCancel}
+      onHide={loading ? undefined : props.onCancel}
       backdrop="static"
       centered
       aria-labelledby="contained-modal-title-vcenter"
     >
-      <Modal.Header closeButton>
+      <Modal.Header closeButton={!loading}>
         <Modal.Title>Rename Folder</Modal.Title>
       </Modal.Header>
       <Form onSubmit={renameFolder}>
@@ -72,16 +83,17 @@ export default function FolderRenameModal(props) {
               type="text"
               value={name}
               onChange={(event) => setName(event.target.value)}
+              disabled={loading}
               autoFocus
             />
           </Form.Group>
           {error && <ErrorAlert error={error} />}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={props.onCancel}>
+          <Button variant="secondary" onClick={props.onCancel} disabled={loading}>
             Cancel
           </Button>
-          <Button variant="primary" type="submit">
+          <Button variant="primary" type="button" onClick={renameFolder} disabled={loading}>
             Rename
           </Button>
         </Modal.Footer>
