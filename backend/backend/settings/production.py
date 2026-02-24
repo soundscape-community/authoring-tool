@@ -14,6 +14,16 @@ if not SECRET_KEY:
         "Set it to a unique, unpredictable value."
     )
 
+if not any(host.strip() for host in ALLOWED_HOSTS):
+    raise ImproperlyConfigured(
+        "ALLOWED_HOSTS environment variable is required in production and must contain at least one host."
+    )
+
+if not any(origin.strip() for origin in CSRF_TRUSTED_ORIGINS):
+    raise ImproperlyConfigured(
+        "CSRF_TRUSTED_ORIGINS environment variable is required in production and must contain at least one origin."
+    )
+
 DEBUG = False
 
 DATABASES = {
