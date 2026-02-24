@@ -199,6 +199,10 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, FRONTEND_DIR_STATIC)]
 # Base URL for file uploads.
 FILE_UPLOAD_BASE_URL = os.getenv('FILE_UPLOAD_BASE_URL', 'https://share.soundscape.services')
 
+# GPX download safety defaults. Override per-environment if needed.
+GPX_MAX_DOWNLOAD_BYTES = 100 * 1024 * 1024  # 100 MB
+GPX_DOWNLOAD_TIMEOUT = 100  # seconds
+
 TESTING_WARNING_ENABLED = env_bool('TESTING_WARNING_ENABLED', False)
 TESTING_WARNING_MESSAGE = os.getenv(
     'TESTING_WARNING_MESSAGE',
