@@ -26,17 +26,29 @@ export default function UserPicker({ value, onChange, placeholder = 'Search user
   const [isLoading, setIsLoading] = useState(false);
   const [options, setOptions] = useState([]);
   const typeaheadRef = useRef(null);
+  const searchRequestIdRef = useRef(0);
 
   const handleSearch = useCallback((query) => {
+    const requestId = searchRequestIdRef.current + 1;
+    searchRequestIdRef.current = requestId;
     setIsLoading(true);
     API.searchUsers(query)
       .then((users) => {
+        if (searchRequestIdRef.current !== requestId) {
+          return;
+        }
         setOptions(users || []);
       })
       .catch(() => {
+        if (searchRequestIdRef.current !== requestId) {
+          return;
+        }
         setOptions([]);
       })
       .finally(() => {
+        if (searchRequestIdRef.current !== requestId) {
+          return;
+        }
         setIsLoading(false);
       });
   }, []);
