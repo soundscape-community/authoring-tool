@@ -18,7 +18,7 @@ export default function FoldersPanel({
   const canModifySelectedFolder = Boolean(selectedFolderId);
 
   return (
-    <div className="col-3 col-xs-1 col-sm-4 col-md-3 col-lg-3 p-0 border-end" id="folders">
+    <div className="col-3 col-sm-4 col-md-3 col-lg-3 p-0 border-end" id="folders">
       <div className="d-flex flex-column">
         <div className="folder-header d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
           <h2 className="h6 mb-0">Folders</h2>
