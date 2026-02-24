@@ -15,6 +15,7 @@ This is a Django + React web application for creating routed activities (GPS-bas
 ### Environment Setup
 - Backend uses `uv` for Python project management in `backend/` directory
 - **Important**: ALL backend commands (uv AND Django) run from `backend/` directory only
+- **Required**: Run backend Python/Django commands via `uv run ...` (do not call `.venv/bin/python` directly)
 - **Critical**: Each terminal command starts fresh - always set working directory AND environment variables inline
 - Settings are environment-specific: `backend/backend/settings/{local,development,production}.py`
 - For local development: Set `DJANGO_SETTINGS_MODULE=backend.settings.local`
@@ -87,6 +88,7 @@ PSQL_DB_NAME, PSQL_DB_USER, PSQL_DB_PASS, PSQL_DB_HOST, PSQL_DB_PORT
 ### Running Tests
 - Backend: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py test`
 - Frontend: `cd $(git rev-parse --show-toplevel)/frontend && npm test -- --run`
+- **Required after changes**: Always run the most relevant test(s) for the files/behavior you modified before finishing.
 
 ### Common Debug Points
 - Check `backend/db.sqlite3` exists after migrations
