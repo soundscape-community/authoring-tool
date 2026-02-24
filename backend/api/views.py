@@ -203,9 +203,9 @@ class ActivityViewSet(ModelViewSet):
 
         try:
             activity: Activity = gpx_to_activity(gpx, user)
-        except Exception:
+        except Exception as e:
             raise ValidationError(
-                'Invalid activity. Please use a previously exported GPX file containing the activity.')
+                'Invalid activity. Please use a previously exported GPX file containing the activity.') from e
 
         serializer = self.get_serializer(activity, many=False)
         return Response(serializer.data)
