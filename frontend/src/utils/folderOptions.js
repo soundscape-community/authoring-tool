@@ -5,7 +5,9 @@ import { buildFolderIndex } from './folderIndex';
 
 export function buildFolderOptions(folders) {
   const { byParent: foldersByParent } = buildFolderIndex(folders);
-  foldersByParent.forEach((items) => items.sort((a, b) => a.name.localeCompare(b.name)));
+  foldersByParent.forEach((items) => {
+    items.sort((a, b) => a.name.localeCompare(b.name));
+  });
 
   const results = [];
   const visited = new Set();
