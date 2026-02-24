@@ -2,6 +2,9 @@
 import React from 'react';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
+
+import FolderShareModal from '../FolderShareModal';
 
 const apiMock = vi.hoisted(() => ({
   getFolderPermissions: vi.fn(() => Promise.resolve([])),
@@ -25,8 +28,6 @@ vi.mock('../../../utils/Toast', () => ({
   dismissLoading: vi.fn(),
   errorContent: (error) => error?.message || 'Error',
 }));
-
-import FolderShareModal from '../FolderShareModal';
 
 describe('FolderShareModal', () => {
   it('disables Add button when no user is selected', async () => {
