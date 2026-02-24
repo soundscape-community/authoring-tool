@@ -48,10 +48,14 @@ export default function NavigationBar({ presentingDetail, onActivitiesShow }) {
               <Dropdown.ItemText>{user.userEmail}</Dropdown.ItemText>
               <NavDropdown.Divider />
               <NavDropdown.Item onClick={() => {
-                auth.logout().then(() => {
-                  setUser({}); 
-                  window.location.reload();
-              });
+                auth.logout()
+                  .then(() => {
+                    setUser({});
+                    window.location.reload();
+                  })
+                  .catch((error) => {
+                    console.error('Sign out failed:', error);
+                  });
               }}>Sign out</NavDropdown.Item>
             </NavDropdown>
           </Nav>
