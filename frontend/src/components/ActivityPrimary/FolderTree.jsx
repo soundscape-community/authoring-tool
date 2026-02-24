@@ -184,6 +184,21 @@ export default function FolderTree({
     }
   };
 
+  const getParentRowId = (rowId) => {
+    const folder = foldersById.get(rowId);
+    if (folder) {
+      return folder.parent ?? 'root';
+    }
+
+    for (const [parentId, children] of foldersByParent.entries()) {
+      if (children.some((child) => child.id === rowId)) {
+        return parentId ?? 'root';
+      }
+    }
+
+    return 'root';
+  };
+
   const handleRowKeyDown = (event, rowId) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -232,6 +247,10 @@ export default function FolderTree({
         if (hasChildren && expandedIds.has(rowId)) {
           event.preventDefault();
           toggleExpanded(rowId);
+        } else {
+          event.preventDefault();
+          const parentRowId = getParentRowId(rowId);
+          focusRow(parentRowId);
         }
       }
     }
