@@ -246,14 +246,16 @@ export default class App extends React.Component {
   // ACTIVITIES
   ///////////////////////////////////////////////////////////
 
-  loadActivities() {
+  loadActivities(selectedActivityIds = []) {
     const toastId = showLoading('Loading activities...');
 
     API.getActivities(this.state.selectedFolderId)
       .then((activities) => {
         this.setState({
           activities,
-          selectedActivityIds: [],
+          selectedActivityIds: selectedActivityIds.filter((id) =>
+            activities.some((activity) => activity.id === id),
+          ),
           //selectedActivity: activities[0],
         });
       })
@@ -551,16 +553,36 @@ export default class App extends React.Component {
     const toastId = showLoading('Moving activities...');
 
     try {
-      await Promise.all(
+      const settledResults = await Promise.allSettled(
         selectedActivities.map((activity) =>
           API.updateActivityPartial(this.buildActivityFolderUpdatePayload(activity, folderId)),
         ),
       );
+
+      const failed = settledResults
+        .map((result, index) => ({ result, activityId: selectedActivities[index].id }))
+        .filter(({ result }) => result.status === 'rejected')
+        .map(({ result, activityId }) => ({
+          activityId,
+          message: result.reason?.message || 'Unknown error',
+        }));
+
+      const failedIds = failed.map(({ activityId }) => activityId);
+      const hasFailures = failedIds.length > 0;
+
       this.setState({
-        showModalActivityBulkMove: false,
-        selectedActivityIds: [],
+        showModalActivityBulkMove: !hasFailures,
+        selectedActivityIds: failedIds,
       });
-      this.loadActivities();
+
+      this.loadActivities(failedIds);
+
+      if (hasFailures) {
+        const details = failed
+          .map(({ activityId, message }) => `Activity ${activityId}: ${message}`)
+          .join('; ');
+        throw new Error(`Failed to move ${failedIds.length} activities. ${details}`);
+      }
     } catch (error) {
       error.title = 'Error moving activities';
       showError(error);
@@ -579,13 +601,35 @@ export default class App extends React.Component {
     const toastId = showLoading('Deleting activities...');
 
     try {
-      await Promise.all(selectedActivityIds.map((id) => API.deleteActivity(id)));
+      const settledResults = await Promise.allSettled(
+        selectedActivityIds.map((id) => API.deleteActivity(id)),
+      );
+
+      const failed = settledResults
+        .map((result, index) => ({ result, activityId: selectedActivityIds[index] }))
+        .filter(({ result }) => result.status === 'rejected')
+        .map(({ result, activityId }) => ({
+          activityId,
+          message: result.reason?.message || 'Unknown error',
+        }));
+
+      const failedIds = failed.map(({ activityId }) => activityId);
+      const hasFailures = failedIds.length > 0;
+
       this.setState({
-        showModalActivityBulkDelete: false,
-        selectedActivityIds: [],
+        showModalActivityBulkDelete: !hasFailures,
+        selectedActivityIds: failedIds,
       });
+
       this.showActivities();
-      this.loadActivities();
+      this.loadActivities(failedIds);
+
+      if (hasFailures) {
+        const details = failed
+          .map(({ activityId, message }) => `Activity ${activityId}: ${message}`)
+          .join('; ');
+        throw new Error(`Failed to delete ${failedIds.length} activities. ${details}`);
+      }
     } catch (error) {
       error.title = 'Error deleting activities';
       showError(error);
