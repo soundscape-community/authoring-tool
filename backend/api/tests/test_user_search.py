@@ -18,10 +18,7 @@ class UserSearchTests(APITestCase):
 
     def test_unauthenticated_returns_empty(self):
         response = self.client.get("/api/v1/users/")
-        # DRF returns 403 or empty depending on auth setup; at minimum no data
-        self.assertIn(response.status_code, [200, 401, 403])
-        if response.status_code == 200:
-            self.assertEqual(response.data, [])
+        self.assertEqual(response.status_code, 403)
 
     def test_list_all_users(self):
         self.client.force_authenticate(user=self.alice)
