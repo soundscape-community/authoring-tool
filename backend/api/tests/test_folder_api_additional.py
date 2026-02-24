@@ -62,7 +62,7 @@ class FolderApiAdditionalTests(FolderTestMixin, APITestCase):
         self.client.force_authenticate(user=self.member)
         response = self.client.post("/api/v1/folders/", {"name": "Nope", "parent": str(self.root.id)})
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         FolderPermission.objects.filter(folder=self.root).update(access=FolderPermission.Access.WRITE)
         response = self.client.post("/api/v1/folders/", {"name": "OK", "parent": str(self.root.id)})
@@ -79,7 +79,7 @@ class FolderApiAdditionalTests(FolderTestMixin, APITestCase):
         self.client.force_authenticate(user=self.member)
         response = self.client.patch(f"/api/v1/folders/{self.root.id}/", {"name": "Rename"})
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         FolderPermission.objects.filter(folder=self.root).update(access=FolderPermission.Access.WRITE)
         response = self.client.patch(f"/api/v1/folders/{self.root.id}/", {"name": "Rename"})
@@ -100,7 +100,7 @@ class FolderApiAdditionalTests(FolderTestMixin, APITestCase):
             {"parent": str(other_root.id)},
         )
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         FolderPermission.objects.create(
             folder=other_root,
@@ -124,7 +124,7 @@ class FolderApiAdditionalTests(FolderTestMixin, APITestCase):
         self.client.force_authenticate(user=self.member)
         response = self.client.delete(f"/api/v1/folders/{self.root.id}/")
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         FolderPermission.objects.filter(folder=self.root).update(access=FolderPermission.Access.WRITE)
         response = self.client.delete(f"/api/v1/folders/{self.root.id}/")

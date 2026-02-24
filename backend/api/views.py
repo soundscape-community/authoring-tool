@@ -408,7 +408,7 @@ class FolderViewSet(ModelViewSet):
         if parent:
             access = resolve_folder_access(self.request.user, parent)
             if not access.can_write:
-                raise ValidationError("No write access to parent folder")
+                raise PermissionDenied("No write access to parent folder")
         self._validate_parent(None, parent)
         serializer.save(owner=self.request.user)
 
@@ -417,17 +417,17 @@ class FolderViewSet(ModelViewSet):
         if parent:
             access = resolve_folder_access(self.request.user, parent)
             if not access.can_write:
-                raise ValidationError("No write access to parent folder")
+                raise PermissionDenied("No write access to parent folder")
         self._validate_parent(serializer.instance, parent)
         access = resolve_folder_access(self.request.user, serializer.instance)
         if not access.can_write:
-            raise ValidationError("No write access to folder")
+            raise PermissionDenied("No write access to folder")
         serializer.save()
 
     def perform_destroy(self, instance):
         access = resolve_folder_access(self.request.user, instance)
         if not access.can_write:
-            raise ValidationError("No write access to folder")
+            raise PermissionDenied("No write access to folder")
         instance.delete()
 
 
