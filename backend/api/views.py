@@ -152,7 +152,7 @@ class ActivityViewSet(ModelViewSet):
             access = resolve_folder_access(user, instance.folder)
             if not access.can_write:
                 raise PermissionDenied("No write access to folder")
-        elif not user or not user.is_authenticated or str(instance.author_id) != str(user.id):
+        elif not user or not user.is_authenticated or (not user.is_staff and str(instance.author_id) != str(user.id)):
             raise PermissionDenied("No permission to delete activity")
         instance.delete()
 
