@@ -1,3 +1,4 @@
+<!-- Copyright (c) Soundscape Community Contributors. -->
 # Health Check Setup
 
 This project uses `django-health-check` to monitor the health of the application and its dependencies.

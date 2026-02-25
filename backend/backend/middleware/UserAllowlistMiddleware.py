@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
+# Copyright (c) Soundscape Community Contributors.
 
 from django.http import HttpResponse
 from http import HTTPStatus
@@ -15,16 +16,16 @@ class UserAllowlistMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.aad_user == None:
+        if request.aad_user is None:
             return HttpResponse('Unauthorized (missing user credentials)', status=HTTPStatus.UNAUTHORIZED)
 
         # user_email = request.aad_user['email'].lower()
         user_email = "users@example.com"
 
         try:
-            user_permissions = UserPermissions.objects.get(user_email=user_email)
-        except:
-            user_permissions = None
+            UserPermissions.objects.get(user_email=user_email)
+        except UserPermissions.DoesNotExist:
+            pass
 
         # if user_permissions == None:
         #     user_permissions = UserPermissions(user_email=user_email, allow_app=False, allow_api=False)

@@ -1,11 +1,12 @@
-// Copyright (c) Microsoft Corporation.
+// Copyright (c) Soundscape Community Contributors.
 // Licensed under the MIT License.
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Form, Button, Image } from 'react-bootstrap';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import Activity from '../../data/Activity';
+import { buildFolderOptions } from '../../utils/folderOptions';
 
 const activitySchema = yup.object().shape({
   name: yup.string().trim().required('Name is a required field'),
@@ -24,6 +25,7 @@ const activitySchema = yup.object().shape({
 
 export default function ActivityForm(props) {
     const activity = props.activity ?? {};
+  const folderOptions = useMemo(() => buildFolderOptions(props.folders), [props.folders]);
 
     const initialValues = {
       name: activity.name || '',
@@ -35,6 +37,7 @@ export default function ActivityForm(props) {
       expires: activity.expires || undefined,
       image_url: activity.image_url || undefined,
       image_alt: activity.image_alt || undefined,
+      folder: activity.folder || '',
 
       image_file: undefined,
       image_filename: undefined,
@@ -68,6 +71,10 @@ export default function ActivityForm(props) {
             activity.image = activity.image_file;
             delete activity.image_file;
             delete activity.image_filename;
+          }
+
+          if (activity.folder === '') {
+            activity.folder = null;
           }
 
           props.onSubmit(activity).finally(() => {
@@ -131,6 +138,26 @@ export default function ActivityForm(props) {
                 isInvalid={touched.author_name && !!errors.author_name}
               />
               <Form.Control.Feedback type="invalid">{errors.author_name}</Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label className="me-2" aria-hidden="true">
+                Folder
+              </Form.Label>
+              <Form.Select
+                name="folder"
+                aria-label="Folder"
+                value={values.folder ?? ''}
+                onChange={handleChange}
+                onBlur={handleBlur}
+              >
+                <option value="">/</option>
+                {folderOptions.map((folder) => (
+                  <option key={folder.id} value={folder.id}>
+                    {`${'-- '.repeat(folder.depth)}${folder.label}`}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -285,4 +312,3 @@ export default function ActivityForm(props) {
       </Formik>
     );
   }
-

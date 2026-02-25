@@ -1,8 +1,16 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
+# Copyright (c) Soundscape Community Contributors.
 
 import os
 from .base import *
+
+# Allow running locally without DJANGO_SECRET_KEY pre-set in the environment.
+# base.py requires DJANGO_SECRET_KEY; local.py overrides with a dev-only key.
+SECRET_KEY = os.getenv(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-local-dev-key-do-not-use-in-production',
+)
 
 DEBUG = True
 
@@ -27,8 +35,7 @@ ALLOWED_HOSTS = [
 # allow Github Code Spaces to pass CSRF origin check
 CSRF_TRUSTED_ORIGINS = [
     'https://*.app.github.dev',
-'http://localhost:3000',
-'http://*.localhost:3000',
-'https://authoring.mur.org.uk'
+    'http://localhost:3000',
+    'http://*.localhost:3000',
 ]
 

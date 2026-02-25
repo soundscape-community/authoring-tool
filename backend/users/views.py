@@ -1,3 +1,3 @@
-from django.shortcuts import render
+# Copyright (c) Soundscape Community Contributors.
 
 # Create your views here.

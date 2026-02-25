@@ -1,3 +1,4 @@
+<!-- Copyright (c) Soundscape Community Contributors. -->
 
 # Backend Development Guide
 

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+// Copyright (c) Soundscape Community Contributors.
 // Licensed under the MIT License.
 
 import React from 'react';
@@ -89,8 +89,7 @@ export default class WaypointForm extends React.Component {
       waypointType: props.waypointType ?? props.waypoint.type,
     };
 
-    this.ImageDropzoneContent = this.ImageDropzoneContent.bind(this);
-    this.AudioDropzoneContent = this.AudioDropzoneContent.bind(this);
+    this.MediaDropzoneContent = this.MediaDropzoneContent.bind(this);
   }
 
   onSubmit = (values, { setSubmitting }) => {
@@ -131,30 +130,8 @@ export default class WaypointForm extends React.Component {
     return images >= MAX_MEDIA_FILES;
   }
 
-  ImageDropzoneContent({ isDragActive, isDragReject, values }) {
-    if (this.shouldDisableImageInput(values)) {
-      return (
-        <Alert className="mt-3" variant="secondary">
-          Max number of files reached
-        </Alert>
-      );
-    } else if (!isDragActive) {
-      return <p className="mt-3">Drag or click to select files</p>;
-    } else if (isDragActive && !isDragReject) {
-      return <p className="mt-3">Drop files</p>;
-    } else if (isDragActive && isDragReject) {
-      return (
-        <Alert className="mt-3" variant="warning">
-          Unsupported file type or too many files
-        </Alert>
-      );
-    }
-
-    return <></>;
-  }
-
-  AudioDropzoneContent({ isDragActive, isDragReject, values }) {
-    if (this.shouldDisableAudioInput(values)) {
+  MediaDropzoneContent({ isDragActive, isDragReject, disabled }) {
+    if (disabled) {
       return (
         <Alert className="mt-3" variant="secondary">
           Max number of files reached
@@ -380,10 +357,10 @@ export default class WaypointForm extends React.Component {
                                   className: `dropzone ${additionalClass}`,
                                 })}>
                                 <input {...getInputProps()} />
-                                <this.ImageDropzoneContent
+                                <this.MediaDropzoneContent
                                   isDragActive={isDragActive}
                                   isDragReject={isDragReject}
-                                  values={values}
+                                  disabled={this.shouldDisableImageInput(values)}
                                 />
                               </div>
                             </Container>
@@ -413,9 +390,7 @@ export default class WaypointForm extends React.Component {
 
                                     API.deleteWaypointMedia(image.id)
                                       .then(() => {
-                                        const images = values.images;
-                                        images.splice(i, 1);
-                                        setFieldValue('images', images);
+                                        setFieldValue('images', values.images.filter((_, idx) => idx !== i));
                                       })
                                       .catch((error) => {
                                         dismissLoading(toastId);
@@ -452,13 +427,8 @@ export default class WaypointForm extends React.Component {
                                   variant="danger"
                                   size="sm"
                                   onClick={() => {
-                                    const images = values.image_files;
-                                    images.splice(i, 1);
-                                    setFieldValue('image_files', images);
-
-                                    let image_file_alts = values.image_file_alts;
-                                    image_file_alts.splice(i, 1);
-                                    setFieldValue('image_file_alts', image_file_alts);
+                                    setFieldValue('image_files', values.image_files.filter((_, idx) => idx !== i));
+                                    setFieldValue('image_file_alts', values.image_file_alts.filter((_, idx) => idx !== i));
                                   }}>
                                   Delete
                                 </Button>
@@ -512,10 +482,10 @@ export default class WaypointForm extends React.Component {
                                   className: `dropzone ${additionalClass}`,
                                 })}>
                                 <input {...getInputProps()} />
-                                <this.AudioDropzoneContent
+                                <this.MediaDropzoneContent
                                   isDragActive={isDragActive}
                                   isDragReject={isDragReject}
-                                  values={values}
+                                  disabled={this.shouldDisableAudioInput(values)}
                                 />
                               </div>
                             </Container>
@@ -549,9 +519,7 @@ export default class WaypointForm extends React.Component {
 
                                     API.deleteWaypointMedia(audio_clip.id)
                                       .then(() => {
-                                        const audio_clips = values.audio_clips;
-                                        audio_clips.splice(i, 1);
-                                        setFieldValue('audio_clips', audio_clips);
+                                        setFieldValue('audio_clips', values.audio_clips.filter((_, idx) => idx !== i));
                                       })
                                       .catch((error) => {
                                         dismissLoading(toastId);
@@ -591,13 +559,8 @@ export default class WaypointForm extends React.Component {
                                 variant="danger"
                                 size="sm"
                                 onClick={() => {
-                                  const audio_clip_files = values.audio_clip_files;
-                                  audio_clip_files.splice(i, 1);
-                                  setFieldValue('audio_clip_files', audio_clip_files);
-
-                                  let audio_clip_file_texts = values.audio_clip_file_texts;
-                                  audio_clip_file_texts.splice(i, 1);
-                                  setFieldValue('audio_clip_file_texts', audio_clip_file_texts);
+                                  setFieldValue('audio_clip_files', values.audio_clip_files.filter((_, idx) => idx !== i));
+                                  setFieldValue('audio_clip_file_texts', values.audio_clip_file_texts.filter((_, idx) => idx !== i));
                                 }}>
                                 Delete
                               </Button>

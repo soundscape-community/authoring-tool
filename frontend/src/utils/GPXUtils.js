@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+// Copyright (c) Soundscape Community Contributors.
 
 import { parseGPX } from "@we-gold/gpxjs"
 export const fileToGPX = async (gpxFile) => {

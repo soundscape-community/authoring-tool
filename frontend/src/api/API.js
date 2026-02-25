@@ -1,17 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+// Copyright (c) Soundscape Community Contributors.
 
 import Axios from 'axios';
 import auth from './Auth';
 import Activity from '../data/Activity';
+import axiosDefaults from './axiosDefaults';
 
 const axios = Axios.create({
+  ...axiosDefaults,
   baseURL: '/api/v1/',
-  headers: {
-    'content-type': 'application/json',
-  },
-  xsrfCookieName: 'csrftoken',
-  xsrfHeaderName: 'X-CSRFToken'
 });
 
 axios.interceptors.response.use(
@@ -33,7 +31,7 @@ const multipartRequestConfig = {
 function objectToFormData(object) {
   const formData = new FormData();
 
-  for (var propertyName in object) {
+  for (const propertyName in object) {
     if (object[propertyName] === undefined || object[propertyName] === null) {
       continue;
     }
@@ -57,10 +55,20 @@ function objectToFormData(object) {
 
 class API {
 
+  async getRuntimeConfig() {
+    return axios.get('runtime-config/');
+  }
+
   // Activities
 
-  async getActivities() {
-    return axios.get('activities/').then((data) => {
+  async getActivities(folderId = null) {
+    const params = {};
+    if (folderId === null) {
+      params.folder_id = 'none';
+    } else if (folderId) {
+      params.folder_id = folderId;
+    }
+    return axios.get('activities/', { params }).then((data) => {
       return data.map((data) => new Activity(data));
     });
   }
@@ -72,11 +80,7 @@ class API {
   }
 
   async createActivity(activity) {
-    //TEST
-    console.log("WOW");
-    console.log(activity);
     const activity_ = Object.assign({}, activity);
-    console.log(activity_);
 
     if (auth.isAuthenticated) {
       activity_.author_id = auth.userId;
@@ -85,22 +89,14 @@ class API {
 
     // We use FormData as the object may contain a file (featured image)
     const formData = objectToFormData(activity_);
-    //TEST
-    console.log("FORM DATA");
-    console.log(formData);
     return axios.post('activities/', formData, multipartRequestConfig).then((data) => {
-      console.log(data);
       return new Activity(data);
     });
   }
 
   async importActivity(gpx) {
-    //TEST
-    console.log("IMPORT GPX DATA");
-    console.log(gpx);
     const formData = objectToFormData({ gpx });
     return axios.post('activities/import_gpx/', formData, multipartRequestConfig).then((data) => {
-      console.log(data);
       return new Activity(data);
     });
   }
@@ -109,6 +105,12 @@ class API {
     // We use FormData as the object may contain a file (featured image)
     const formData = objectToFormData(activity);
     return axios.put(`activities/${activity.id}/`, formData, multipartRequestConfig).then((data) => {
+      return new Activity(data);
+    });
+  }
+
+  async updateActivityPartial(activity) {
+    return axios.patch(`activities/${activity.id}/`, activity).then((data) => {
       return new Activity(data);
     });
   }
@@ -129,6 +131,73 @@ class API {
     });
   }
 
+  // Folders
+
+  async getFolders() {
+    return axios.get('folders/');
+  }
+
+  async createFolder(folder) {
+    return axios.post('folders/', folder);
+  }
+
+  async updateFolder(folder) {
+    return axios.put(`folders/${folder.id}/`, folder);
+  }
+
+  async deleteFolder(folderId) {
+    return axios.delete(`folders/${folderId}/`);
+  }
+
+  // Folder permissions
+
+  async getFolderPermissions() {
+    return axios.get('folder_permissions/');
+  }
+
+  async createFolderPermission(permission) {
+    return axios.post('folder_permissions/', permission);
+  }
+
+  async updateFolderPermission(permission) {
+    return axios.put(`folder_permissions/${permission.id}/`, permission);
+  }
+
+  async deleteFolderPermission(permissionId) {
+    return axios.delete(`folder_permissions/${permissionId}/`);
+  }
+
+  // Teams
+
+  async getTeams() {
+    return axios.get('teams/');
+  }
+
+  async createTeam(team) {
+    return axios.post('teams/', team);
+  }
+
+  // Team memberships
+
+  async getTeamMemberships() {
+    return axios.get('team_memberships/');
+  }
+
+  async createTeamMembership(membership) {
+    return axios.post('team_memberships/', membership);
+  }
+
+  async deleteTeamMembership(membershipId) {
+    return axios.delete(`team_memberships/${membershipId}/`);
+  }
+
+  // Users
+
+  async searchUsers(search = '') {
+    const params = search ? { search } : {};
+    return axios.get('users/', { params });
+  }
+
   // Waypoints
 
   async createWaypoint(waypoint) {
@@ -141,14 +210,6 @@ class API {
     // We use FormData as the object may contain a file (featured image)
     const formData = objectToFormData(waypoint);
     return axios.put(`waypoints/${waypoint.id}/`, formData, multipartRequestConfig);
-  }
-
-  async updateWaypointIndex(waypoint, offset) {
-    const object = {
-      waypoint: waypoint,
-      offset: offset,
-    };
-    return axios.put(`waypoints/${waypoint.id}/`, object);
   }
 
   async deleteWaypoint(waypointId) {

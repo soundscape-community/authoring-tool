@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+// Copyright (c) Soundscape Community Contributors.
 // Licensed under the MIT License.
 
 import React from 'react';
@@ -10,7 +10,7 @@ export default function InvalidWindowSizeAlert() {
       <Alert.Heading>Made for bigger screens</Alert.Heading>
       <p>
         Creating activities works best on bigger screens. Please increase the window size or switch to a desktop. The
-        minimum supported window size is 100x500 pixels.
+        minimum supported window size is 1000x500 pixels.
       </p>
     </Alert>
   );

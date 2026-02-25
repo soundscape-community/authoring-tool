@@ -1,11 +1,12 @@
-# Soundscape Authoring Tool - AI Coding Agent Instructions
+<!-- Copyright (c) Soundscape Community Contributors. -->
+# Soundscape Authoring Tool - Agent Instructions
 
 ## Architecture Overview
 
 This is a Django + React web application for creating routed activities (GPS-based tours) for the Soundscape iOS app. The system converts between internal data models and GPX format for export/import.
 
 ### Key Components
-- **Backend**: Django REST API with SQLite (local) / PostgreSQL (production)
+- **Backend**: Django REST API with SQLite (local) / PostgreSQL (development/production)
 - **Frontend**: React SPA built with Vite, served by Django in production
 - **Core Domain**: Activities contain WaypointGroups (ordered/unordered/geofence) which contain Waypoints with optional media
 
@@ -13,17 +14,22 @@ This is a Django + React web application for creating routed activities (GPS-bas
 
 ### Environment Setup
 - Backend uses `uv` for Python project management in `backend/` directory
+- Do not create or manage a separate Python virtual environment manually; `uv` handles environment creation and usage.
 - **Important**: ALL backend commands (uv AND Django) run from `backend/` directory only
+- **Required**: Run backend Python/Django commands via `uv run ...` (do not call `.venv/bin/python` directly)
 - **Critical**: Each terminal command starts fresh - always set working directory AND environment variables inline
 - Settings are environment-specific: `backend/backend/settings/{local,development,production}.py`
 - For local development: Set `DJANGO_SETTINGS_MODULE=backend.settings.local`
-- Environment variables in `backend/.env/` files (create from sample.env)
+- Environment variables in `backend/.env/` files (create from sample.env and install.md)
 
 ### Dependency Management
 - Use `uv add <package>` to add new Python dependencies (from `backend/` directory)
 - Avoid using `pip` directly - let `uv` manage the virtual environment and dependencies
 - **Ignore `requirements.txt`** - project uses `pyproject.toml` and `uv.lock` for dependency management
 - Frontend dependencies managed with `npm` in `frontend/` directory
+
+### Agent Clarifications
+- When clarification is needed and the tool is available, use `ask_questions` instead of ad-hoc free-text questions so prompts are explicit and choices are structured.
 
 ### Frontend Build Process
 - Frontend builds to `backend/frontend/serve/` via Vite config
@@ -37,7 +43,6 @@ This is a Django + React web application for creating routed activities (GPS-bas
 3. Create superuser: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py createsuperuser`
 4. Start Django: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py runserver`
 5. Start frontend: `cd $(git rev-parse --show-toplevel)/frontend && npm run start` (in separate terminal)
-
 
 ## Project-Specific Patterns
 
@@ -86,7 +91,8 @@ PSQL_DB_NAME, PSQL_DB_USER, PSQL_DB_PASS, PSQL_DB_HOST, PSQL_DB_PORT
 
 ### Running Tests
 - Backend: `cd $(git rev-parse --show-toplevel)/backend && DJANGO_SETTINGS_MODULE=backend.settings.local uv run python -Wd manage.py test`
-- Frontend: Standard React testing patterns
+- Frontend: `cd $(git rev-parse --show-toplevel)/frontend && npm test -- --run`
+- **Required after changes**: Always run the most relevant test(s) for the files/behavior you modified before finishing.
 
 ### Common Debug Points
 - Check `backend/db.sqlite3` exists after migrations
@@ -105,4 +111,16 @@ PSQL_DB_NAME, PSQL_DB_USER, PSQL_DB_PASS, PSQL_DB_HOST, PSQL_DB_PORT
 - WhiteNoise serves static files
 - WEBSITE_HOSTNAME auto-added to ALLOWED_HOSTS
 
+## Copyright Notices
+
+- Use the upstream reference at `microsoft/soundscape` under `svcs/soundscape-authoring` when comparing file origins.
+- Keep only the Microsoft copyright notice for files identical to the upstream Microsoft project.
+- When a file is derived from Microsoft code and has diverged from upstream, include both the Microsoft notice and the Soundscape Community Contributors notice.
+- For files not present in the upstream project, include only the Soundscape Community Contributors notice (do not add a Microsoft notice).
+- If a file format cannot accept comments (for example JSON, lockfiles, or binaries), add an explicit metadata field or document the exception in the change summary.
+
 When modifying this codebase, pay special attention to the Activity lifecycle (creation → editing → publishing), the GPX import/export functionality, and the React state management patterns that coordinate between the activity list and detail views.
+
+## Folder Planning
+
+The implementation plan for activity folders (including permissions, nesting, migration strategy, and UI expectations) lives in `PLAN.md`. Keep that plan up-to-date as work progresses, and after each implementation phase run tests, commit changes, and refresh the plan’s next steps.

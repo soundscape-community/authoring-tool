@@ -1,3 +1,4 @@
+// Copyright (c) Soundscape Community Contributors.
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{html,js,jsx}", "index.html"],

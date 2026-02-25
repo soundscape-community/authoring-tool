@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+// Copyright (c) Soundscape Community Contributors.
 // Licensed under the MIT License.
 
 import React from 'react';
@@ -48,10 +48,14 @@ export default function NavigationBar({ presentingDetail, onActivitiesShow }) {
               <Dropdown.ItemText>{user.userEmail}</Dropdown.ItemText>
               <NavDropdown.Divider />
               <NavDropdown.Item onClick={() => {
-                auth.logout().then(() => {
-                  setUser({}); 
-                  window.location.reload(true);
-              });
+                auth.logout()
+                  .then(() => {
+                    setUser({});
+                    window.location.reload();
+                  })
+                  .catch((error) => {
+                    console.error('Sign out failed:', error);
+                  });
               }}>Sign out</NavDropdown.Item>
             </NavDropdown>
           </Nav>

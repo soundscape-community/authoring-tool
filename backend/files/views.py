@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
+# Copyright (c) Soundscape Community Contributors.
 
-import os
 
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse

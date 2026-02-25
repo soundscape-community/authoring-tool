@@ -1,8 +1,9 @@
+// Copyright (c) Soundscape Community Contributors.
 // Copyright    (c) Robbie Murray
 // Licence:     <MIT>
 // Login component for the frontend
 
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { showError } from "../../utils/Toast";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
@@ -10,19 +11,19 @@ import auth from "../../api/Auth";
 import MainContext from '../Main/MainContext';
 import './Login.css'
 
-function Login({ }) {
-  const { user, setUser } = useContext(MainContext);
+function Login() {
+  const { setUser } = useContext(MainContext);
 
   const handleLogin = async ({username, password}) => {
     try {
       await auth.login(username, password);
     } catch (error) {
-      console.log(error);
       error.title = 'Invalid login attempt'
-      showError(error); // do show error on frontend when unsuccessful login
+      showError(error);
+      return;
     }
     setUser(await auth.fetchAuthInfo());
-    window.location.reload(true);
+    window.location.reload();
   };
 
   const validationSchema = Yup.object().shape({

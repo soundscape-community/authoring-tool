@@ -1,3 +1,3 @@
-from django.test import TestCase
+# Copyright (c) Soundscape Community Contributors.
 
 # Create your tests here.

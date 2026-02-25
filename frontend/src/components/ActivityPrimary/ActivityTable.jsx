@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+// Copyright (c) Soundscape Community Contributors.
 // Licensed under the MIT License.
 
 import React from 'react';
@@ -150,7 +150,7 @@ export default function ActivityInfoTable(props) {
                   onDelete={props.onWaypointDelete}
                   onUpdate={props.onWaypointUpdate}
                   onMoveDown={index !== 0 ? props.onWaypointMovedDown : null}
-                  onMoveUp={index !== waypoints.length - 1 ? props.onWaypointMovedUp : null}
+                  onMoveUp={index !== pois.length - 1 ? props.onWaypointMovedUp : null}
                 />
               ))
             ) : (

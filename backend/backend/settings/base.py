@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
+# Copyright (c) Soundscape Community Contributors.
 
 """
 Django settings for backend project.
@@ -14,7 +15,15 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
+
+
+def env_bool(name, default=False):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {'1', 'true', 't', 'yes', 'y', 'on'}
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,11 +34,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # This value is the key to securing signed data.
 # SECURITY WARNING: keep the secret key used in production secret!
-# default to insecure secret key for local development
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-i45(4w6er1sabytg45#mai((%ea_36ojfr_ms3k6jin!+ikor')
+# No fallback here — each environment settings file must supply a key.
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Configure the allowed domain names using the environment variable (seperated by ',')
 ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(',') if 'ALLOWED_HOSTS' in os.environ else []
@@ -40,9 +49,8 @@ if 'WEBSITE_HOSTNAME' in os.environ:
     ALLOWED_HOSTS.append(os.environ['WEBSITE_HOSTNAME'])
 
 # Configure admins for getting notified of errors
-ADMINS = [('NAME', 'EMAIL')]
-# SERVER_EMAIL = 'django@author.yourdomain.com'
-SERVER_EMAIL = 'soundscape.buddhism103@passinbox.com'
+ADMINS = []
+SERVER_EMAIL = os.getenv('SERVER_EMAIL', 'root@localhost')
 
 # Application definition
 
@@ -177,6 +185,9 @@ STORAGES = {
     },
 }
 
+if "test" in sys.argv:
+    STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.StaticFilesStorage"
+
 FRONTEND_DIR = "../frontend/serve"
 TEMPLATES[0]["DIRS"] = [os.path.join(BASE_DIR, FRONTEND_DIR)]
 WHITENOISE_ROOT = os.path.join(BASE_DIR, FRONTEND_DIR, "root")
@@ -187,3 +198,13 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, FRONTEND_DIR_STATIC)]
 
 # Base URL for file uploads.
 FILE_UPLOAD_BASE_URL = os.getenv('FILE_UPLOAD_BASE_URL', 'https://share.soundscape.services')
+
+# GPX download safety defaults. Override per-environment if needed.
+GPX_MAX_DOWNLOAD_BYTES = 100 * 1024 * 1024  # 100 MB
+GPX_DOWNLOAD_TIMEOUT = 100  # seconds
+
+TESTING_WARNING_ENABLED = env_bool('TESTING_WARNING_ENABLED', False)
+TESTING_WARNING_MESSAGE = os.getenv(
+    'TESTING_WARNING_MESSAGE',
+    'Testing environment — all changes will be lost.',
+)

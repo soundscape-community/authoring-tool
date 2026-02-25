@@ -1,9 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
+# Copyright (c) Soundscape Community Contributors.
 
 import os
 import uuid
 
+from django.conf import settings
+from django.core.exceptions import MultipleObjectsReturned
 from django.db import models
 from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
@@ -48,7 +51,7 @@ def file_proxy_url(file: models.FileField):
     Used for serving files from a storage account.
     Not applicable in a local environment.
     """
-    if file == None or len(file.name) == 0:
+    if not file or not file.name:
         return None
 
     return file.url
@@ -101,6 +104,7 @@ class Activity(CommonModel):
     image_alt = models.TextField(blank=True, null=True)
     last_published = models.DateTimeField(blank=True, null=True)
     unpublished_changes = models.BooleanField(default=False)
+    folder = models.ForeignKey("Folder", blank=True, null=True, on_delete=models.SET_NULL, related_name="activities")
 
     class Meta:
         ordering = ['-created']
@@ -108,19 +112,13 @@ class Activity(CommonModel):
     def __str__(self):
         return self.name
 
-    @receiver(pre_save)
+    @receiver(pre_save, sender='api.Activity')
     def checker(sender, instance, raw, using, update_fields, *args, **kwargs):
-        if isinstance(instance, Activity) == False:
-            return
-
         if update_fields is None or 'unpublished_changes' not in update_fields:
             instance.unpublished_changes = True
 
-    @receiver(post_delete)
+    @receiver(post_delete, sender='api.Activity')
     def delete_file(sender, instance, **kwargs):
-        if isinstance(instance, Activity) == False:
-            return
-
         instance.deletePublishedFile()
         instance.deleteFeaturedImageFile()
         instance.deleteWaypointsMediaDirectory()
@@ -140,7 +138,7 @@ class Activity(CommonModel):
 
     @property
     def can_link(self):
-        return self.last_published != None
+        return self.last_published is not None
 
     @property
     def waypoint_groups_all(self):
@@ -164,7 +162,6 @@ class Activity(CommonModel):
     def child_entity_did_update(self):
         self.unpublished_changes = True
         self.save()
-        pass
 
     def storePublishedFile(self, content):
         self.deletePublishedFile()
@@ -198,11 +195,8 @@ class WaypointGroup(CommonModel):
     def __str__(self):
         return '{0} ({1})'.format(self.name, self.activity.name)
 
-    @receiver(pre_save)
+    @receiver(pre_save, sender='api.WaypointGroup')
     def checker(sender, instance, raw, using, update_fields, *args, **kwargs):
-        if isinstance(instance, WaypointGroup) == False:
-            return
-
         instance.activity.child_entity_did_update()
 
     @property
@@ -216,7 +210,7 @@ class WaypointGroup(CommonModel):
 
         try:
             latest_waypoint = Waypoint.objects.filter(group=self).latest('index')
-        except:
+        except Waypoint.DoesNotExist:
             return 0
 
         return latest_waypoint.index+1
@@ -243,11 +237,8 @@ class Waypoint(CommonModel):
     def __str__(self):
         return '{0}. {1} ({2},{3})'.format(self.index, self.name, self.latitude, self.longitude)
 
-    @receiver(pre_save)
+    @receiver(pre_save, sender='api.Waypoint')
     def checker(sender, instance, raw, using, update_fields, *args, **kwargs):
-        if isinstance(instance, Waypoint) == False:
-            return
-
         activity = instance.group.activity
         activity.child_entity_did_update()
 
@@ -279,19 +270,13 @@ class WaypointMedia(CommonModel):
     class Meta:
         ordering = ['index']
 
-    @receiver(pre_save)
+    @receiver(pre_save, sender='api.WaypointMedia')
     def checker(sender, instance, raw, using, update_fields, *args, **kwargs):
-        if isinstance(instance, WaypointMedia) == False:
-            return
-
         activity = instance.waypoint.group.activity
         activity.child_entity_did_update()
 
-    @receiver(post_delete)
+    @receiver(post_delete, sender='api.WaypointMedia')
     def delete_file(sender, instance, **kwargs):
-        if isinstance(instance, WaypointMedia) == False:
-            return
-
         instance.delete_media_file()
 
     @property
@@ -310,3 +295,171 @@ class UserPermissions(models.Model):
 
     def __str__(self):
         return '{0} allow app: {1}, allow api {2}'.format(self.user_email, self.allow_app, self.allow_api)
+
+
+class Folder(CommonModel):
+    name = models.TextField()
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="folders")
+    parent = models.ForeignKey("self", blank=True, null=True, on_delete=models.CASCADE, related_name="children")
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner", "parent", "name"],
+                condition=models.Q(parent__isnull=False),
+                name="unique_folder_name_per_parent",
+            ),
+            models.UniqueConstraint(
+                fields=["name"],
+                condition=models.Q(parent__isnull=True),
+                name="unique_root_folder_name_global",
+            ),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class FolderPermissionAccess(models.TextChoices):
+    READ = "read", _("Read")
+    WRITE = "write", _("Write")
+
+
+class FolderUserPermission(CommonModel):
+    folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name="user_permissions")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="folder_user_permissions"
+    )
+    access = models.CharField(max_length=10, choices=FolderPermissionAccess.choices)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["folder", "user"], name="unique_folder_user_permission"),
+        ]
+
+    def __str__(self):
+        return f"{self.folder} -> user:{self.user} ({self.access})"
+
+
+class FolderTeamPermission(CommonModel):
+    folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name="team_permissions")
+    team = models.ForeignKey("users.Team", on_delete=models.CASCADE, related_name="folder_team_permissions")
+    access = models.CharField(max_length=10, choices=FolderPermissionAccess.choices)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["folder", "team"], name="unique_folder_team_permission"),
+        ]
+
+    def __str__(self):
+        return f"{self.folder} -> team:{self.team} ({self.access})"
+
+
+class _FolderPermissionCompatQuerySet:
+    def __init__(self, user_qs, team_qs):
+        self.user_qs = user_qs
+        self.team_qs = team_qs
+
+    def filter(self, **kwargs):
+        user_value = kwargs.pop("user", None)
+        team_value = kwargs.pop("team", None)
+
+        user_qs = self.user_qs
+        team_qs = self.team_qs
+
+        if user_value is not None:
+            user_qs = user_qs.filter(user=user_value)
+            team_qs = FolderTeamPermission.objects.none()
+        if team_value is not None:
+            team_qs = team_qs.filter(team=team_value)
+            user_qs = FolderUserPermission.objects.none()
+
+        if kwargs:
+            user_qs = user_qs.filter(**kwargs)
+            team_qs = team_qs.filter(**kwargs)
+
+        return _FolderPermissionCompatQuerySet(user_qs, team_qs)
+
+    def update(self, **kwargs):
+        return self.user_qs.update(**kwargs) + self.team_qs.update(**kwargs)
+
+    def count(self):
+        return self.user_qs.count() + self.team_qs.count()
+
+    def exists(self):
+        return self.user_qs.exists() or self.team_qs.exists()
+
+    def delete(self):
+        user_count, user_details = self.user_qs.delete()
+        team_count, team_details = self.team_qs.delete()
+
+        merged_details = dict(user_details)
+        for key, value in team_details.items():
+            merged_details[key] = merged_details.get(key, 0) + value
+
+        return user_count + team_count, merged_details
+
+    def get(self, **kwargs):
+        user_obj = None
+        team_obj = None
+
+        try:
+            user_obj = self.user_qs.get(**kwargs)
+        except FolderUserPermission.DoesNotExist:
+            pass
+
+        try:
+            team_obj = self.team_qs.get(**kwargs)
+        except FolderTeamPermission.DoesNotExist:
+            pass
+
+        if user_obj is not None and team_obj is not None:
+            raise MultipleObjectsReturned("get() returned more than one object.")
+        if user_obj is not None:
+            return user_obj
+        if team_obj is not None:
+            return team_obj
+
+        raise FolderUserPermission.DoesNotExist(
+            "Folder permission matching query does not exist."
+        )
+
+    def __iter__(self):
+        for item in self.user_qs:
+            yield item
+        for item in self.team_qs:
+            yield item
+
+
+class _FolderPermissionCompatManager:
+    def all(self):
+        return _FolderPermissionCompatQuerySet(FolderUserPermission.objects.all(), FolderTeamPermission.objects.all())
+
+    def none(self):
+        return _FolderPermissionCompatQuerySet(FolderUserPermission.objects.none(), FolderTeamPermission.objects.none())
+
+    def filter(self, **kwargs):
+        return self.all().filter(**kwargs)
+
+    def create(self, **kwargs):
+        folder = kwargs.get("folder")
+        access = kwargs.get("access")
+        user = kwargs.get("user")
+        team = kwargs.get("team")
+
+        if user is not None and team is not None:
+            raise ValueError("Folder permission must specify only one principal: user or team.")
+        if user is not None:
+            return FolderUserPermission.objects.create(folder=folder, user=user, access=access)
+        if team is not None:
+            return FolderTeamPermission.objects.create(folder=folder, team=team, access=access)
+        raise ValueError("Folder permission must specify a user or team principal.")
+
+    def count(self):
+        return self.all().count()
+
+
+class FolderPermission:
+    Access = FolderPermissionAccess
+    objects = _FolderPermissionCompatManager()

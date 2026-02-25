@@ -1,3 +1,4 @@
+<!-- Copyright (c) Soundscape Community Contributors. -->
 # Soundscape Authoring Tool User Guide
 Soundscape Authoring Tool is a web app which allows users to create routed activities for use with the Soundscape iOS app.
 
@@ -28,6 +29,11 @@ To access the user registration page, click on "Sign up!" on the login page. You
 ## User Page
 ![image of user page](images/user_page.png)
 This is the user page! On the top right corner you should be able to see the user you are signed in as, as well as the email associated with that user. You can also click the dropdown in the top right to sign out and switch users if needed!
+
+### Folder Access Notes
+Folder access is inherited from the folder you are working in. Activities without a folder are visible to the user who created them.
+
+Staff accounts can view and edit all folders and activities, including activities without a folder. Root folder names must be unique across all users.
 
 ### Creating a new Activity
 To create a new activity, you can click the "+ Create" button found on the user page. You will then be prompted with a window to enter in data for the new activity.

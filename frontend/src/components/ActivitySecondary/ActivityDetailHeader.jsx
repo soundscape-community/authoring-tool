@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+// Copyright (c) Soundscape Community Contributors.
 // Licensed under the MIT License.
 
 import React from 'react';
@@ -33,7 +33,6 @@ export default function ActivityDetailHeader(props) {
               aria-label="Activity Link"
               onClick={props.onActivityLink}
               disabled={!props.activity.can_link}>
-              <span data-feather="external-link"></span>
               <Link className="me-1" size={16} style={{ verticalAlign: '-10%' }} />
               Link
             </Button>
@@ -49,7 +48,6 @@ export default function ActivityDetailHeader(props) {
               variant="outline-secondary"
               aria-label="Export"
               href={`/api/v1/activities/${props.activity.id}/export_gpx/`}>
-              <span data-feather="external-link"></span>
               <ExternalLink className="me-1" size={16} style={{ verticalAlign: '-10%' }} />
               Export
             </Button>

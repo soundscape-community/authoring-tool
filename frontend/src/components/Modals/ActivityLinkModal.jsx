@@ -1,14 +1,17 @@
-// Copyright (c) Microsoft Corporation.
+// Copyright (c) Soundscape Community Contributors.
 // Licensed under the MIT License.
 
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import { Alert } from 'react-bootstrap';
+
+const SHARE_DOMAIN = (import.meta.env.VITE_SHARE_DOMAIN || 'https://share.soundscape.services').replace(/\/+$/, '');
 
 export default class ActivityLinkModal extends React.Component {
   render() {
-    const link = `https://share.soundscape.services/v3/experience?id=${this.props.activity?.id}`;
+    const activityId = this.props.activity?.id;
+    const link = activityId ? `${SHARE_DOMAIN}/v3/experience?id=${activityId}` : null;
 
     return (
       <Modal
@@ -43,13 +46,17 @@ export default class ActivityLinkModal extends React.Component {
             phone. At the day of the event, participants without the link can use their phone to scan the QR code from
             your phone.
           </p>
-          <div className="text-center">
-            <QRCode value={link} />
-          </div>
-          <br />
-          <a href={link} target="_blank" rel="noreferrer">
-            {link}
-          </a>
+          {link && (
+            <>
+              <div className="text-center">
+                <QRCodeSVG value={link} />
+              </div>
+              <br />
+              <a href={link} target="_blank" rel="noreferrer">
+                {link}
+              </a>
+            </>
+          )}
         </Modal.Body>
       </Modal>
     );
