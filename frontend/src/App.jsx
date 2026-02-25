@@ -733,11 +733,11 @@ export default class App extends React.Component {
   }
 
   waypointMovedUp = (waypoint) => {
-    this.waypointMoved(waypoint, 1);
+    this.waypointMoved(waypoint, -1);
   };
 
   waypointMovedDown = (waypoint) => {
-    this.waypointMoved(waypoint, -1);
+    this.waypointMoved(waypoint, 1);
   };
 
   waypointMoved = (waypoint, offset) => {

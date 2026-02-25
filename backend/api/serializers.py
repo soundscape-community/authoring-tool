@@ -38,6 +38,18 @@ class WaypointSerializer(serializers.ModelSerializer):
         fields = ['id', 'latitude', 'longitude', 'group', 'type', 'index',
                   'name', 'description', 'departure_callout', 'arrival_callout', 'images', 'audio_clips']
 
+    def get_validators(self):
+        # Exclude the auto-generated UniqueTogetherValidator for (group, index).
+        # The uniqueness constraint is enforced by the database and the view's
+        # perform_update handles index swapping atomically.
+        return [
+            v for v in super().get_validators()
+            if not (
+                isinstance(v, serializers.UniqueTogetherValidator)
+                and set(v.fields) == {'group', 'index'}
+            )
+        ]
+
 
 class WaypointGroupSerializer(serializers.ModelSerializer):
     waypoints = WaypointSerializer(many=True, read_only=True)
