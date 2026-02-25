@@ -34,7 +34,7 @@ class WaypointAccessTests(FolderAPITestCase):
             },
         )
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_write_access_allows_waypoint_create(self):
         self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.WRITE)
@@ -75,7 +75,7 @@ class WaypointAccessTests(FolderAPITestCase):
             {"waypoint": str(waypoint.id), "media": fake_image, "type": "image", "mime_type": "image/png"},
             format="multipart",
         )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_write_access_allows_media_create(self):
         self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.WRITE)
@@ -99,7 +99,7 @@ class WaypointAccessTests(FolderAPITestCase):
             f"/api/v1/waypoints/{waypoint.id}/",
             {"name": "New Name"},
         )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_read_access_blocks_waypoint_delete(self):
         self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.READ)
@@ -107,7 +107,7 @@ class WaypointAccessTests(FolderAPITestCase):
         self.client.force_authenticate(user=self.member)
 
         response = self.client.delete(f"/api/v1/waypoints/{waypoint.id}/")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_write_access_allows_waypoint_update(self):
         self._grant_access(self.folder, team=self.team, access=FolderPermission.Access.WRITE)

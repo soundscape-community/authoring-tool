@@ -16,7 +16,7 @@ class UserSearchTests(APITestCase):
         self.bob = User.objects.create_user(username="bob", password="pass")
         self.carol = User.objects.create_user(username="carol", password="pass")
 
-    def test_unauthenticated_returns_empty(self):
+    def test_unauthenticated_returns_forbidden(self):
         response = self.client.get("/api/v1/users/")
         self.assertEqual(response.status_code, 403)
 

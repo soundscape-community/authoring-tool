@@ -50,11 +50,11 @@ from .gpx_utils import activity_to_gpx, gpx_to_activity
 
 
 class ActivityWritePermissionMixin:
-    """Shared helper that raises ValidationError when the user lacks write access."""
+    """Shared helper that raises PermissionDenied when the user lacks write access."""
 
     def _check_activity_write_permission(self, activity):
         if not can_write_activity(self.request.user, activity):
-            raise ValidationError("No write access to activity")
+            raise PermissionDenied("No write access to activity")
 
 
 def gpx_response(content, filename):
@@ -97,7 +97,7 @@ class ActivityViewSet(ModelViewSet):
         user_id = str(user.id)
         folder_id = self.request.query_params.get("folder_id")
         accessible_folder_ids = get_accessible_folder_ids(user)
-        accessible_folder_ids_str = {str(folder_id) for folder_id in accessible_folder_ids}
+        accessible_folder_ids_str = {str(accessible_id) for accessible_id in accessible_folder_ids}
 
         if folder_id:
             if folder_id == "none":
@@ -475,9 +475,7 @@ class FolderPermissionViewSet(GenericViewSet):
 
     def get_queryset(self):
         writable_ids = self._get_writable_folder_ids()
-        user_qs = FolderUserPermission.objects.filter(folder_id__in=writable_ids).select_related("folder", "user")
-        team_qs = FolderTeamPermission.objects.filter(folder_id__in=writable_ids).select_related("folder", "team")
-        return list(user_qs) + list(team_qs)
+        return FolderUserPermission.objects.filter(folder_id__in=writable_ids).select_related("folder", "user")
 
     def _get_permission_object(self, permission_id):
         try:
@@ -489,7 +487,10 @@ class FolderPermissionViewSet(GenericViewSet):
                 raise ValidationError("Folder permission not found") from exc
 
     def list(self, request):
-        serializer = self.get_serializer(self.get_queryset(), many=True)
+        writable_ids = self._get_writable_folder_ids()
+        user_qs = FolderUserPermission.objects.filter(folder_id__in=writable_ids).select_related("folder", "user")
+        team_qs = FolderTeamPermission.objects.filter(folder_id__in=writable_ids).select_related("folder", "team")
+        serializer = self.get_serializer(list(user_qs) + list(team_qs), many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
@@ -631,7 +632,7 @@ class UserViewSet(ListModelMixin, GenericViewSet):
 
     Returns ``{id, username}`` for all users.  Accepts an optional
     ``?search=`` query parameter that filters by username (case-insensitive
-    substring match).  Results are capped at 25 rows.
+    substring match).  Responses are limited to 25 rows.
     """
 
     serializer_class = UserSerializer
@@ -645,4 +646,9 @@ class UserViewSet(ListModelMixin, GenericViewSet):
         search = self.request.query_params.get("search", "").strip()
         if search:
             qs = qs.filter(UserQ(username__icontains=search))
-        return qs[:25]
+        return qs
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())[:25]
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

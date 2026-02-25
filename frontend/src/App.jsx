@@ -207,6 +207,9 @@ export default class App extends React.Component {
    */
   reloadSelectedActivity(stateOverrides = {}, callback = undefined) {
     const { selectedActivity } = this.state;
+    if (!selectedActivity) {
+      return null;
+    }
     const toastId = showLoading('Loading activity...');
 
     API.getActivity(selectedActivity.id)
@@ -350,16 +353,6 @@ export default class App extends React.Component {
   buildActivityFolderUpdatePayload(activity, folderId) {
     return {
       id: activity.id,
-      author_id: activity.author_id,
-      author_name: activity.author_name,
-      author_email: activity.author_email,
-      name: activity.name,
-      description: activity.description,
-      type: activity.type,
-      start: activity.start,
-      end: activity.end,
-      expires: activity.expires,
-      image_alt: activity.image_alt,
       folder: folderId,
     };
   }
@@ -394,22 +387,69 @@ export default class App extends React.Component {
   }
 
   async moveActivitiesToUnfoldered(folderId) {
+    const BATCH_SIZE = 20;
     const folderIds = this.getDescendantFolderIds(folderId);
     if (folderIds.length === 0) {
       return;
     }
 
-    const activityLists = await Promise.all(folderIds.map((id) => API.getActivities(id)));
-    const activities = activityLists.flat();
+    const activityLists = [];
+    const fetchFailures = [];
+
+    for (let i = 0; i < folderIds.length; i += BATCH_SIZE) {
+      const batch = folderIds.slice(i, i + BATCH_SIZE);
+      const settledResults = await Promise.allSettled(batch.map((id) => API.getActivities(id)));
+      settledResults.forEach((result, index) => {
+        const currentFolderId = batch[index];
+        if (result.status === 'fulfilled') {
+          activityLists.push(result.value);
+          return;
+        }
+        fetchFailures.push({
+          folderId: currentFolderId,
+          message: result.reason?.message || 'Unknown error',
+        });
+      });
+    }
+
+    const activitiesById = new Map();
+    activityLists.flat().forEach((activity) => {
+      activitiesById.set(activity.id, activity);
+    });
+    const activities = Array.from(activitiesById.values());
     if (activities.length === 0) {
+      if (fetchFailures.length > 0) {
+        throw new Error(`Failed to load activities from ${fetchFailures.length} folders.`);
+      }
       return;
     }
 
-    await Promise.all(
-      activities.map((activity) =>
-        API.updateActivityPartial(this.buildActivityFolderUpdatePayload(activity, null)),
-      ),
-    );
+    const updateFailures = [];
+
+    for (let i = 0; i < activities.length; i += BATCH_SIZE) {
+      const batch = activities.slice(i, i + BATCH_SIZE);
+      const settledResults = await Promise.allSettled(
+        batch.map((activity) =>
+          API.updateActivityPartial(this.buildActivityFolderUpdatePayload(activity, null)),
+        ),
+      );
+      settledResults.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          return;
+        }
+        updateFailures.push({
+          activityId: batch[index].id,
+          message: result.reason?.message || 'Unknown error',
+        });
+      });
+    }
+
+    if (fetchFailures.length > 0 || updateFailures.length > 0) {
+      console.error('Failed to move some activities to unfoldered.', { fetchFailures, updateFailures });
+      throw new Error(
+        `Failed to move all activities (folder fetch failures: ${fetchFailures.length}, update failures: ${updateFailures.length}).`,
+      );
+    }
   }
 
   async folderDeleted({ moveActivities }) {
@@ -601,7 +641,6 @@ export default class App extends React.Component {
     } catch (error) {
       error.title = 'Error moving activities';
       showError(error);
-      throw error;
     } finally {
       dismissLoading(toastId);
     }
@@ -648,7 +687,6 @@ export default class App extends React.Component {
     } catch (error) {
       error.title = 'Error deleting activities';
       showError(error);
-      throw error;
     } finally {
       dismissLoading(toastId);
     }

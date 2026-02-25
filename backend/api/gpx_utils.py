@@ -437,12 +437,13 @@ def gpx_to_waypoint(gpx_waypoint: gpxpy.gpx.GPXWaypoint, waypoint_group: Waypoin
                 continue
 
             description_element = next((e for e in gpxsc_link if e.tag == 'text'), None)
+            description = description_element.text if description_element is not None else ''
 
             waypoint_media = WaypointMedia(waypoint=activity_waypoint,
                                            media=media,
                                            type=type,
                                            mime_type=mime_type_element.text,
-                                           description=description_element.text)
+                                           description=description)
             waypoint_media.save()
 
     return activity_waypoint

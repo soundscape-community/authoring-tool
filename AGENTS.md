@@ -114,9 +114,9 @@ PSQL_DB_NAME, PSQL_DB_USER, PSQL_DB_PASS, PSQL_DB_HOST, PSQL_DB_PORT
 ## Copyright Notices
 
 - Use the upstream reference at `microsoft/soundscape` under `svcs/soundscape-authoring` when comparing file origins.
-- Files identical to the upstream Microsoft project keep only the Microsoft copyright notice.
-- Files derived from Microsoft code that diverged from upstream must include both the Microsoft notice and the Soundscape Community Contributors notice.
-- Files not present in the upstream project must include only the Soundscape Community Contributors notice (do not add a Microsoft notice).
+- Keep only the Microsoft copyright notice for files identical to the upstream Microsoft project.
+- When a file is derived from Microsoft code and has diverged from upstream, include both the Microsoft notice and the Soundscape Community Contributors notice.
+- For files not present in the upstream project, include only the Soundscape Community Contributors notice (do not add a Microsoft notice).
 - If a file format cannot accept comments (for example JSON, lockfiles, or binaries), add an explicit metadata field or document the exception in the change summary.
 
 When modifying this codebase, pay special attention to the Activity lifecycle (creation → editing → publishing), the GPX import/export functionality, and the React state management patterns that coordinate between the activity list and detail views.

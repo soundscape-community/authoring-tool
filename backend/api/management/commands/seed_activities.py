@@ -44,7 +44,7 @@ class Command(BaseCommand):
         children = max(0, options["children"])
         depth = max(0, options["depth"])
         hot_folder_name = options["hot_folder_name"]
-        hot_count = max(0, options["hot_count"])
+        hot_count = min(max(0, options["hot_count"]), count)
         user_lookup = options["user"]
 
         user = self._resolve_user(user_lookup)

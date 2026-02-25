@@ -147,7 +147,7 @@ export default function ActivitiesTable(props) {
     return items;
   }, [folderPath, selectedFolderId]);
 
-  const childFolders = foldersIndex.byParent[selectedFolderId || null] || [];
+  const childFolders = foldersIndex.byParent.get(selectedFolderId ?? null) || [];
 
   const selectedActivityIds = props.selectedActivityIds || [];
   const selectionCount = selectedActivityIds.length;

@@ -7,6 +7,7 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 
 import ErrorAlert from '../Main/ErrorAlert';
+import { buildFolderOptions } from '../../utils/folderOptions';
 
 export default function FolderCreateModal(props) {
   const [name, setName] = useState('');
@@ -19,9 +20,7 @@ export default function FolderCreateModal(props) {
     setError(null);
   }, [props.parent, props.show]);
 
-  const sortedFolders = useMemo(() => {
-    return [...(props.folders || [])].sort((a, b) => a.name.localeCompare(b.name));
-  }, [props.folders]);
+  const folderOptions = useMemo(() => buildFolderOptions(props.folders), [props.folders]);
 
   const createFolder = (event) => {
     event?.preventDefault();
@@ -69,9 +68,9 @@ export default function FolderCreateModal(props) {
               onChange={(event) => setParent(event.target.value || null)}
             >
               <option value="">/</option>
-              {sortedFolders.map((folder) => (
+              {folderOptions.map((folder) => (
                 <option key={folder.id} value={folder.id}>
-                  {folder.name}
+                  {`${'-- '.repeat(folder.depth)}${folder.label}`}
                 </option>
               ))}
             </Form.Select>

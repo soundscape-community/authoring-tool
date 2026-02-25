@@ -5,6 +5,10 @@ import React from 'react';
 import { Alert } from 'react-bootstrap';
 
 export default function EnvironmentWarningBanner({ message }) {
+  if (!message) {
+    return null;
+  }
+
   return (
     <Alert className="mb-0 rounded-0 text-center" variant="warning">
       {message}

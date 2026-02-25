@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import { Alert } from 'react-bootstrap';
 
 const SHARE_DOMAIN = (import.meta.env.VITE_SHARE_DOMAIN || 'https://share.soundscape.services').replace(/\/+$/, '');
@@ -49,7 +49,7 @@ export default class ActivityLinkModal extends React.Component {
           {link && (
             <>
               <div className="text-center">
-                <QRCode value={link} />
+                <QRCodeSVG value={link} />
               </div>
               <br />
               <a href={link} target="_blank" rel="noreferrer">
