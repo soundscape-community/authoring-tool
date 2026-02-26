@@ -626,7 +626,7 @@ export default class App extends React.Component {
       const hasFailures = failedIds.length > 0;
 
       this.setState({
-        showModalActivityBulkMove: !hasFailures,
+        showModalActivityBulkMove: hasFailures,
         selectedActivityIds: failedIds,
       });
 
@@ -671,7 +671,7 @@ export default class App extends React.Component {
       const hasFailures = failedIds.length > 0;
 
       this.setState({
-        showModalActivityBulkDelete: !hasFailures,
+        showModalActivityBulkDelete: hasFailures,
         selectedActivityIds: failedIds,
       });
 
