@@ -1,7 +1,4 @@
 {
 	"python-envs.alwaysUseUv": true,
 	"python-envs.terminal.autoActivationType": "shellStartup",
-	"chat.tools.terminal.autoApprove": {
-		"npm test": true
-	}
 }
