@@ -1,22 +1,7 @@
 {
-    "python-envs.alwaysUseUv": true,
-    "python-envs.terminal.autoActivationType": "shellStartup",
-    "chat.tools.terminal.autoApprove": {
-        "npm test": true
-    }
-}<vscode_codeblock_uri>file:///home/robbie/src/authoring-tool/.vscode/mcp.json</vscode_codeblock_uri>
-  {
-  	"servers": {
-  		"microsoft/playwright-mcp": {
-  			"type": "stdio",
-  			"command": "npx",
-  			"args": [
-  				"@playwright/mcp@latest"
-- 			],
-- 			"gallery": "https://api.mcp.github.com",
-- 			"version": "0.0.1-seed"
-+ 			]
-  		}
-  	},
-  	"inputs": []
-		"python-envs.terminal.autoActivationType": "shellStartup"
+	"python-envs.alwaysUseUv": true,
+	"python-envs.terminal.autoActivationType": "shellStartup",
+	"chat.tools.terminal.autoApprove": {
+		"npm test": true
+	}
+}
