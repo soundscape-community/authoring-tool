@@ -74,6 +74,12 @@ INSTALLED_APPS = [
     # Health check
     'health_check',
     'health_check.db',
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount'
+    'allauth.socialaccount.providers.google',
+
 ]
 
 REST_FRAMEWORK = {
@@ -90,6 +96,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -143,6 +150,23 @@ REST_AUTH = {
     'JWT_AUTH_COOKIE': 'AUTHORING_AUTH',
     'TOKEN_MODEL':None
 }
+
+
+authentication_backends = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': os.getenv('GOOGLE_OAUTH_CLIENT_ID', ''),
+            'secret': os.getenv('GOOGLE_OAUTH_CLIENT_SECRET', ''),
+            'key': '',
+        }
+    }
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
