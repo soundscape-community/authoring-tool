@@ -13,6 +13,7 @@ import './Login.css'
 
 function Login() {
   const { setUser } = useContext(MainContext);
+  const googleLoginUrl = '/accounts/google/login/?auth_params=prompt%3Dselect_account';
 
   const handleLogin = async ({username, password}) => {
     try {
@@ -55,7 +56,13 @@ function Login() {
                 </label>
                 <ErrorMessage name="password" component="div" className="error"/>
               </div>
-              <button type="submit" disabled={isSubmitting} className="button">Login</button>
+              <div className="auth_actions">
+                <button type="submit" disabled={isSubmitting} className="button">Login</button>
+                <a href={googleLoginUrl} className="button google_button">Continue with Google</a>
+              </div>
+              <p className="auth_notice">
+                New Google sign-ins require staff approval before access is granted.
+              </p>
             </Form>
           </div>
         }

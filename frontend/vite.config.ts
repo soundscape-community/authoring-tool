@@ -16,6 +16,11 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      '^/accounts/.*': {
+        target: 'http://localhost:8000',
+        xfwd: true,
+        changeOrigin: false,
+      },
       '^(/admin|/api|/api-auth|/dj-rest-auth|/files|/.auth)/.*': {
         target: 'http://localhost:8000',
         xfwd: true,

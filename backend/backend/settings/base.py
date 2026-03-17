@@ -77,7 +77,7 @@ INSTALLED_APPS = [
 
     'allauth',
     'allauth.account',
-    'allauth.socialaccount'
+    'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
 
 ]
@@ -146,16 +146,26 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = 'users.User'
 
 REST_AUTH = {
+    'SESSION_LOGIN': True,
     'USE_JWT': True,
     'JWT_AUTH_COOKIE': 'AUTHORING_AUTH',
-    'TOKEN_MODEL':None
+    'TOKEN_MODEL': None,
 }
 
 
-authentication_backends = [
+AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+
+ACCOUNT_ADAPTER = 'users.adapters.ApprovalAccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'users.adapters.ApprovalSocialAccountAdapter'
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+LOGIN_REDIRECT_URL = '/'
+PENDING_APPROVAL_REDIRECT_URL = '/pending-approval/'
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -163,7 +173,8 @@ SOCIALACCOUNT_PROVIDERS = {
             'client_id': os.getenv('GOOGLE_OAUTH_CLIENT_ID', ''),
             'secret': os.getenv('GOOGLE_OAUTH_CLIENT_SECRET', ''),
             'key': '',
-        }
+        },
+        'SCOPE': ['profile', 'email'],
     }
 }
 

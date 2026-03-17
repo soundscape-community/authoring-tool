@@ -6,4 +6,5 @@ from .views import AppView
 
 urlpatterns = [
     path('', AppView.as_view()),
+    path('pending-approval/', AppView.as_view()),
 ]
