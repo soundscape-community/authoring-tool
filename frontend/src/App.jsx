@@ -34,6 +34,7 @@ import InvalidWindowSizeAlert from './components/Main/InvalidWindowSizeAlert';
 import EnvironmentWarningBanner from './components/Main/EnvironmentWarningBanner';
 import PrivacyAlertModal from './components/Modals/PrivacyAlertModal';
 import Login from './components/auth/Login';
+import PendingApproval from './components/auth/PendingApproval';
 import MainContext from './components/Main/MainContext';
 
 export default class App extends React.Component {
@@ -137,6 +138,10 @@ export default class App extends React.Component {
 
     this.loadRuntimeConfig();
 
+    if (this.isPendingApprovalRoute) {
+      return;
+    }
+
     this.authenticate()
       .then((user) => {
         this.setState({
@@ -165,6 +170,10 @@ export default class App extends React.Component {
 
   get isScreenSizeValid() {
     return window.innerWidth > 1000 && window.innerHeight > 500;
+  }
+
+  get isPendingApprovalRoute() {
+    return window.location.pathname.replace(/\/+$/, '') === '/pending-approval';
   }
 
   handleResize = (event) => {
@@ -782,6 +791,20 @@ export default class App extends React.Component {
   };
 
   render() {
+    if (this.isPendingApprovalRoute) {
+      return (
+        <div className="App">
+          <ToastContainer />
+
+          {this.state.showBetaWarning && (
+            <EnvironmentWarningBanner message={this.state.betaWarningMessage} />
+          )}
+
+          <PendingApproval />
+        </div>
+      );
+    }
+
     return (
       <MainContext.Provider value={{ user: this.state.user, setUser: this.setUser }}>
         <div className="App">

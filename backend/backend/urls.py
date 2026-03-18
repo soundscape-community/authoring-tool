@@ -27,6 +27,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
+    # allauth endpoints for social authentication
+    path('accounts/', include('allauth.urls')),
 
     # Health check endpoint
     path('ht/', include('health_check.urls')),

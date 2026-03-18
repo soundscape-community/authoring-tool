@@ -74,6 +74,12 @@ INSTALLED_APPS = [
     # Health check
     'health_check',
     'health_check.db',
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+
 ]
 
 REST_FRAMEWORK = {
@@ -90,6 +96,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -139,10 +146,37 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = 'users.User'
 
 REST_AUTH = {
+    'SESSION_LOGIN': True,
     'USE_JWT': True,
     'JWT_AUTH_COOKIE': 'AUTHORING_AUTH',
-    'TOKEN_MODEL':None
+    'TOKEN_MODEL': None,
 }
+
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+ACCOUNT_ADAPTER = 'users.adapters.ApprovalAccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'users.adapters.ApprovalSocialAccountAdapter'
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+LOGIN_REDIRECT_URL = '/'
+PENDING_APPROVAL_REDIRECT_URL = '/pending-approval/'
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': os.getenv('GOOGLE_OAUTH_CLIENT_ID', ''),
+            'secret': os.getenv('GOOGLE_OAUTH_CLIENT_SECRET', ''),
+            'key': '',
+        },
+        'SCOPE': ['profile', 'email'],
+    }
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/

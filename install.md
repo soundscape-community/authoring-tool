@@ -47,8 +47,16 @@
 
     AZURE_MAPS_SUBSCRIPTION_KEY=""
 
+    GOOGLE_OAUTH_CLIENT_ID=""
+
+    GOOGLE_OAUTH_CLIENT_SECRET=""
+
     X_MS_TOKEN_AAD_ID_TOKEN="lkjsajfdjfdsalkfj"
     ```
+
+    * If you enable Google sign-in and use the Vite dev server, add the callback URI `http://localhost:3000/accounts/google/login/callback/` for local development.
+    * If you are serving the frontend directly from Django instead of Vite during local development, use `http://localhost:8000/accounts/google/login/callback/`.
+    * For deployed environments, use `https://your.domain.com/accounts/google/login/callback/`.
     
 4.  Double check `.env` file
     * remove all the comments in the `backend/.env` files 
