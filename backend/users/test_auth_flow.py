@@ -8,7 +8,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages import get_messages
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
 from allauth.account.models import EmailAddress
@@ -196,3 +196,19 @@ class CsrfBootstrapTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('csrftoken', response.cookies)
+
+
+class ProxyHttpsTests(SimpleTestCase):
+    @override_settings(SECURE_PROXY_SSL_HEADER=('HTTP_X_FORWARDED_PROTO', 'https'))
+    def test_forwarded_https_builds_https_callback_url(self):
+        request = RequestFactory().get(
+            '/',
+            HTTP_HOST='authoring.soundscape.services',
+            HTTP_X_FORWARDED_PROTO='https',
+        )
+
+        self.assertTrue(request.is_secure())
+        self.assertEqual(
+            request.build_absolute_uri('/accounts/google/login/callback/'),
+            'https://authoring.soundscape.services/accounts/google/login/callback/',
+        )

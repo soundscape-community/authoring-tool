@@ -26,6 +26,10 @@ if not any(origin.strip() for origin in CSRF_TRUSTED_ORIGINS):
 
 DEBUG = False
 
+# Trust the reverse proxy to report the original HTTPS scheme for absolute URLs
+# such as OAuth callback URIs.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
