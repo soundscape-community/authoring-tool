@@ -101,6 +101,8 @@ class GoogleApprovalFlowTests(TestCase):
         self.assertEqual(second_response.url, settings.LOGIN_REDIRECT_URL)
         self.assertEqual(second_request.session.get(SESSION_KEY), str(user.pk))
         self.assertTrue(second_request.user.is_authenticated)
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
 
     def test_verified_email_login_links_existing_user_without_wiping_password(self):
         user = User.objects.create_user(
