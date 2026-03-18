@@ -7,16 +7,13 @@ import MainContext from '../../Main/MainContext';
 import Login from '../Login';
 
 describe('Login', () => {
-  it('renders a Google sign-in link', () => {
+  it('renders a Google sign-in button', () => {
     render(
       <MainContext.Provider value={{ setUser: () => {} }}>
         <Login />
       </MainContext.Provider>,
     );
 
-    expect(screen.getByRole('link', { name: 'Continue with Google' })).toHaveAttribute(
-      'href',
-      '/accounts/google/login/?auth_params=prompt%3Dselect_account',
-    );
+    expect(screen.getByRole('button', { name: 'Continue with Google' })).toBeInTheDocument();
   });
 });

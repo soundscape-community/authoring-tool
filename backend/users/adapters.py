@@ -10,6 +10,9 @@ from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 
 
 class ApprovalAccountAdapter(DefaultAccountAdapter):
+    def is_open_for_signup(self, request):
+        return False
+
     def respond_user_inactive(self, request, user):
         return HttpResponseRedirect(
             resolve_url(getattr(settings, 'PENDING_APPROVAL_REDIRECT_URL', '/pending-approval/'))
@@ -17,6 +20,9 @@ class ApprovalAccountAdapter(DefaultAccountAdapter):
 
 
 class ApprovalSocialAccountAdapter(DefaultSocialAccountAdapter):
+    def is_open_for_signup(self, request, sociallogin):
+        return sociallogin.account.provider == 'google'
+
     def pre_social_login(self, request, sociallogin):
         verified_email = getattr(sociallogin, '_did_authenticate_by_email', None)
         if verified_email and sociallogin.user and sociallogin.user.pk:

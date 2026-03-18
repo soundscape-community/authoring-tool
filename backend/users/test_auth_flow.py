@@ -169,3 +169,28 @@ class UserAdminApprovalTests(TestCase):
         self.assertTrue(
             any('Approved 1 user(s).' in str(message) for message in get_messages(response.wsgi_request))
         )
+
+
+class LocalSignupClosedTests(TestCase):
+    def test_allauth_local_signup_cannot_create_a_user(self):
+        response = self.client.post(
+            reverse('account_signup'),
+            {
+                'email': 'local@example.com',
+                'username': 'local-user',
+                'password1': 'testpass123',
+                'password2': 'testpass123',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'account/signup_closed.html')
+        self.assertFalse(User.objects.filter(email='local@example.com').exists())
+
+
+class CsrfBootstrapTests(TestCase):
+    def test_frontend_csrf_bootstrap_sets_csrf_cookie(self):
+        response = self.client.get(reverse('frontend_csrf_cookie'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('csrftoken', response.cookies)
