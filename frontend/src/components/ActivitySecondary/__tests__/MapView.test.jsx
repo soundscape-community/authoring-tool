@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { render } from '@testing-library/react';
-import { vi } from 'vitest';
+import { beforeEach, vi } from 'vitest';
 
 import Activity from '../../../data/Activity';
 import MapView from '../MapView';
@@ -58,6 +58,10 @@ vi.mock('react-leaflet', () => {
 });
 
 describe('MapView', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('configures OSM tiles to send a cross-origin referrer', () => {
     const activity = new Activity({
       type: Activity.TYPE.GUIDED_TOUR,
