@@ -30,6 +30,7 @@ const OSM_ATTR = {
   url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
   attribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  referrerPolicy: 'strict-origin-when-cross-origin',
 };
 
 function shouldShowWaypointCreationControl(activity) {
@@ -352,7 +353,11 @@ export default function MapView(props) {
 
   return (
     <MapContainer bounds={bounds()} zoom={19} worldCopyJump={true} ref={mapRef} attributionControl={false}>
-      <TileLayer attribution={OSM_ATTR.attribution} url={OSM_ATTR.url} />
+      <TileLayer
+        attribution={OSM_ATTR.attribution}
+        url={OSM_ATTR.url}
+        referrerPolicy={OSM_ATTR.referrerPolicy}
+      />
       <LayersControl position="topright">
         <LayersControl.Overlay checked name="Waypoints">
           <LayerGroup>
