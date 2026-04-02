@@ -103,7 +103,7 @@ export default class ActivityLinkModal extends React.Component {
       downloadLink.download = this.buildQrFilename();
       downloadLink.click();
 
-      URL.revokeObjectURL(objectUrl);
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
       this.setQrStatus(DOWNLOAD_SUCCESS_MESSAGE);
     } catch (error) {
       this.setQrStatus(DOWNLOAD_FAILURE_MESSAGE, 'danger');

@@ -67,6 +67,7 @@ describe('ActivityLinkModal', () => {
 
     Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
       configurable: true,
+      writable: true,
       value: vi.fn((callback) => callback(new Blob(['qr-code'], { type: 'image/png' }))),
     });
 
@@ -177,7 +178,29 @@ describe('ActivityLinkModal', () => {
     expect(createdAnchor.download).toBe('city-tour-qr.png');
     expect(createdAnchor.href).toBe('blob:qr-code');
     expect(anchorClickMock).toHaveBeenCalledTimes(1);
-    expect(revokeObjectUrlMock).toHaveBeenCalledWith('blob:qr-code');
+    await waitFor(() => expect(revokeObjectUrlMock).toHaveBeenCalledWith('blob:qr-code'));
     expect(screen.getByText('QR code download started.')).toBeInTheDocument();
+  });
+
+  it('shows a fallback message when downloading the QR code fails', async () => {
+    const user = userEvent.setup();
+    createObjectUrlMock.mockImplementationOnce(() => {
+      throw new Error('Blob URL blocked');
+    });
+
+    renderModal();
+    const anchorCountBeforeDownload = document.createElement.mock.calls.filter(([tagName]) => tagName === 'a').length;
+
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: 'Download QR Code' }));
+    });
+
+    await waitFor(() => expect(screen.getByText('Unable to download the QR code.')).toBeInTheDocument());
+
+    const anchorCountAfterDownload = document.createElement.mock.calls.filter(([tagName]) => tagName === 'a').length;
+
+    expect(anchorCountAfterDownload).toBe(anchorCountBeforeDownload);
+    expect(anchorClickMock).not.toHaveBeenCalled();
+    expect(revokeObjectUrlMock).not.toHaveBeenCalled();
   });
 });
