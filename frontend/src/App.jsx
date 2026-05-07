@@ -131,6 +131,7 @@ export default class App extends React.Component {
     this.waypointDeleteModal = this.waypointDeleteModal.bind(this);
     this.waypointDeleted = this.waypointDeleted.bind(this);
     this.waypointsReversed = this.waypointsReversed.bind(this);
+    this.waypointsReturnRouteCreated = this.waypointsReturnRouteCreated.bind(this);
     this.setUser = this.setUser.bind(this);
   }
 
@@ -790,6 +791,27 @@ export default class App extends React.Component {
       });
   }
 
+  waypointsReturnRouteCreated() {
+    const waypointGroupId = this.state.selectedActivity?.waypoints_group?.id;
+    if (!waypointGroupId) {
+      return;
+    }
+
+    const toastId = showLoading('Creating return route...');
+
+    API.makeWaypointGroupReturnRoute(waypointGroupId)
+      .then(() => {
+        this.reloadSelectedActivity();
+      })
+      .catch((error) => {
+        error.title = 'Error creating return route';
+        showError(error);
+      })
+      .finally(() => {
+        dismissLoading(toastId);
+      });
+  }
+
   waypointDeleteModal(waypoint) {
     this.setState({
       selectedWaypoint: waypoint,
@@ -863,6 +885,7 @@ export default class App extends React.Component {
                       onWaypointMovedUp={this.waypointMovedUp}
                       onWaypointMovedDown={this.waypointMovedDown}
                       onWaypointsReversed={this.waypointsReversed}
+                      onWaypointsReturnRouteCreated={this.waypointsReturnRouteCreated}
                     />
                   ) : (
                     <ActivitiesTable

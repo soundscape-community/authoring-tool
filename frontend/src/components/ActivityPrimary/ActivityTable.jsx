@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import React from 'react';
-import { Plus, MapPin, Edit, RotateCcw } from 'react-feather';
+import { Plus, MapPin, Edit, RotateCcw, CornerDownLeft } from 'react-feather';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Button from 'react-bootstrap/Button';
 
@@ -59,9 +59,18 @@ function AddWaypointButton({ onClick }) {
   );
 }
 
-function WaypointHeaderActions({ canReverse, onAdd, onReverse }) {
+function WaypointHeaderActions({ canReverse, canCreateReturnRoute, onAdd, onReverse, onCreateReturnRoute }) {
   return (
     <div className="d-flex gap-2">
+      <Button
+        size="sm"
+        variant="outline-primary"
+        aria-label="Create Return Route"
+        onClick={onCreateReturnRoute}
+        disabled={!canCreateReturnRoute}>
+        <CornerDownLeft className="me-1" size={16} style={{ verticalAlign: 'text-bottom' }} />
+        Return
+      </Button>
       <Button
         size="sm"
         variant="outline-primary"
@@ -121,8 +130,10 @@ export default function ActivityInfoTable(props) {
             props.editing ? (
               <WaypointHeaderActions
                 canReverse={waypoints.length > 1}
+                canCreateReturnRoute={waypoints.length > 1}
                 onAdd={props.onWaypointCreate.bind(this, Waypoint.TYPE.WAYPOINT)}
                 onReverse={props.onWaypointsReversed}
+                onCreateReturnRoute={props.onWaypointsReturnRouteCreated}
               />
             ) : null
           }

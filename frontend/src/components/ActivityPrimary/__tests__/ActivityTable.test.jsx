@@ -50,6 +50,7 @@ function renderActivityTable(overrides = {}) {
     onWaypointMovedUp: vi.fn(),
     onWaypointMovedDown: vi.fn(),
     onWaypointsReversed: vi.fn(),
+    onWaypointsReturnRouteCreated: vi.fn(),
     ...overrides,
   };
 
@@ -65,6 +66,7 @@ describe('ActivityTable', () => {
     });
 
     expect(screen.queryByRole('button', { name: 'Reverse Waypoints' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Create Return Route' })).not.toBeInTheDocument();
   });
 
   it('disables the reverse waypoints button with fewer than two waypoints', () => {
@@ -74,6 +76,7 @@ describe('ActivityTable', () => {
     });
 
     expect(screen.getByRole('button', { name: 'Reverse Waypoints' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Create Return Route' })).toBeDisabled();
   });
 
   it('calls the reverse callback when the enabled reverse waypoints button is clicked', async () => {
@@ -89,5 +92,20 @@ describe('ActivityTable', () => {
     await user.click(screen.getByRole('button', { name: 'Reverse Waypoints' }));
 
     expect(onWaypointsReversed).toHaveBeenCalledOnce();
+  });
+
+  it('calls the return-route callback when the enabled return button is clicked', async () => {
+    const user = userEvent.setup();
+    const onWaypointsReturnRouteCreated = vi.fn();
+
+    renderActivityTable({
+      activity: buildActivity([buildWaypoint('waypoint-1', 0), buildWaypoint('waypoint-2', 1)]),
+      editing: true,
+      onWaypointsReturnRouteCreated,
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Create Return Route' }));
+
+    expect(onWaypointsReturnRouteCreated).toHaveBeenCalledOnce();
   });
 });

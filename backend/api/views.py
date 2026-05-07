@@ -255,6 +255,44 @@ class WaypointGroupViewSet(ActivityWritePermissionMixin, ModelViewSet):
         serializer = self.get_serializer(group, many=False)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['POST'], name='Make Return Route')
+    @transaction.atomic
+    def make_return_route(self, request, pk=None):
+        group = self.get_object()
+        self._check_activity_write_permission(group.activity)
+
+        if group.type != WaypointGroupType.ORDERED:
+            raise ValidationError("Only ordered waypoint groups can be made into return routes")
+
+        waypoints = list(Waypoint.objects.select_for_update().filter(group=group).order_by("index"))
+        if len(waypoints) > 1:
+            next_index = len(waypoints)
+            for waypoint in reversed(waypoints[:-1]):
+                return_waypoint = Waypoint.objects.create(
+                    group=group,
+                    index=next_index,
+                    name=waypoint.name,
+                    description=waypoint.description,
+                    departure_callout=waypoint.departure_callout,
+                    arrival_callout=waypoint.arrival_callout,
+                    latitude=waypoint.latitude,
+                    longitude=waypoint.longitude,
+                )
+                next_index += 1
+
+                for waypoint_media in waypoint.media_items:
+                    WaypointMedia.objects.create(
+                        waypoint=return_waypoint,
+                        media=waypoint_media.media.name,
+                        type=waypoint_media.type,
+                        mime_type=waypoint_media.mime_type,
+                        description=waypoint_media.description,
+                        index=waypoint_media.index,
+                    )
+
+        serializer = self.get_serializer(group, many=False)
+        return Response(serializer.data)
+
 
 class WaypointViewSet(ActivityWritePermissionMixin, ModelViewSet):
     queryset = Waypoint.objects.all()
