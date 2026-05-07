@@ -130,6 +130,8 @@ export default class App extends React.Component {
     this.waypointUpdated = this.waypointUpdated.bind(this);
     this.waypointDeleteModal = this.waypointDeleteModal.bind(this);
     this.waypointDeleted = this.waypointDeleted.bind(this);
+    this.waypointsReversed = this.waypointsReversed.bind(this);
+    this.waypointsReturnRouteCreated = this.waypointsReturnRouteCreated.bind(this);
     this.setUser = this.setUser.bind(this);
   }
 
@@ -768,6 +770,48 @@ export default class App extends React.Component {
       });
   };
 
+  waypointsReversed() {
+    const waypointGroupId = this.state.selectedActivity?.waypoints_group?.id;
+    if (!waypointGroupId) {
+      return;
+    }
+
+    const toastId = showLoading('Reversing waypoints...');
+
+    API.reverseWaypointGroup(waypointGroupId)
+      .then(() => {
+        this.reloadSelectedActivity();
+      })
+      .catch((error) => {
+        error.title = 'Error reversing waypoints';
+        showError(error);
+      })
+      .finally(() => {
+        dismissLoading(toastId);
+      });
+  }
+
+  waypointsReturnRouteCreated() {
+    const waypointGroupId = this.state.selectedActivity?.waypoints_group?.id;
+    if (!waypointGroupId) {
+      return;
+    }
+
+    const toastId = showLoading('Creating return route...');
+
+    API.makeWaypointGroupReturnRoute(waypointGroupId)
+      .then(() => {
+        this.reloadSelectedActivity();
+      })
+      .catch((error) => {
+        error.title = 'Error creating return route';
+        showError(error);
+      })
+      .finally(() => {
+        dismissLoading(toastId);
+      });
+  }
+
   waypointDeleteModal(waypoint) {
     this.setState({
       selectedWaypoint: waypoint,
@@ -840,6 +884,8 @@ export default class App extends React.Component {
                       onWaypointUpdate={this.waypointUpdateModal}
                       onWaypointMovedUp={this.waypointMovedUp}
                       onWaypointMovedDown={this.waypointMovedDown}
+                      onWaypointsReversed={this.waypointsReversed}
+                      onWaypointsReturnRouteCreated={this.waypointsReturnRouteCreated}
                     />
                   ) : (
                     <ActivitiesTable

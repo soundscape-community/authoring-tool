@@ -284,8 +284,14 @@ class WaypointMedia(CommonModel):
         return file_proxy_url(self.media)
 
     def delete_media_file(self):
-        if self.media and default_storage.exists(self.media.path):
-            default_storage.delete(self.media.path)
+        if not self.media or not self.media.name:
+            return
+
+        if WaypointMedia.objects.filter(media=self.media.name).exists():
+            return
+
+        if default_storage.exists(self.media.name):
+            default_storage.delete(self.media.name)
 
 
 class UserPermissions(models.Model):

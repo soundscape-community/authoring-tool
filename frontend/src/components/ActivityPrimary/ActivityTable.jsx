@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import React from 'react';
-import { Plus, MapPin, Edit } from 'react-feather';
+import { Plus, MapPin, Edit, RotateCcw, CornerDownLeft } from 'react-feather';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Button from 'react-bootstrap/Button';
 
@@ -59,6 +59,32 @@ function AddWaypointButton({ onClick }) {
   );
 }
 
+function WaypointHeaderActions({ canReverse, canCreateReturnRoute, onAdd, onReverse, onCreateReturnRoute }) {
+  return (
+    <div className="d-flex gap-2">
+      <Button
+        size="sm"
+        variant="outline-primary"
+        aria-label="Create Return Route"
+        onClick={onCreateReturnRoute}
+        disabled={!canCreateReturnRoute}>
+        <CornerDownLeft className="me-1" size={16} style={{ verticalAlign: 'text-bottom' }} />
+        Return
+      </Button>
+      <Button
+        size="sm"
+        variant="outline-primary"
+        aria-label="Reverse Waypoints"
+        onClick={onReverse}
+        disabled={!canReverse}>
+        <RotateCcw className="me-1" size={16} style={{ verticalAlign: 'text-bottom' }} />
+        Reverse
+      </Button>
+      <AddWaypointButton onClick={onAdd} />
+    </div>
+  );
+}
+
 export default function ActivityInfoTable(props) {
   const waypoints = props.activity.waypoints_group.waypoints;
   const pois = props.activity.pois_group?.waypoints ?? [];
@@ -102,7 +128,13 @@ export default function ActivityInfoTable(props) {
           title="Waypoints"
           subheaderView={
             props.editing ? (
-              <AddWaypointButton onClick={props.onWaypointCreate.bind(this, Waypoint.TYPE.WAYPOINT)} />
+              <WaypointHeaderActions
+                canReverse={waypoints.length > 1}
+                canCreateReturnRoute={waypoints.length > 1}
+                onAdd={props.onWaypointCreate.bind(this, Waypoint.TYPE.WAYPOINT)}
+                onReverse={props.onWaypointsReversed}
+                onCreateReturnRoute={props.onWaypointsReturnRouteCreated}
+              />
             ) : null
           }
         />
