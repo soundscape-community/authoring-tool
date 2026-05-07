@@ -230,6 +230,31 @@ class WaypointGroupViewSet(ActivityWritePermissionMixin, ModelViewSet):
         self._check_activity_write_permission(instance.activity)
         instance.delete()
 
+    @action(detail=True, methods=['POST'], name='Reverse Order')
+    @transaction.atomic
+    def reverse_order(self, request, pk=None):
+        group = self.get_object()
+        self._check_activity_write_permission(group.activity)
+
+        if group.type != WaypointGroupType.ORDERED:
+            raise ValidationError("Only ordered waypoint groups can be reversed")
+
+        waypoints = list(Waypoint.objects.select_for_update().filter(group=group).order_by("index"))
+        if len(waypoints) > 1:
+            for offset, waypoint in enumerate(waypoints):
+                waypoint.index = -(offset + 1)
+            Waypoint.objects.bulk_update(waypoints, ["index"])
+
+            updated_at = timezone.now()
+            for index, waypoint in enumerate(reversed(waypoints)):
+                waypoint.index = index
+                waypoint.updated = updated_at
+            Waypoint.objects.bulk_update(waypoints, ["index", "updated"])
+            group.activity.child_entity_did_update()
+
+        serializer = self.get_serializer(group, many=False)
+        return Response(serializer.data)
+
 
 class WaypointViewSet(ActivityWritePermissionMixin, ModelViewSet):
     queryset = Waypoint.objects.all()

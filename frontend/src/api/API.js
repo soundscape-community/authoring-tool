@@ -216,6 +216,10 @@ class API {
     return axios.delete(`waypoints/${waypointId}/`);
   }
 
+  async reverseWaypointGroup(waypointGroupId) {
+    return axios.post(`waypoint_groups/${waypointGroupId}/reverse_order/`);
+  }
+
   // Waypoint Media
 
   async deleteWaypointMedia(waypointMediaId) {
