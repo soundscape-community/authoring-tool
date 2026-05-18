@@ -21,14 +21,9 @@ export default function WaypointMarker({ waypoint, editing, onWaypointMove }) {
       title={title}
       icon={mapPinIcon}
       draggable={editing}
-      waypoint={waypoint}
       eventHandlers={{
         dragend: (event) => {
-          // We pass the waypoint ID and not the object itself because for some reason
-          // it is passing the object the map loaded the first time.
-          // If the waypoint was edited, such as a change in name, it will still
-          // return the original object.
-          onWaypointMove(event.target.options.waypoint.id, event.target._latlng);
+          onWaypointMove(waypoint.id, event.target._latlng);
         },
       }}>
       <Tooltip permanent>{`${waypoint.index + 1}`}</Tooltip>

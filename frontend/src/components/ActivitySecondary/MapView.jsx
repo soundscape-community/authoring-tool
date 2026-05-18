@@ -212,7 +212,7 @@ export default function MapView(props) {
 
     return waypoints.map((waypoint) => (
       <WaypointMarker
-        key={waypoint.id}
+        key={`${waypoint.id}:${waypoint.index}:${waypoint.name}`}
         waypoint={waypoint}
         editing={props.editing}
         onWaypointMove={onWaypointMove}
@@ -250,7 +250,7 @@ export default function MapView(props) {
 
     return waypoints.map((waypoint) => (
       <POIMarker
-        key={waypoint.id}
+        key={`${waypoint.id}:${waypoint.name}`}
         waypoint={waypoint}
         editing={props.editing}
         onWaypointMove={onWaypointMove}
