@@ -34,6 +34,7 @@ This is a Django + React web application for creating routed activities (GPS-bas
 ### Frontend Build Process
 - Frontend builds to `backend/frontend/serve/` via Vite config
 - Development: `npm run start` (port 3000) proxies API calls to Django (port 8000) - no build needed
+- For local browser/manual testing, use `http://localhost:3000` (not `http://127.0.0.1:3000`)
 - Production: `npm run build` then Django serves static files via WhiteNoise
 
 ### Critical Startup Sequence
