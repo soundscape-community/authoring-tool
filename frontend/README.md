@@ -45,17 +45,6 @@ Note: If you are using the backend server, you should do `npm run build` when yo
 
 When developing new features or fixing bugs, create a new branch from `main`. Use descriptive branch names that reflect the changes being made.
 
-### Security dependency override
-
-`package.json` overrides `postcss-selector-parser` to `^7.1.7` for Tailwind CSS 3
-and `postcss-nested`. Version 6 has no fix for
-[GHSA-rj75-hqrm-r3gf](https://github.com/advisories/GHSA-rj75-hqrm-r3gf).
-Parser 7 changes insertions during iteration; the application's Tailwind/PostCSS
-output was verified to be identical with parsers 6.1.2 and 7.1.7. Keep this
-override until both consumers accept a patched parser in their dependency ranges.
-This preserves the current Tailwind styling and browser support while avoiding
-the CSS and browser compatibility changes required by Tailwind 4.
-
 ## Testing
 
 Run the frontend unit tests with:
